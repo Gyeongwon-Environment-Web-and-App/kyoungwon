@@ -21,9 +21,9 @@ const VehicleInfo: React.FC = () => {
   return (
     <>
       <div className="flex justify-between items-center my-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <div
-            className={`flex col-span-2 text-sm border border-light-border rounded`}
+            className={`hidden md:flex col-span-2 text-sm border border-light-border rounded`}
           >
             {['전체', '운행중', '고장'].map((label, idx, arr) => (
               <button
@@ -44,6 +44,24 @@ const VehicleInfo: React.FC = () => {
                 {label}
               </button>
             ))}
+          </div>
+          <div className="block md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="font-bold border border-light-border justify-between"
+                >
+                  차량 상태
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full text-center">
+                <DropdownMenuItem className="">전체</DropdownMenuItem>
+                <DropdownMenuItem className="">운행중</DropdownMenuItem>
+                <DropdownMenuItem className="">고장</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div>
             <DropdownMenu>
@@ -66,15 +84,15 @@ const VehicleInfo: React.FC = () => {
           </div>
         </div>
         <button
-          className="py-1.5 px-5 rounded-lg bg-light-green hover:bg-[#009d10] font-bold text-white"
+          className="py-1.5 px-2 md:px-5 rounded-lg bg-light-green hover:bg-[#009d10] font-bold text-white"
           onClick={() => navigate('/transport/vehicle/form')}
         >
           등록하기
         </button>
       </div>
-      <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+      <div className="md:grid md:grid-cols-[1fr_1fr_1fr] gap-6">
         {vehicles.map((vehicle, index) => (
-          <div className="col-span-1">
+          <div className="col-span-1 mb:mb-0 mb-6">
             <VehicleCard
               key={index}
               vehicleType={vehicle.vehicleType}

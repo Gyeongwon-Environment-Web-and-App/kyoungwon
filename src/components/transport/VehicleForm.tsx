@@ -79,7 +79,7 @@ const VehicleForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit}>
       <div className="rounded-lg border border-a5a5a5">
-        <div className="grid grid-cols-[150px_1fr_1fr] gap-x-4 gap-y-7 items-center px-10 py-10 text-lg">
+        <div className="flex flex-col md:grid md:grid-cols-[150px_1fr_1fr] gap-x-4 gap-y-3 md:gap-y-7 items-start md:items-center px-5 md:px-10 py-5 md:py-10 text-lg">
           {/* 차 종 */}
           <label className="col-span-1 font-bold">
             차 종<span className="text-red pr-0"> *</span>
@@ -88,7 +88,7 @@ const VehicleForm: React.FC = () => {
             type="text"
             value={formData.vehicleType}
             onChange={(e) => updateFormData({ vehicleType: e.target.value })}
-            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base"
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base w-full"
             placeholder="예시: 봉고, 동양, AM 등"
           />
 
@@ -101,7 +101,7 @@ const VehicleForm: React.FC = () => {
             type="text"
             value={formData.vehicleNum}
             onChange={(e) => updateFormData({ vehicleNum: e.target.value })}
-            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base"
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base w-full"
             placeholder="예시: 12다 3456"
           />
 
@@ -110,7 +110,7 @@ const VehicleForm: React.FC = () => {
             톤 수<span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-2 text-sm border border-light-border rounded`}
+            className={`flex col-span-2 text-sm border border-light-border rounded w-full`}
           >
             {['1T', '3.5T', '5T', '25T'].map((label, idx, arr) => (
               <button
@@ -141,7 +141,7 @@ const VehicleForm: React.FC = () => {
             type="text"
             value={formData.maxTon}
             onChange={(e) => updateFormData({ maxTon: e.target.value })}
-            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base"
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base w-full"
             placeholder="예시: 0.7T"
           />
 
@@ -154,7 +154,7 @@ const VehicleForm: React.FC = () => {
             type="text"
             value={formData.vehicleYear}
             onChange={(e) => updateFormData({ vehicleYear: e.target.value })}
-            className="col-span-2 rounded border border-light-border px-3 py-1.5 mb-0 text-left text-base"
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 mb-0 text-left text-base w-full"
             placeholder="예시: 2013년형"
           />
 
@@ -164,7 +164,7 @@ const VehicleForm: React.FC = () => {
             <span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-2 text-sm border border-light-border rounded`}
+            className={`flex col-span-2 text-sm border border-light-border rounded w-full`}
           >
             {['생활', '음식물', '재활용', '클린', '수송'].map(
               (label, idx, arr) => (
@@ -172,7 +172,7 @@ const VehicleForm: React.FC = () => {
                   key={label}
                   type="button"
                   className={`
-                  flex-1 px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  flex-1 px-1 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                   ${formData.vehicleCategory === label ? 'bg-lighter-green' : ''}
                   ${idx === 0 ? 'rounded-l' : ''}
                   ${idx === arr.length - 1 ? 'rounded-r' : ''}
@@ -210,93 +210,97 @@ const VehicleForm: React.FC = () => {
             기사님 선택
             <span className="text-red pr-0"> *</span>
           </label>
-          <div className="col-span-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="font-bold border border-light-border justify-between w-[80%]"
-                >
-                  담당기사 선택하기
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full">
-                <DropdownMenuRadioGroup
-                  value={formData.selectedMainDriver?.phoneNum || ''}
-                  onValueChange={(phoneNum) => {
-                    const driver = drivers.find((d) => d.phoneNum === phoneNum);
-                    updateFormData({ selectedMainDriver: driver || null });
-                  }}
-                >
-                  {drivers.map((driver) => (
-                    <DropdownMenuRadioItem
-                      key={driver.phoneNum}
-                      value={driver.phoneNum}
-                      className="text-base"
-                    >
-                      {driver.name} ({driver.phoneNum})
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <div className="col-span-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="font-bold border border-light-border justify-between w-[80%]"
-                >
-                  팀원 선택하기
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full">
-                {drivers
-                  .filter(
-                    (driver) =>
-                      driver.phoneNum !== formData.selectedMainDriver?.phoneNum
-                  )
-                  .map((driver) => (
-                    <DropdownMenuItem
-                      key={driver.phoneNum}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        const isSelected = formData.selectedTeamMembers.some(
-                          (d) => d.phoneNum === driver.phoneNum
-                        );
-                        if (isSelected) {
-                          updateFormData({
-                            selectedTeamMembers:
-                              formData.selectedTeamMembers.filter(
-                                (d) => d.phoneNum !== driver.phoneNum
-                              ),
-                          });
-                        } else {
-                          updateFormData({
-                            selectedTeamMembers: [
-                              ...formData.selectedTeamMembers,
-                              driver,
-                            ],
-                          });
-                        }
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.selectedTeamMembers.some(
-                          (d) => d.phoneNum === driver.phoneNum
-                        )}
-                        className="mr-2 text-base"
-                      />
-                      {driver.name} ({driver.phoneNum})
-                    </DropdownMenuItem>
-                  ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className='flex items-center gap-x-2 md:block'>
+            <div className="col-span-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="font-bold border border-light-border justify-between w-full md:w-[80%]"
+                  >
+                    <span className='block md:hidden'>담당기사</span>
+                    <span className='hidden md:block'>담당기사 선택하기</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  <DropdownMenuRadioGroup
+                    value={formData.selectedMainDriver?.phoneNum || ''}
+                    onValueChange={(phoneNum) => {
+                      const driver = drivers.find((d) => d.phoneNum === phoneNum);
+                      updateFormData({ selectedMainDriver: driver || null });
+                    }}
+                  >
+                    {drivers.map((driver) => (
+                      <DropdownMenuRadioItem
+                        key={driver.phoneNum}
+                        value={driver.phoneNum}
+                        className="text-base"
+                      >
+                        {driver.name} ({driver.phoneNum})
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+  
+            <div className="col-span-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="font-bold border border-light-border justify-between w-full md:w-[80%]"
+                  >
+                    <span className='block md:hidden'>팀원</span>
+                    <span className='hidden md:block'>팀원 선택하기</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  {drivers
+                    .filter(
+                      (driver) =>
+                        driver.phoneNum !== formData.selectedMainDriver?.phoneNum
+                    )
+                    .map((driver) => (
+                      <DropdownMenuItem
+                        key={driver.phoneNum}
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          const isSelected = formData.selectedTeamMembers.some(
+                            (d) => d.phoneNum === driver.phoneNum
+                          );
+                          if (isSelected) {
+                            updateFormData({
+                              selectedTeamMembers:
+                                formData.selectedTeamMembers.filter(
+                                  (d) => d.phoneNum !== driver.phoneNum
+                                ),
+                            });
+                          } else {
+                            updateFormData({
+                              selectedTeamMembers: [
+                                ...formData.selectedTeamMembers,
+                                driver,
+                              ],
+                            });
+                          }
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.selectedTeamMembers.some(
+                            (d) => d.phoneNum === driver.phoneNum
+                          )}
+                          className="mr-2 text-base"
+                        />
+                        {driver.name} ({driver.phoneNum})
+                      </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {(formData.selectedMainDriver ||
@@ -348,7 +352,7 @@ const VehicleForm: React.FC = () => {
             담당 구역
             <span className="text-red pr-0"> *</span>
           </label>
-          <div className="col-span-2">
+          <div className="col-span-2 w-full">
             <div
               className={`flex text-sm border border-light-border rounded mb-2`}
             >
@@ -358,7 +362,7 @@ const VehicleForm: React.FC = () => {
                     key={label}
                     type="button"
                     className={`
-                    flex-1 flex items-center justify-center px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    flex-1 flex items-center justify-center px-2 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                     ${formData.vehicleArea.includes(label) ? 'bg-lighter-green' : ''}
                     ${idx === 0 ? 'rounded-l' : ''}
                     ${idx === arr.length - 1 ? 'rounded-r' : ''}
@@ -372,7 +376,7 @@ const VehicleForm: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={formData.vehicleArea.includes(label)}
-                      className="mr-2 w-4 h-4 cursor-pointer"
+                      className="mr-2 w-4 h-4 cursor-pointer hidden md:block"
                     />
                     {label}
                   </button>
@@ -385,7 +389,7 @@ const VehicleForm: React.FC = () => {
                   key={label}
                   type="button"
                   className={`
-                    flex-1 flex items-center justify-center px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    flex-1 flex items-center justify-center px-2 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                     ${formData.vehicleArea.includes(label) ? 'bg-lighter-green' : ''}
                     ${idx === 0 ? 'rounded-l' : ''}
                     ${idx === arr.length - 1 ? 'rounded-r' : ''}
@@ -399,7 +403,7 @@ const VehicleForm: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={formData.vehicleArea.includes(label)}
-                    className="mr-2 w-4 h-4 cursor-pointer"
+                    className="mr-2 w-4 h-4 cursor-pointer hidden md:block"
                   />
                   {label}
                 </button>

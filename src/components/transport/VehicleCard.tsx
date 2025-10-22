@@ -37,7 +37,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
 }) => {
   return (
     <div
-      className={`relative text-left px-4 py-6 rounded-lg border-2 ${status ? 'border-red' : 'border-light-green'} font-semibold cursor-default`}
+      className={`relative text-left px-1 xxs:px-2 md:px-4 py-6 rounded-lg border-2 ${status ? 'border-red' : 'border-light-green'} font-semibold cursor-default flex md:block items-center md:items-start`}
     >
       {/* 오른쪽 위 메뉴 */}
       <div className="absolute right-3 top-3">
@@ -52,33 +52,39 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
         </DropdownMenu>
       </div>
 
-      <img src={sample} alt="임시차량사진" className="py-2 pb-3" />
-      <div className="flex items-center text-lg pb-3">
-        <img
-          src={
-            vehicleCategory === '생활'
-              ? general
-              : vehicleCategory === '재활용'
-                ? recycle
-                : vehicleCategory === '음식물'
-                  ? food
-                  : other
-          }
-          alt="쓰레기 상성"
-          className="mr-2"
-        />
-        {vehicleNum}
-      </div>
-      <div className="flex items-center text-base pb-3 gap-x-1">
-        <img src={truck} alt="트럭" className="mr-1 h-6 w-6" />
-        <span>{vehicleType}</span>
-        <span>{maxTon ? maxTon : ton}</span>
-        <span>{vehicleCategory}</span>
-        <span>({ton})</span>
-      </div>
-      <div className="flex items-center">
-        <img src={driver} alt="기사" className="mr-2 h-6 w-6" />
-        <span>{selectedMainDriver}</span>
+      <img
+        src={sample}
+        alt="임시차량사진"
+        className="w-24 h-16 xxs:w-32 xxs:h-20 md:w-full md:h-auto object-cover rounded-lg pb-0 md:pb-4 mr-1 md:mr-0"
+      />
+      <div className="">
+        <div className="flex items-center text-base md:text-lg pb-1 md:pb-3">
+          <img
+            src={
+              vehicleCategory === '생활'
+                ? general
+                : vehicleCategory === '재활용'
+                  ? recycle
+                  : vehicleCategory === '음식물'
+                    ? food
+                    : other
+            }
+            alt="쓰레기 상성"
+            className="mr-2 md:w-16 w-12"
+          />
+          {vehicleNum}
+        </div>
+        <div className="flex items-center text-sm md:text-base pb-1 md:pb-3 gap-x-1">
+          <img src={truck} alt="트럭" className="mr-1 md:h-6 md:w-6 w-4 h-4" />
+          <span>{vehicleType}</span>
+          <span>{maxTon ? maxTon : ton}</span>
+          <span>{vehicleCategory}</span>
+          <span>({ton})</span>
+        </div>
+        <div className="flex items-center text-sm md:text-base">
+          <img src={driver} alt="기사" className="mr-2 md:h-6 md:w-6 w-4 h-4" />
+          <span>{selectedMainDriver}</span>
+        </div>
       </div>
     </div>
   );

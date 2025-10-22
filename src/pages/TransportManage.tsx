@@ -14,6 +14,7 @@ import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';
 import PageLayout from '../components/layout/PageLayout';
 import { useAuthStore } from '../stores/authStore';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 
 const TransportManage: React.FC = () => {
   const { logout } = useAuthStore();
@@ -155,6 +156,7 @@ const TransportManage: React.FC = () => {
           </div>
         </PageLayout>
       </div>
+      <MobileBottomNav />
     </div>
   );
 };
