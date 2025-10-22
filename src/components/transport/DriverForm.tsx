@@ -54,7 +54,7 @@ const DriverForm: React.FC = () => {
             value={formData.name}
             onChange={(e) => updateFormData({ name: e.target.value })}
             className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left"
-            placeholder=""
+            placeholder="예시: 홍길동"
           />
 
           {/* 전화번호 */}
@@ -67,7 +67,7 @@ const DriverForm: React.FC = () => {
             value={formData.phoneNum}
             onChange={(e) => updateFormData({ phoneNum: e.target.value })}
             className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left"
-            placeholder="'-'를 빼고 입력하세요"
+            placeholder={`'-'를 빼고 입력하세요`}
           />
 
           {/* 담당 팀 */}
@@ -110,7 +110,7 @@ const DriverForm: React.FC = () => {
             value={formData.teamNum}
             onChange={(e) => updateFormData({ teamNum: e.target.value })}
             className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left"
-            placeholder=""
+            placeholder="예시: 1조"
           />
 
           {/* 파일 첨부 */}

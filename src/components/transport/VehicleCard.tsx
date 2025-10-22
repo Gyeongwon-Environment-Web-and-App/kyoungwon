@@ -37,7 +37,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
 }) => {
   return (
     <div
-      className={`relative text-left px-4 py-6 rounded-lg border-2 ${status ? 'border-red' : 'border-light-green'} font-semibold`}
+      className={`relative text-left px-4 py-6 rounded-lg border-2 ${status ? 'border-red' : 'border-light-green'} font-semibold cursor-default`}
     >
       {/* 오른쪽 위 메뉴 */}
       <div className="absolute right-3 top-3">

@@ -60,7 +60,7 @@ const VehicleInfo: React.FC = () => {
                 <DropdownMenuItem className="">재활용</DropdownMenuItem>
                 <DropdownMenuItem className="">일반</DropdownMenuItem>
                 <DropdownMenuItem className="">음식물</DropdownMenuItem>
-                <DropdownMenuItem className="">기타</DropdownMenuItem>
+                <DropdownMenuItem className="">클린 / 수송</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
