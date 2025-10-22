@@ -53,7 +53,7 @@ const DriverForm: React.FC = () => {
             type="text"
             value={formData.name}
             onChange={(e) => updateFormData({ name: e.target.value })}
-            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left  w-full"
+            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left w-full"
             placeholder="예시: 홍길동"
           />
 

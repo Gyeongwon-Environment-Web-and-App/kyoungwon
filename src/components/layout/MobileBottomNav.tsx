@@ -27,6 +27,8 @@ const MobileBottomNav = () => {
         return 'complaint';
       case '/complaints/stats':
         return 'stats';
+      case '/transport/vehicle/info':
+        return 'transport';
       default:
         return 'home';
     }
@@ -46,6 +48,9 @@ const MobileBottomNav = () => {
         break;
       case '/complaints/stats':
         setActiveTab('stats');
+        break;
+      case '/transport/vehicle/info':
+        setActiveTab('transport');
         break;
       default:
         setActiveTab('home');
@@ -79,14 +84,14 @@ const MobileBottomNav = () => {
       label: '지도',
       icon: mapIcon,
       activeIcon: mapIconGreen,
-      route: '/',
+      route: '/map/overview',
     },
     {
-      id: 'vehicle',
+      id: 'transport',
       label: '차량',
       icon: vehicle,
       activeIcon: vehicleGreen,
-      route: '/',
+      route: '/transport/vehicle/info',
     },
   ];
 

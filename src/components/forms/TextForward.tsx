@@ -44,13 +44,13 @@ const TextForward: React.FC<TextForwardProps> = ({
   // 모바일 버전
   if (isMobile) {
     return (
-      <div className="flex gap-3 w-full">
+      <div className="flex gap-1 w-full justify-center">
         {displayOptions.map((option) => {
           const isSelected = selectedValues.includes(option);
           return (
             <button
               key={option}
-              className={`w-full px-0 rounded-lg border border-dark-gray font-bold text-sm transition-all ${
+              className={`w-16 px-0 rounded-lg border border-dark-gray font-bold text-sm transition-all ${
                 isSelected
                   ? 'bg-lighter-green text-dark-gray'
                   : 'bg-white text-black'

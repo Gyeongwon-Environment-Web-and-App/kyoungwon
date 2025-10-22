@@ -10,6 +10,7 @@ import NoticeTable from '@/components/notice/NoticeTable';
 import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';
 import PageLayout from '../components/layout/PageLayout';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { useAuthStore } from '../stores/authStore';
 
 const NoticeManage: React.FC = () => {
@@ -128,6 +129,7 @@ const NoticeManage: React.FC = () => {
           </div>
         </PageLayout>
       </div>
+      <MobileBottomNav />
     </div>
   );
 };
