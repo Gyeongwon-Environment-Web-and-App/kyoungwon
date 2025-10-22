@@ -20,7 +20,7 @@ const DriverInfo: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center my-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -59,15 +59,15 @@ const DriverInfo: React.FC = () => {
           </div>
         </div>
         <button
-          className="py-1.5 px-5 rounded-lg bg-light-green hover:bg-[#009d10] font-bold text-white"
+          className="py-1.5 px-2 md:px-5 rounded-lg bg-light-green hover:bg-[#009d10] font-bold text-white"
           onClick={() => navigate('/transport/driver/form')}
         >
           등록하기
         </button>
       </div>
-      <div className="grid grid-cols-[1fr_1fr_1fr_1fr] gap-6">
+      <div className="md:grid md:grid-cols-[1fr_1fr_1fr_1fr] gap-6">
         {drivers.map((driver, index) => (
-          <div className="col-span-1">
+          <div className="col-span-1 mb-6 md:mb-0">
             <DriverCard
               key={index}
               name={driver.name}

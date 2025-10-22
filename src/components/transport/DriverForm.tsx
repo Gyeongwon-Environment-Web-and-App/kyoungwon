@@ -43,7 +43,7 @@ const DriverForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit}>
       <div className="rounded-lg border border-a5a5a5">
-        <div className="grid grid-cols-[150px_1fr_1fr] gap-x-4 gap-y-7 items-center px-10 py-10 text-lg">
+        <div className="flex flex-col md:grid md:grid-cols-[150px_1fr_1fr] gap-x-4 gap-y-3 md:gap-y-7 items-start md:items-center px-5 md:px-10 py-5 md:py-10 text-lg">
           {/* 이름 */}
           <label className="col-span-1 font-bold">
             이름
@@ -53,7 +53,7 @@ const DriverForm: React.FC = () => {
             type="text"
             value={formData.name}
             onChange={(e) => updateFormData({ name: e.target.value })}
-            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left"
+            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left  w-full"
             placeholder="예시: 홍길동"
           />
 
@@ -66,7 +66,7 @@ const DriverForm: React.FC = () => {
             type="text"
             value={formData.phoneNum}
             onChange={(e) => updateFormData({ phoneNum: e.target.value })}
-            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left"
+            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left  w-full"
             placeholder={`'-'를 빼고 입력하세요`}
           />
 
@@ -75,7 +75,7 @@ const DriverForm: React.FC = () => {
             담당 팀<span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-2 text-sm border border-light-border rounded`}
+            className={`flex col-span-2 text-sm border border-light-border rounded w-full`}
           >
             {['일반', '음식물', '재활용', '클린', '수송'].map(
               (label, idx, arr) => (
@@ -83,7 +83,7 @@ const DriverForm: React.FC = () => {
                   key={label}
                   type="button"
                   className={`
-                  flex-1 px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  flex-1 px-1 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                   ${formData.category === label ? 'bg-lighter-green' : ''}
                   ${idx === 0 ? 'rounded-l' : ''}
                   ${idx === arr.length - 1 ? 'rounded-r' : ''}
@@ -109,7 +109,7 @@ const DriverForm: React.FC = () => {
             type="text"
             value={formData.teamNum}
             onChange={(e) => updateFormData({ teamNum: e.target.value })}
-            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left"
+            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left  w-full"
             placeholder="예시: 1조"
           />
 

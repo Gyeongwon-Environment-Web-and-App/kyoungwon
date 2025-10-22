@@ -90,7 +90,7 @@ const GenericFileAttach = ({
       <button
         type="button"
         onClick={handleFileClick}
-        className="w-[200px] border border-light-border px-2 py-1.5 rounded text-center outline-none text-sm font-bold"
+        className="w-36 md:w-[200px] border border-light-border px-2 py-1.5 rounded text-center outline-none text-sm font-bold"
       >
         파일 선택
       </button>
