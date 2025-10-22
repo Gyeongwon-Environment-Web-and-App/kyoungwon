@@ -21,6 +21,7 @@ interface VehicleCardProps {
   vehicleCategory: string;
   vehicleNum: string;
   ton: string;
+  maxTon?: string;
   selectedMainDriver: string;
   status: boolean | undefined;
 }
@@ -30,6 +31,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
   vehicleCategory,
   vehicleNum,
   ton,
+  maxTon,
   selectedMainDriver,
   status,
 }) => {
@@ -70,7 +72,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
       <div className="flex items-center text-base pb-3 gap-x-1">
         <img src={truck} alt="트럭" className="mr-1 h-6 w-6" />
         <span>{vehicleType}</span>
-        <span>{ton}</span>
+        <span>{maxTon ? maxTon : ton}</span>
         <span>{vehicleCategory}</span>
         <span>({ton})</span>
       </div>

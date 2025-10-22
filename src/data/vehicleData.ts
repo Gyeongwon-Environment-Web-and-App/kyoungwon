@@ -70,14 +70,15 @@ export const vehicles: VehicleFormData[] = [
     vehicleType: '포터',
     vehicleNum: '12가 3456',
     ton: '1T',
+    maxTon: '0.7T',
     vehicleYear: '2020',
     vehicleCategory: '생활',
     uploadedFiles: [],
     drivers: drivers,
     vehicleArea: ['쌍문1동', '쌍문2동'],
     broken: false,
-    selectedMainDriver: drivers[0], // 김철수
-    selectedTeamMembers: [drivers[1], drivers[2]], // 이영희, 박민수
+    selectedMainDriver: drivers[0],
+    selectedTeamMembers: [drivers[1], drivers[2]],
   },
   {
     vehicleType: '마이티',
@@ -96,6 +97,7 @@ export const vehicles: VehicleFormData[] = [
     vehicleType: '뉴파워',
     vehicleNum: '56다 1234',
     ton: '5T',
+    maxTon: '6.1T',
     vehicleYear: '2021',
     vehicleCategory: '재활용',
     uploadedFiles: [],

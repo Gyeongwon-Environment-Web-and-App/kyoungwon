@@ -22,6 +22,7 @@ export interface VehicleFormData {
   vehicleType: string;
   vehicleNum: string;
   ton: string;
+  maxTon?: string;
   vehicleYear: string;
   vehicleCategory: string;
   uploadedFiles: Array<{

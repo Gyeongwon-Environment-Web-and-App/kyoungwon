@@ -26,6 +26,7 @@ const VehicleForm: React.FC = () => {
     vehicleType: '',
     vehicleNum: '',
     ton: '',
+    maxTon: '',
     vehicleYear: '',
     vehicleCategory: '',
     uploadedFiles: [],
@@ -131,6 +132,18 @@ const VehicleForm: React.FC = () => {
               </button>
             ))}
           </div>
+
+          {/* 최대적재량 */}
+          <label className="col-span-1 font-bold">
+            최대적재량
+          </label>
+          <input
+            type="text"
+            value={formData.maxTon}
+            onChange={(e) => updateFormData({ maxTon: e.target.value })}
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base"
+            placeholder="예시: 0.7T"
+          />
 
           {/* 연식 */}
           <label className="col-span-1 font-bold">

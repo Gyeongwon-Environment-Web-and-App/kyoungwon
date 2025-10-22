@@ -13,6 +13,7 @@ const VehicleInfo: React.FC = () => {
             vehicleCategory={vehicle.vehicleCategory}
             vehicleNum={vehicle.vehicleNum}
             ton={vehicle.ton}
+            maxTon={vehicle.maxTon}
             selectedMainDriver={vehicle.selectedMainDriver?.name || '미지정'}
             status={vehicle.broken}
           />
