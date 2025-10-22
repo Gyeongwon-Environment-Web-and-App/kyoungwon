@@ -103,7 +103,7 @@ export const vehicles: VehicleFormData[] = [
     uploadedFiles: [],
     drivers: drivers,
     vehicleArea: ['방학1동', '방학3동'],
-    broken: false,
+    broken: true,
     selectedMainDriver: drivers[2], // 박민수
     selectedTeamMembers: [drivers[1], drivers[4]], // 이영희, 정대호
   },
@@ -116,7 +116,7 @@ export const vehicles: VehicleFormData[] = [
     uploadedFiles: [],
     drivers: drivers,
     vehicleArea: ['쌍문1동', '방학1동'],
-    broken: false,
+    broken: true,
     selectedMainDriver: drivers[3], // 최지영
     selectedTeamMembers: [drivers[0], drivers[2]], // 김철수, 박민수
   },
@@ -129,7 +129,7 @@ export const vehicles: VehicleFormData[] = [
     uploadedFiles: [],
     drivers: drivers,
     vehicleArea: ['쌍문2동', '쌍문3동'],
-    broken: false,
+    broken: true,
     selectedMainDriver: drivers[4], // 정대호
     selectedTeamMembers: [drivers[1], drivers[3]], // 이영희, 최지영
   },

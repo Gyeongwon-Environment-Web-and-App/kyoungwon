@@ -34,10 +34,10 @@ const menuItems = [
   {
     label: '차량 관리',
     submenu: [
-      { name: '차량 정보', route: '/' },
-      { name: '차량 등록 / 수정', route: '/' },
-      { name: '기사정보', route: '/' },
-      { name: '기사등록 / 수정', route: '/' },
+      { name: '차량 정보', route: '/transport/vehicle/info' },
+      { name: '차량 등록 / 수정', route: '/transport/vehicle/form' },
+      { name: '기사정보', route: '/transport/driver/info' },
+      { name: '기사등록 / 수정', route: '/transport/driver/form' },
     ],
   },
   {

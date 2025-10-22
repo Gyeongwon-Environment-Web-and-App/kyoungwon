@@ -25,22 +25,20 @@ const TransportManage: React.FC = () => {
     'vehicleInfo' | 'vehicleForm' | 'driverInfo' | 'driverForm'
   >('vehicleInfo');
 
-  // URL 변경 감지하여 탭 업데이트
-  // useEffect(() => {
-  //   const getDefaultTab = () => {
-  //     if (location.pathname.includes('/form')) {
-  //       return 'form';
-  //     } else if (location.pathname.includes('/table')) {
-  //       return 'table';
-  //     } else if (location.pathname.includes('/detail')) {
-  //       return 'detail';
-  //     }
-  //     return 'table';
-  //   };
-
-  //   const newTab = getDefaultTab();
-  //   setActiveTab(newTab);
-  // }, [location.pathname, setActiveTab]);
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/vehicle/form')) {
+      setActiveTab('vehicleForm');
+    } else if (path.includes('/vehicle/info')) {
+      setActiveTab('vehicleInfo');
+    } else if (path.includes('/driver/form')) {
+      setActiveTab('driverForm');
+    } else if (path.includes('/driver/info')) {
+      setActiveTab('driverInfo');
+    } else {
+      setActiveTab('vehicleInfo');
+    }
+  }, [location.pathname]);
 
   const handleTabClick = (
     nextTab: 'vehicleInfo' | 'vehicleForm' | 'driverInfo' | 'driverForm'
@@ -55,14 +53,16 @@ const TransportManage: React.FC = () => {
       if (!confirmLeave) return;
     }
 
-    // // URL 업데이트
-    // if (nextTab === 'form') {
-    //   navigate('/notice/form');
-    // } else if (nextTab === 'table') {
-    //   navigate('/notice/table');
-    // } else if (nextTab === 'detail') {
-    //   navigate('/notice/detail');
-    // }
+    // URL 업데이트
+    if (nextTab === 'vehicleForm') {
+      navigate('/transport/vehicle/form');
+    } else if (nextTab === 'vehicleInfo') {
+      navigate('/transport/vehicle/info');
+    } else if (nextTab === 'driverForm') {
+      navigate('/transport/driver/form');
+    } else if (nextTab === 'driverInfo') {
+      navigate('/transport/driver/info');
+    }
 
     setActiveTab(nextTab);
   };

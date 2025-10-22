@@ -155,7 +155,7 @@ const MainPage: React.FC = () => {
       title: '차량 조회',
       description: '업체에서 사용되는 차량 조회',
       icon: truck,
-      route: '/',
+      route: '/transport/vehicle/info',
       alt: '차량 아이콘',
     },
   ];
