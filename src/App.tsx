@@ -1,6 +1,12 @@
 import React from 'react';
 
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from 'react-router-dom';
 
 import CacheManager from './components/common/CacheManager';
 import { useAuth } from './hooks/useAuth';
@@ -21,7 +27,24 @@ const App: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, isLoading, login } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading, login: storeLogin } = useAuth();
+
+  // Enhanced login function with navigation
+  const login = (userData: {
+    id: number;
+    serial_no: string;
+    phone_no: string;
+    name: string;
+    token: string;
+  }) => {
+    storeLogin(userData);
+
+    // Navigate after state update
+    setTimeout(() => {
+      navigate('/');
+    }, 0);
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -73,10 +96,22 @@ const AppContent: React.FC = () => {
             <Route path="/notice/detail" element={<NoticeManage />} />
 
             {/* 차량 관리 */}
-            <Route path="/transport/driver/form" element={<TransportManage />} />
-            <Route path="/transport/driver/info" element={<TransportManage />} />
-            <Route path="/transport/vehicle/info" element={<TransportManage />} />
-            <Route path="/transport/vehicle/form" element={<TransportManage />} />
+            <Route
+              path="/transport/driver/form"
+              element={<TransportManage />}
+            />
+            <Route
+              path="/transport/driver/info"
+              element={<TransportManage />}
+            />
+            <Route
+              path="/transport/vehicle/info"
+              element={<TransportManage />}
+            />
+            <Route
+              path="/transport/vehicle/form"
+              element={<TransportManage />}
+            />
           </>
         ) : (
           // 인증되지 않은 경우 모든 경로를 로그인으로 리다이렉트

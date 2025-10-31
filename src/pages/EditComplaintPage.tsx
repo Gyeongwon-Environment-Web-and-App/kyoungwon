@@ -14,7 +14,17 @@ import DateTimeBox from '../components/forms/DateTimeBox';
 const EditComplaintPage: React.FC = () => {
   const { complaintId } = useParams<{ complaintId: string }>();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout: storeLogout } = useAuth();
+
+  // Enhanced logout function with navigation
+  const logout = () => {
+    storeLogout();
+
+    // Navigate after state update
+    setTimeout(() => {
+      navigate('/login');
+    }, 0);
+  };
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -159,7 +169,9 @@ const EditComplaintPage: React.FC = () => {
               </svg>
               돌아가기
             </button>
-            <h1 className="text-lg md:text-2xl font-bold text-gray-900 pl-5">민원 수정</h1>
+            <h1 className="text-lg md:text-2xl font-bold text-gray-900 pl-5">
+              민원 수정
+            </h1>
           </div>
         </div>
 
