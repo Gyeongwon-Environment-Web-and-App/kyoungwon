@@ -112,6 +112,14 @@ const AppContent: React.FC = () => {
               path="/transport/vehicle/form"
               element={<TransportManage />}
             />
+            <Route
+              path="/transport/team/form"
+              element={<TransportManage />}
+            />
+            <Route
+              path="/transport/team/info"
+              element={<TransportManage />}
+            />
           </>
         ) : (
           // 인증되지 않은 경우 모든 경로를 로그인으로 리다이렉트

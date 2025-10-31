@@ -44,6 +44,10 @@ const TransportManage: React.FC = () => {
       setActiveTab('driverForm');
     } else if (path.includes('/driver/info')) {
       setActiveTab('driverInfo');
+    } else if (path.includes('/team/info')) {
+      setActiveTab('teamInfo');
+    } else if (path.includes('/team/form')) {
+      setActiveTab('teamForm');
     } else {
       setActiveTab('vehicleInfo');
     }
@@ -79,6 +83,10 @@ const TransportManage: React.FC = () => {
       navigate('/transport/driver/form');
     } else if (nextTab === 'driverInfo') {
       navigate('/transport/driver/info');
+    } else if (nextTab === 'teamInfo') {
+      navigate('/transport/team/info');
+    } else if (nextTab === 'teamForm') {
+      navigate('/transport/team/form');
     }
 
     setActiveTab(nextTab);

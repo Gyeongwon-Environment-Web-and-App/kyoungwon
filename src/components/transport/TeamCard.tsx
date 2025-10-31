@@ -38,7 +38,7 @@ const TeamCard: React.FC<DriverCardProps> = ({
       className={`relative text-left flex flex-row md:flex-col items-center gap-1 px-4 py-3 md:py-6 rounded-lg border-2 border-light-green  cursor-default font-medium`}
     >
       {/* 오른쪽 위 메뉴 */}
-      <div className="absolute right-3 top-3">
+      <div className="absolute right-3 top-3 cursor-pointer">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <img src={three} alt="수정/삭제" />
