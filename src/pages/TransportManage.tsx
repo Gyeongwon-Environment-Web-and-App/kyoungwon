@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useEffect, useState } from 'react';
+import React, { act, useEffect, useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import DriverForm from '@/components/transport/DriverForm';
 import DriverInfo from '@/components/transport/DriverInfo';
 import VehicleForm from '@/components/transport/VehicleForm';
@@ -10,11 +11,13 @@ import VehicleInfo from '@/components/transport/VehicleInfo';
 
 import driverIcon from '../assets/icons/common/driver.svg';
 import truckIcon from '../assets/icons/common/truck.svg';
+import teamIcon from '../assets/icons/common/team.svg';
 import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';
 import PageLayout from '../components/layout/PageLayout';
 import { useAuthStore } from '../stores/authStore';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
+import TeamForm from '@/components/transport/TeamForm';
+import TeamInfo from '@/components/transport/TeamInfo';
 
 const TransportManage: React.FC = () => {
   const { logout } = useAuthStore();
@@ -23,7 +26,12 @@ const TransportManage: React.FC = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'vehicleInfo' | 'vehicleForm' | 'driverInfo' | 'driverForm'
+    | 'vehicleInfo'
+    | 'vehicleForm'
+    | 'driverInfo'
+    | 'driverForm'
+    | 'teamForm'
+    | 'teamInfo'
   >('vehicleInfo');
 
   useEffect(() => {
@@ -42,10 +50,18 @@ const TransportManage: React.FC = () => {
   }, [location.pathname]);
 
   const handleTabClick = (
-    nextTab: 'vehicleInfo' | 'vehicleForm' | 'driverInfo' | 'driverForm'
+    nextTab:
+      | 'vehicleInfo'
+      | 'vehicleForm'
+      | 'driverInfo'
+      | 'driverForm'
+      | 'teamInfo'
+      | 'teamForm'
   ) => {
     if (
-      (activeTab === 'driverForm' || activeTab === 'vehicleForm') &&
+      (activeTab === 'driverForm' ||
+        activeTab === 'vehicleForm' ||
+        activeTab === 'teamForm') &&
       hasUnsavedChanges
     ) {
       const confirmLeave = window.confirm(
@@ -98,8 +114,10 @@ const TransportManage: React.FC = () => {
           icon={
             activeTab === 'vehicleInfo' || activeTab === 'vehicleForm' ? (
               <img src={truckIcon} alt="차량 아이콘" className="w-8 h-8" />
-            ) : (
+            ) : activeTab === 'driverInfo' || activeTab === 'driverForm' ? (
               <img src={driverIcon} alt="기사 아이콘" className="w-8 h-8" />
+            ) : (
+              <img src={teamIcon} alt="팀 아이콘" className="w-8 h-8" />
             )
           }
           tabs={[
@@ -107,6 +125,8 @@ const TransportManage: React.FC = () => {
             { label: '차량 등록 / 수정', value: 'vehicleForm' },
             { label: '기사 정보', value: 'driverInfo' },
             { label: '기사 등록 / 수정', value: 'driverForm' },
+            { label: '팀 정보', value: 'teamInfo' },
+            { label: '팀 등록 / 수정', value: 'teamForm' },
           ]}
           activeTab={activeTab}
           onTabClick={(value) => {
@@ -114,7 +134,9 @@ const TransportManage: React.FC = () => {
               value === 'vehicleInfo' ||
               value === 'vehicleForm' ||
               value === 'driverInfo' ||
-              value === 'driverForm'
+              value === 'driverForm' ||
+              value === 'teamForm' ||
+              value === 'teamInfo'
             ) {
               handleTabClick(value);
             }
@@ -128,7 +150,9 @@ const TransportManage: React.FC = () => {
                   ? '기사 정보'
                   : activeTab === 'driverForm'
                     ? '기사 등록 / 수정'
-                    : ''
+                    : activeTab === 'teamForm'
+                    ? '팀 등록 / 수정'
+                    : '팀 정보'
           }
         >
           {/* 민원 등록 콘텐츠 */}
@@ -151,6 +175,16 @@ const TransportManage: React.FC = () => {
             {activeTab === 'driverForm' && (
               <>
                 <DriverForm />
+              </>
+            )}
+            {activeTab === 'teamForm' && (
+              <>
+                <TeamForm />
+              </>
+            )}
+            {activeTab === 'teamInfo' && (
+              <>
+                <TeamInfo />
               </>
             )}
           </div>

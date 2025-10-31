@@ -1,4 +1,5 @@
 import type { VehicleDriver, VehicleFormData } from '@/types/transport';
+import type { Team } from '@/types/transport';
 
 // 10 dummy drivers
 export const drivers: VehicleDriver[] = [
@@ -197,5 +198,113 @@ export const vehicles: VehicleFormData[] = [
     broken: false,
     selectedMainDriver: drivers[9], // 송나영
     selectedTeamMembers: [drivers[3], drivers[4]], // 최지영, 정대호
+  },
+];
+
+export const teams: Team[] = [
+  {
+    teamName: '1팀',
+    category: '일반',
+    selectedVehicles: ['12가 3456', '34나 7890'],
+    region: '쌍문1동',
+    drivers: [drivers[0], drivers[1]],
+  },
+  {
+    teamName: '2팀',
+    category: '음식물',
+    selectedVehicles: ['34나 7890', '56다 1234'],
+    region: '쌍문2동',
+    drivers: [drivers[1], drivers[3]],
+  },
+  {
+    teamName: '3팀',
+    category: '재활용',
+    selectedVehicles: ['78라 5678'],
+    region: '쌍문3동',
+    drivers: [drivers[2]],
+  },
+  {
+    teamName: '4팀',
+    category: '클린',
+    selectedVehicles: ['78라 5678', '90마 9012', '78라 5678'],
+    region: '방학1동',
+    drivers: [drivers[3], drivers[2]],
+  },
+  {
+    teamName: '5팀',
+    category: '수송',
+    selectedVehicles: ['90마 9012', '12바 3456'],
+    region: '방학3동',
+    drivers: [drivers[4], drivers[1], drivers[5], drivers[0]],
+  },
+  {
+    teamName: '6팀',
+    category: '일반',
+    selectedVehicles: ['34사 7890'],
+    region: '쌍문1동',
+    drivers: [drivers[5], drivers[0]],
+  },
+  {
+    teamName: '7팀',
+    category: '음식물',
+    selectedVehicles: ['34사 7890', '56아 1234'],
+    region: '쌍문3동',
+    drivers: [drivers[6], drivers[3]],
+  },
+  {
+    teamName: '8팀',
+    category: '재활용',
+    selectedVehicles: ['56아 1234', '78자 5678'],
+    region: '쌍문3동',
+    drivers: [drivers[7], drivers[2]],
+  },
+  {
+    teamName: '9팀',
+    category: '클린',
+    selectedVehicles: ['78자 5678'],
+    region: '방학1동',
+    drivers: [drivers[8], drivers[0]],
+  },
+  {
+    teamName: '10팀',
+    category: '수송',
+    selectedVehicles: ['90차 9012', '12가 3456'],
+    region: '쌍문2동',
+    drivers: [drivers[9]],
+  },
+  {
+    teamName: '11팀',
+    category: '일반',
+    selectedVehicles: ['12가 3456', '56다 1234'],
+    region: '방학1동',
+    drivers: [drivers[0], drivers[2]],
+  },
+  {
+    teamName: '12팀',
+    category: '음식물',
+    selectedVehicles: ['34나 7890', '78라 5678'],
+    region: '방학1동',
+    drivers: [drivers[1], drivers[3]],
+  },
+  {
+    teamName: '13팀',
+    category: '재활용',
+    selectedVehicles: ['56다 1234', '90마 9012'],
+    region: '방학1동',
+    drivers: [drivers[2], drivers[4]],
+  },
+  {
+    teamName: '14팀',
+    category: '클린',
+    selectedVehicles: ['78라 5678', '12바 3456'],
+    region: '방학1동',
+    drivers: [drivers[3], drivers[5]],
+  },
+  {
+    teamName: '15팀',
+    category: '수송',
+    selectedVehicles: ['90마 9012', '34사 7890'],
+    region: '방학1동',
+    drivers: [drivers[4], drivers[6]],
   },
 ];

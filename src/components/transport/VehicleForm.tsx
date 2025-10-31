@@ -1,18 +1,7 @@
 import React, { useState } from 'react';
 
-import { ChevronDown, X } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { drivers } from '@/data/vehicleData';
 import type { VehicleFormData } from '@/types/transport';
 
 import attention from '../../assets/icons/common/attention.svg';
@@ -47,14 +36,14 @@ const VehicleForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
-  const toggleVehicleArea = (area: string) => {
-    const isSelected = formData.vehicleArea.includes(area);
-    updateFormData({
-      vehicleArea: isSelected
-        ? formData.vehicleArea.filter((a) => a !== area)
-        : [...formData.vehicleArea, area],
-    });
-  };
+  // const toggleVehicleArea = (area: string) => {
+  //   const isSelected = formData.vehicleArea.includes(area);
+  //   updateFormData({
+  //     vehicleArea: isSelected
+  //       ? formData.vehicleArea.filter((a) => a !== area)
+  //       : [...formData.vehicleArea, area],
+  //   });
+  // };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +54,8 @@ const VehicleForm: React.FC = () => {
       !formData.ton.trim() ||
       !formData.vehicleYear.trim() ||
       !formData.vehicleCategory.trim() ||
-      formData.vehicleArea.length === 0 || formData.vehicleArea.every(area => !area.trim()) ||
+      formData.vehicleArea.length === 0 ||
+      formData.vehicleArea.every((area) => !area.trim()) ||
       !formData.selectedMainDriver
     ) {
       alert('필수 입력창을 모두 입력해주세요.');
@@ -134,9 +124,7 @@ const VehicleForm: React.FC = () => {
           </div>
 
           {/* 최대적재량 */}
-          <label className="col-span-1 font-bold">
-            최대적재량
-          </label>
+          <label className="col-span-1 font-bold">최대적재량</label>
           <input
             type="text"
             value={formData.maxTon}
@@ -158,42 +146,11 @@ const VehicleForm: React.FC = () => {
             placeholder="예시: 2013년형"
           />
 
-          {/* 수거 종류 */}
-          <label className="col-span-1 font-bold">
-            수거 종류
-            <span className="text-red pr-0"> *</span>
-          </label>
-          <div
-            className={`flex col-span-2 text-sm border border-light-border rounded w-full`}
-          >
-            {['생활', '음식물', '재활용', '클린', '수송'].map(
-              (label, idx, arr) => (
-                <button
-                  key={label}
-                  type="button"
-                  className={`
-                  flex-1 px-1 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                  ${formData.vehicleCategory === label ? 'bg-lighter-green' : ''}
-                  ${idx === 0 ? 'rounded-l' : ''}
-                  ${idx === arr.length - 1 ? 'rounded-r' : ''}
-                `}
-                  style={{
-                    borderRight:
-                      idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
-                  }}
-                  onClick={() => updateFormData({ vehicleCategory: label })}
-                >
-                  {label}
-                </button>
-              )
-            )}
-          </div>
-
           {/* 파일 첨부 */}
           <label className="col-span-1 font-bold">사진 첨부</label>
           <div className="col-span-2">
             <GenericFileAttach
-              formData={{ uploadedFiles: formData.uploadedFiles}}
+              formData={{ uploadedFiles: formData.uploadedFiles }}
               // ! 여기 나중에 수정필요
               setFormData={(updates) => {
                 if (typeof updates === 'function') {
@@ -205,7 +162,7 @@ const VehicleForm: React.FC = () => {
             />
           </div>
 
-          {/* 기사님 선택 */}
+          {/* 기사님 선택
           <label className="col-span-1 font-bold">
             기사님 선택
             <span className="text-red pr-0"> *</span>
@@ -345,9 +302,9 @@ const VehicleForm: React.FC = () => {
                 </div>
               ))}
             </div>
-          )}
+          )} */}
 
-          {/* 담당 구역 */}
+          {/* 담당 구역
           <label className="col-span-1 font-bold">
             담당 구역
             <span className="text-red pr-0"> *</span>
@@ -409,7 +366,7 @@ const VehicleForm: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* 악성 민원 체크 */}
           <div className="col-span-1"></div>
