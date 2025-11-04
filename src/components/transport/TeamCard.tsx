@@ -50,7 +50,8 @@ const TeamCard: React.FC<DriverCardProps> = ({
         </DropdownMenu>
       </div>
 
-      <div className="flex flex-col span-y-1">
+      {/* <img src={teamIcon} alt="" className="mr-2 md:w-20 w-16 my-4 opacity-80" /> */}
+      <div className="flex flex-col span-y-1 font-normal">
         <div className="flex items-center mb-2 text-xl font-semibold">
           <img
             src={
@@ -82,7 +83,7 @@ const TeamCard: React.FC<DriverCardProps> = ({
         {drivers.length > 0 && (
           <div className="flex items-start text-base md:text-lg">
             <img src={team} alt="소속팀" className="mr-1 h-6 w-6 mt-0.5" />
-            <span className="p-0">
+            <span className="p-0 break-keep break-normal">
               {drivers.map((d) => `${d.name} (${d.phoneNum})`).join(', ')}
             </span>
           </div>
