@@ -348,7 +348,7 @@ const ComplaintStats = () => {
             <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${categoryPie.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
-                <div className="text-center md:w-[4rem] px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
+                <div className="text-center w-20 px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
                   {categoryPie.map((item) => (
                     <span
                       key={item.name}
@@ -396,7 +396,7 @@ const ComplaintStats = () => {
             <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${regionPie.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
-                <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
+                <div className="flex flex-col w-20 text-center gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
                   {(selectedAreas.length > 0 ? regionPie : regionPie).map(
                     (item) => (
                       <span
@@ -450,7 +450,7 @@ const ComplaintStats = () => {
             <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${(selectedAreas.length > 0 ? regionPosNegData : posNegPie).reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
-                <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
+                <div className="inline-flex flex-col gap-2 w-20  md:mr-10 text-center mt-4">
                   {(selectedAreas.length > 0
                     ? regionPosNegData
                     : posNegPie
