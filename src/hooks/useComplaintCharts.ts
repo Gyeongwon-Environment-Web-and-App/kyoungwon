@@ -72,6 +72,17 @@ const getComplaintColor = (name: string) =>
   ColorMappings.complaints[name] || '#cccccc';
 
 const highestComplaintTime = (data: BarChartItem[]) => {
+  // Handle empty data
+  if (!data || data.length === 0) {
+    return {
+      maxTime: '',
+      minTime: '',
+      maxComplaints: 0,
+      minComplaints: 0,
+      totalComplaints: 0,
+    };
+  }
+
   let maxComplaints = -1;
   let minComplaints = Infinity;
   let totalComplaints = 0;
@@ -79,25 +90,41 @@ const highestComplaintTime = (data: BarChartItem[]) => {
   let minTime = '';
 
   data.forEach((item) => {
-    // 각 시간대의 총 민원 수 계산 (time 제외한 모든 카테고리 합계)
+    if (!item) return;
+
+    // 각 시간대의 총 민원 수 계산 (time과 hour 제외한 모든 카테고리 합계)
     const totalTimeComplaints = Object.keys(item)
-      .filter((key) => key !== 'time')
-      .reduce((sum, key) => sum + Number(item[key]), 0);
+      .filter((key) => key !== 'time' && key !== 'hour')
+      .reduce((sum, key) => {
+        const value = Number(item[key]);
+        return sum + (isNaN(value) ? 0 : value);
+      }, 0);
 
     // 가장 많은 민원 시간대 찾기
     if (totalTimeComplaints > maxComplaints) {
       maxComplaints = totalTimeComplaints;
-      maxTime = item.time;
+      maxTime = String(item.time || item.hour || '');
     }
 
     // 가장 적은 민원 시간대 찾기
     if (totalTimeComplaints < minComplaints) {
       minComplaints = totalTimeComplaints;
-      minTime = item.time;
+      minTime = String(item.time || item.hour || '');
     }
 
     totalComplaints += totalTimeComplaints;
   });
+
+  // Handle case where all values are 0
+  if (maxComplaints === -1) {
+    return {
+      maxTime: '',
+      minTime: '',
+      maxComplaints: 0,
+      minComplaints: 0,
+      totalComplaints: 0,
+    };
+  }
 
   return {
     maxTime,
@@ -127,8 +154,8 @@ export const useComplaintCharts = ({
 }: UseComplaintChartsParams) => {
   // 메모화된 차트 데이터 계산
   const chartData = useMemo(
-    () => getHybridChartData(transformedData, selectedTrashType),
-    [transformedData, selectedTrashType]
+    () => getHybridChartData(transformedData),
+    [transformedData]
   );
 
   const showFirstPieChart = useMemo(

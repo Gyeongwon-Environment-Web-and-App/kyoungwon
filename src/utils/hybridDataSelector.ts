@@ -1,38 +1,26 @@
-import {
-  complaintData,
-  complaintTypeData,
-  dongComplaintData,
-  timeSlotData,
-  weekdayData,
-} from '@/data/chartData';
 import type { TransformedStatisticsData } from '@/types/statistics';
 
 export const getHybridChartData = (
-  transformedData: TransformedStatisticsData | null,
-  selectedCategory: string | null
+  transformedData: TransformedStatisticsData | null
 ) => {
-  // If we have API data and a selected category, use transformed data
-  if (
-    transformedData &&
-    selectedCategory &&
-    selectedCategory !== '전체통계' &&
-    selectedCategory !== '쓰레기 종류'
-  ) {
+  // If we have API data, always use it (even if empty arrays)
+  if (transformedData) {
     return {
-      complaintTypeData: transformedData.positiveNegatives,
-      dongComplaintData: transformedData.regions,
-      complaintData: transformedData.positiveNegatives,
-      timeSlotData: transformedData.timePeriods,
-      weekdayData: transformedData.days,
+      complaintTypeData: transformedData.positiveNegatives || [],
+      dongComplaintData: transformedData.regions || [],
+      complaintData: transformedData.positiveNegatives || [],
+      timeSlotData: transformedData.timePeriods || [],
+      weekdayData: transformedData.days || [],
     };
   }
 
+  // If no API data, return empty arrays instead of dummy data
   return {
-    complaintTypeData,
-    dongComplaintData,
-    complaintData,
-    timeSlotData,
-    weekdayData,
+    complaintTypeData: [],
+    dongComplaintData: [],
+    complaintData: [],
+    timeSlotData: [],
+    weekdayData: [],
   };
 };
 

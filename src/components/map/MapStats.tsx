@@ -139,7 +139,7 @@ const MapStats: React.FC<MapStatsProps> = ({
   }, [trashTypeWeekdayData, daysBar, selectedTrashType]);
 
   return (
-    <div className="overflow-y-auto h-[26%]">
+    <div className="overflow-y-auto h-full pt-2 scrollbar-hide">
       {showFirstPieChart && selectedWeekday === '전체 요일' && (
         <section className="relative mb-6">
           <p className="font-semibold text-lg text-[#8d8d8d]">
@@ -320,15 +320,23 @@ const MapStats: React.FC<MapStatsProps> = ({
             의 민원 통계
           </p>
           <h1 className="font-bold text-xl mt-1">
-            {`총 ${(selectedAreas.length > 0
-              ? regionTimePeriodsData
-              : chartData.timeSlotData
-            ).reduce((sum, item) => {
-              const totalTimeComplaints = Object.keys(item)
-                .filter((key) => key !== 'time')
-                .reduce((sum, key) => sum + Number(item[key]), 0);
-              return sum + totalTimeComplaints;
-            }, 0)}건`}
+            {`총 ${(() => {
+              const data =
+                selectedAreas.length > 0
+                  ? regionTimePeriodsData
+                  : chartData.timeSlotData;
+              if (!data || data.length === 0) return 0;
+              return data.reduce((sum, item) => {
+                if (!item) return sum;
+                const totalTimeComplaints = Object.keys(item)
+                  .filter((key) => key !== 'time' && key !== 'hour')
+                  .reduce((sum, key) => {
+                    const value = Number(item[key]);
+                    return sum + (isNaN(value) ? 0 : value);
+                  }, 0);
+                return sum + totalTimeComplaints;
+              }, 0);
+            })()}건`}
           </h1>
           <div className="mt-3 flex flex-col gap-3">
             <div>
@@ -345,15 +353,18 @@ const MapStats: React.FC<MapStatsProps> = ({
                     ? [getTrashColor(selectedTrashType)]
                     : Object.values(ColorMappings.trash)
                 }
+                mobile={true}
               />
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 -mt-5">
               <div>
                 <p className="text-[#585858] font-semibold text-base">
                   가장 많은 민원이 들어온 시간대
                 </p>
                 <p className="text-black font-semibold text-lg">
-                  {timeStats.maxTime} ({timeStats.maxComplaints}건)
+                  {timeStats.maxTime
+                    ? `${timeStats.maxTime} (${timeStats.maxComplaints}건)`
+                    : 'N/A (0건)'}
                 </p>
               </div>
               <div>
@@ -361,7 +372,9 @@ const MapStats: React.FC<MapStatsProps> = ({
                   가장 적은 민원이 들어온 시간대
                 </p>
                 <p className="text-black font-semibold text-lg">
-                  {timeStats.minTime} ({timeStats.minComplaints}건)
+                  {timeStats.minTime
+                    ? `${timeStats.minTime} (${timeStats.minComplaints}건)`
+                    : 'N/A (0건)'}
                 </p>
               </div>
             </div>
@@ -381,7 +394,7 @@ const MapStats: React.FC<MapStatsProps> = ({
           <h1 className="font-bold text-xl mt-1">
             {`총 ${displayDaysData.reduce((sum, item) => sum + Number(item.count || 0), 0)}건`}
           </h1>
-          <div className="mt-3 flex flex-col gap-3">
+          <div className="mt-3 flex flex-col gap-3 mb-40">
             <div>
               <SimpleWeekdayChart
                 data={displayDaysData}
@@ -391,6 +404,7 @@ const MapStats: React.FC<MapStatsProps> = ({
                     ? [getTrashTypeColor(selectedTrashType)]
                     : ['#59B9FF']
                 }
+                mobile={true}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -443,7 +457,7 @@ const MapStats: React.FC<MapStatsProps> = ({
             <h1 className="font-bold text-lg mt-1">
               {selectedWeekday} 민원 분포
             </h1>
-            <div className="mt-3 flex flex-col gap-3">
+            <div className="my-3 flex flex-col gap-3">
               <div>
                 <SimpleTimeSlotChart
                   data={weekdayTimeSlotData}

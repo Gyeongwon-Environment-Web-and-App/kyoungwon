@@ -252,16 +252,3 @@ button {
   font-weight: bold;
 }
 
-/* 파이 차트 outline 제거 */
-.recharts-wrapper,
-.recharts-wrapper *,
-.recharts-pie,
-.recharts-pie * {
-  outline: none !important;
-}
-
-.recharts-wrapper:focus,
-.recharts-pie:focus,
-.recharts-pie *:focus {
-  outline: none !important;
-}

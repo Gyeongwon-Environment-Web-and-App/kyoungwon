@@ -4,12 +4,14 @@ import type { BarChartProps } from '@/types/stats';
 
 interface SimpleTimeSlotChartProps extends BarChartProps {
   className?: string;
+  mobile?: boolean;
 }
 
 const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
   data,
   colors,
   className = '',
+  mobile = false,
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
@@ -108,7 +110,7 @@ const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
   if (!data || data.length === 0) {
     return (
       <div
-        className={`h-96 w-full md:w-[600px] flex items-center justify-center ${className}`}
+        className={`h-96 ${mobile ? '' : 'w-[600px]'} flex items-center justify-center ${className}`}
       >
         <div className="text-gray-500">표시할 데이터가 없습니다.</div>
       </div>
@@ -120,9 +122,11 @@ const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
 
   return (
     <div
-      className={`h-96 w-[300px] md:w-[670px] flex flex-col justify-center md:flex-row ${className}`}
+      className={`flex justify-center ${mobile ? 'flex-col scale-90 h-80' : 'flex-row w-[670px] h-96'} ${className}`}
     >
-      <div className="flex-1 flex items-center md:w-[450px] md:ml-5">
+      <div
+        className={`flex-1 flex items-center ${mobile ? '' : 'md:w-[400px] md:ml-5'}`}
+      >
         <div className="w-full h-56 flex flex-col justify-end">
           {/* Y축 라벨 */}
           <div className="relative w-full h-full pb-8">
@@ -138,7 +142,9 @@ const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
                 onMouseLeave={() => setHoveredIndex(0)}
               >
                 {/* 바 차트 */}
-                <div className="w-6 md:w-8 h-48 flex flex-col justify-end mb-2">
+                <div
+                  className={`${mobile ? 'w-6' : 'w-8'} h-48 flex flex-col justify-end mb-2`}
+                >
                   <div className="w-full h-full flex flex-col justify-end">
                     {bar.segments.map((segment, segIndex) => (
                       <div
@@ -163,7 +169,7 @@ const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
             {ticks.map((tick, idx) => (
               <div
                 key={idx}
-                className="text-[10px] md:text-xs text-gray-600 text-center absolute"
+                className={`${mobile ? 'text-[10px]' : 'text-xs'} text-gray-600 text-center absolute`}
                 style={{
                   left: `${(idx / (ticks.length - 1)) * 100}%`,
                   transform: 'translateX(-50%)',
@@ -177,30 +183,34 @@ const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
       </div>
 
       {/* 툴팁 */}
-      <div className="flex items-center justify-center md:justify-start px-4 pt-10 md:pt-0">
-        <div className="bg-white border border-[#757575] rounded-lg p-4 w-48 text-center">
-          <div className="font-semibold text-lg text-gray-600 mb-2">
-            {currentData?.time ? getTimeRange(String(currentData.time)) : ''}
-          </div>
-          <div className="space-y-1">
-            {currentData?.segments.map((segment, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between text-sm"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: segment.color }}
-                  />
-                  <span>{segment.category}</span>
+      {currentData && (
+        <div
+          className={`flex items-center ${mobile ? 'justify-center' : 'justify-start'} px-4 pt-10 md:pt-0`}
+        >
+          <div className="bg-white border border-[#757575] rounded-lg p-4 w-48 text-center">
+            <div className="font-semibold text-lg text-gray-600 mb-2">
+              {currentData?.time ? getTimeRange(String(currentData.time)) : ''}
+            </div>
+            <div className="space-y-1">
+              {currentData?.segments.map((segment, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: segment.color }}
+                    />
+                    <span>{segment.category}</span>
+                  </div>
+                  <span className="font-semibold">{segment.value}건</span>
                 </div>
-                <span className="font-semibold">{segment.value}건</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

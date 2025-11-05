@@ -310,7 +310,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
               onBlur={() => setIsSearchFocused(false)}
             />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 h-[80vh] px-2">
             <SharedSidebarHeader />
             {sidebarContents[activeSidebar]}
           </div>

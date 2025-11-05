@@ -4,12 +4,14 @@ import type { BarChartProps } from '@/types/stats';
 
 interface SimpleWeekdayChartProps extends BarChartProps {
   className?: string;
+  mobile?: boolean;
 }
 
 const SimpleWeekdayChartComponent: React.FC<SimpleWeekdayChartProps> = ({
   data,
   colors,
   className = '',
+  mobile = false,
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
@@ -69,7 +71,7 @@ const SimpleWeekdayChartComponent: React.FC<SimpleWeekdayChartProps> = ({
   if (!data || data.length === 0) {
     return (
       <div
-        className={`h-96 w-full md:w-[600px] flex items-center justify-center ${className}`}
+        className={`h-96 ${mobile ? 'w-[400px]' : 'w-[600px]'} flex items-center justify-center ${className}`}
       >
         <div className="text-gray-500">표시할 데이터가 없습니다.</div>
       </div>
@@ -81,9 +83,9 @@ const SimpleWeekdayChartComponent: React.FC<SimpleWeekdayChartProps> = ({
 
   return (
     <div
-      className={`h-96 w-full md:w-[600px] flex flex-col items-center justify-center md:flex-row ${className}`}
+      className={`h-96 flex items-center justify-center ${mobile ? 'flex-col ' : 'flex-row w-[600px]'} ${className}`}
     >
-      <div className="flex-1 flex items-center min-w-[450px] scale-90">
+      <div className="flex-1 flex items-center min-w-[400px] scale-90">
         <div className="w-full h-80 flex flex-col justify-end">
           {/* Y축 라벨 */}
           <div className="flex justify-evenly items-end h-full pb-8">
@@ -123,7 +125,9 @@ const SimpleWeekdayChartComponent: React.FC<SimpleWeekdayChartProps> = ({
       </div>
 
       {/* 툴팁 */}
-      <div className="flex items-center justify-center md:justify-start md:ml-5 -mt-6 md:mt-0">
+      <div
+        className={`flex items-center justify-center md:justify-start ${mobile ? '-mt-8' : 'mt-0 ml-5'}`}
+      >
         <div className="bg-white border border-[#757575] rounded-lg p-4 w-48 text-center">
           <div className="font-semibold text-lg text-gray-600 mb-2">
             {currentData?.time}
