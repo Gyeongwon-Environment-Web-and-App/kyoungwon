@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { Search } from '@/lib/icons';
 
+import triangle from '../../assets/icons/actions/triangle.svg';
 import logo from '../../assets/icons/brand/logo.svg';
 import chartIcon from '../../assets/icons/common/chart.svg';
 import chartWhite from '../../assets/icons/common/chart_white.svg';
@@ -15,6 +16,7 @@ import truckWhite from '../../assets/icons/common/truck_white.svg';
 import grayLeftArrow from '../../assets/icons/navigation/arrows/gray_arrow_left.svg';
 import grayRightArrow from '../../assets/icons/navigation/arrows/gray_arrow_right.svg';
 import { useMapOverviewStore } from '../../stores/mapOverviewStore';
+import { AreaDropdown } from '../ui/AreaDropdown';
 import ComplaintDetail from './ComplaintDetail';
 import ComplaintListContainer from './ComplaintListContainer';
 
@@ -35,10 +37,103 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
 }) => {
   const [lastOpenedSidebar, setLastOpenedSidebar] = useState<SidebarType>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
 
   const { complaintId } = useParams<{ complaintId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const getSelectedAreaDisplay = (areas: string[]) => {
+    if (areas.length === 0 || areas.length === 8) return '전체 지역';
+
+    const 쌍문Children = ['쌍문 1동', '쌍문 2동', '쌍문 3동', '쌍문 4동'];
+    const 방학Children = ['방학 1동', '방학 3동'];
+
+    const selected쌍문Children = 쌍문Children.filter((child) =>
+      areas.includes(child)
+    );
+    const selected방학Children = 방학Children.filter((child) =>
+      areas.includes(child)
+    );
+
+    const displayParts = [];
+
+    if (selected쌍문Children.length === 쌍문Children.length) {
+      displayParts.push('쌍문동');
+    } else if (selected쌍문Children.length > 0) {
+      displayParts.push(selected쌍문Children.join(', '));
+    }
+
+    if (selected방학Children.length === 방학Children.length) {
+      displayParts.push('방학동');
+    } else if (selected방학Children.length > 0) {
+      displayParts.push(selected방학Children.join(', '));
+    }
+
+    return displayParts.join(', ');
+  };
+
+  const handleAreaSelectionChange = (areas: string[]) => {
+    setSelectedAreas(areas);
+  };
+
+  const SharedSidebarHeader = () => (
+    <>
+      {/* Area Selection Section */}
+      <div className="flex items-end md:items-center justify-between px-2 pt-0 pb-3 md:pt-5 md:pb-5">
+        <div className="rounded-lg mr-2 md:mr-0">
+          <p className="font-semibold text-sm md:text-base text-[#8D8D8D] mb-1">
+            현재 조회 중인 지역은
+          </p>
+          <h3 className="text-base xsm:text-lg md:text-xl font-bold">
+            서울특별시 도봉구 {getSelectedAreaDisplay(selectedAreas)}
+          </h3>
+        </div>
+        <AreaDropdown
+          selectedAreas={selectedAreas}
+          onSelectedAreasChange={handleAreaSelectionChange}
+          buttonText="구역 선택"
+          buttonClassName="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+          contentClassName="w-20 md:w-28 !p-0"
+          childItemClassName="pl-10 bg-f0f0f0 rounded-none bg-[#E9FFD4] hover:bg-[#E2F7CF]"
+          triangleIcon={triangle}
+        />
+      </div>
+
+      {/* Category Buttons Section */}
+      <div
+        className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
+      >
+        {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => {
+          const isSelected = selectedCategory === label;
+          return (
+            <button
+              key={label}
+              type="button"
+              className={`
+              flex-1 px-4 font-bold
+              ${isSelected ? 'bg-lighter-green' : ''}
+              ${idx === 0 ? 'rounded-l' : ''}
+              ${idx === arr.length - 1 ? 'rounded-r' : ''}
+              focus:outline-none
+            `}
+              style={{
+                borderRight:
+                  idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCategoryChange?.(label);
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
 
   const onSidebarChangeRef = React.useRef(onSidebarChange);
 
@@ -114,37 +209,10 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
         dateRange={dateRange}
         selectedCategory={selectedCategory}
         onCategoryChange={onCategoryChange}
+        selectedAreas={selectedAreas}
       />
     ),
-    vehicle: (
-      <div className="">
-        <div
-          className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
-        >
-          {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => (
-            <button
-              key={label}
-              type="button"
-              className={`
-              flex-1 px-4 font-bold
-              ${selectedCategory === label ? 'bg-lighter-green' : ''}
-              ${idx === 0 ? 'rounded-l' : ''}
-              ${idx === arr.length - 1 ? 'rounded-r' : ''}
-              focus:outline-none
-            `}
-              style={{
-                borderRight:
-                  idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
-              }}
-              onClick={() => onCategoryChange?.(label)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        차량 정보 컴포넌트
-      </div>
-    ),
+    vehicle: <div className="">차량 정보 컴포넌트</div>,
     stats: <div className="">구역별 통계 컴포넌트</div>,
   };
 
@@ -235,7 +303,10 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
               onBlur={() => setIsSearchFocused(false)}
             />
           </div>
-          <div className="flex-1">{sidebarContents[activeSidebar]}</div>
+          <div className="flex-1">
+            <SharedSidebarHeader />
+            {sidebarContents[activeSidebar]}
+          </div>
           {activeSidebar === 'complaint' && (
             <footer className="absolute bottom-2 right-1 w-full flex justify-end items-center">
               <button
