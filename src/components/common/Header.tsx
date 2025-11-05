@@ -181,6 +181,12 @@ export default function Header({ onLogout }: HeaderProps) {
                   className="text-right text-white hover:text-gray-600 transition-colors"
                   onClick={() => handleLogout}
                 >
+                  직원 등록
+                </button>
+                <button
+                  className="text-right text-white hover:text-gray-600 transition-colors"
+                  onClick={() => handleLogout}
+                >
                   로그아웃
                 </button>
               </div>
@@ -227,6 +233,9 @@ export default function Header({ onLogout }: HeaderProps) {
 
         {/* 오른쪽 메뉴 - 데스크톱에서만 표시 */}
         <div className="hidden md:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
+          <button className="hover:text-gray-400" onClick={() => onLogout()}>
+            직원 등록
+          </button>
           <button className="hover:text-gray-400" onClick={() => onLogout()}>
             로그아웃
           </button>

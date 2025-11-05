@@ -56,7 +56,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   // 수동 로그인 함수 (SSL 인증서 문제 우회용)
   const handleManualLogin = () => {
     const token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwicGhvbmVfbm8iOiIwMTAxMjM0NTY3OCIsInNlcmlhbF9ubyI6IjEyMzQiLCJuYW1lIjoiaGV5IiwiaWF0IjoxNzYwMDU0NjI3LCJleHAiOjE3NjA2NTk0Mjd9.1Rsts9wo-w0waI8oI0lFN0iOK7-Iakn8VG5iWKhISio';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwicGhvbmVfbm8iOiJzdHJpbmciLCJzZXJpYWxfbm8iOiIxMjM0IiwibmFtZSI6InN0cmluZyIsImlhdCI6MTc2MjMyNDIwOSwiZXhwIjoxNzYyOTI5MDA5fQ.d0SRUMomo5cc_jyYjJevijHGc9qTP7EAngXOZLeDiXQ';
 
     // JWT 토큰 디코딩
     const decodedToken = decodeJWT(token);

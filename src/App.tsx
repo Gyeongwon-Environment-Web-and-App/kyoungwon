@@ -16,6 +16,7 @@ import Login from './pages/Login';
 import MainPage from './pages/MainPage';
 import MapOverview from './pages/MapOverview';
 import NoticeManage from './pages/NoticeManage';
+import Register from './pages/Register';
 import TransportManage from './pages/TransportManage';
 
 const App: React.FC = () => {
@@ -112,14 +113,10 @@ const AppContent: React.FC = () => {
               path="/transport/vehicle/form"
               element={<TransportManage />}
             />
-            <Route
-              path="/transport/team/form"
-              element={<TransportManage />}
-            />
-            <Route
-              path="/transport/team/info"
-              element={<TransportManage />}
-            />
+            <Route path="/transport/team/form" element={<TransportManage />} />
+            <Route path="/transport/team/info" element={<TransportManage />} />
+
+            <Route path="/register" element={<Register />} />
           </>
         ) : (
           // 인증되지 않은 경우 모든 경로를 로그인으로 리다이렉트
