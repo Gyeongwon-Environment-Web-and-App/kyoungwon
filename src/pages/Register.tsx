@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import mdLogo from '../assets/icons/brand/mid_logo.svg';
 import { authService } from '../services/authService';
+import { validatePhoneNumber } from '../utils/validateDash';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +34,13 @@ const Register: React.FC = () => {
 
     if (!serial || !phoneNum || !name) {
       setError('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    // Validate phone number for dashes
+    const phoneValidation = validatePhoneNumber(phoneNum);
+    if (!phoneValidation.isValid) {
+      setError(phoneValidation.message || '전화번호 형식이 올바르지 않습니다.');
       return;
     }
 

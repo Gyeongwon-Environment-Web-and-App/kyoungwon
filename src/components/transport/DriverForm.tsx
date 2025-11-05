@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 
 import type { DriverFormData } from '@/types/transport';
 
+import { validatePhoneNumber } from '../../utils/validateDash';
 import GenericFileAttach from '../forms/GenericFileAttach';
 
 // ! 수정 모드를 위해 interface로 prop 지정 필요
@@ -33,6 +34,13 @@ const DriverForm: React.FC = () => {
       !formData.teamNum.trim()
     ) {
       alert('필수 입력창을 모두 입력해주세요.');
+      return;
+    }
+
+    // Validate phone number for dashes
+    const phoneValidation = validatePhoneNumber(formData.phoneNum);
+    if (!phoneValidation.isValid) {
+      alert(phoneValidation.message || '전화번호 형식이 올바르지 않습니다.');
       return;
     }
 
@@ -102,8 +110,7 @@ const DriverForm: React.FC = () => {
 
           {/* 조 */}
           <label className="col-span-1 font-bold">
-            조
-            <span className="text-red pr-0"> *</span>
+            조<span className="text-red pr-0"> *</span>
           </label>
           <input
             type="text"
