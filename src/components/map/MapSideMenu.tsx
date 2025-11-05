@@ -19,6 +19,7 @@ import { useMapOverviewStore } from '../../stores/mapOverviewStore';
 import { AreaDropdown } from '../ui/AreaDropdown';
 import ComplaintDetail from './ComplaintDetail';
 import ComplaintListContainer from './ComplaintListContainer';
+import MapStats from './MapStats';
 
 type SidebarType = 'complaint' | 'vehicle' | 'stats' | null;
 
@@ -213,7 +214,13 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       />
     ),
     vehicle: <div className="">차량 정보 컴포넌트</div>,
-    stats: <div className="">구역별 통계 컴포넌트</div>,
+    stats: (
+      <MapStats
+        dateRange={dateRange}
+        selectedCategory={selectedCategory}
+        selectedAreas={selectedAreas}
+      />
+    ),
   };
 
   return (

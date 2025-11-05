@@ -6,14 +6,24 @@ import { useRegionStatistics } from '@/hooks/useRegionStatistics';
 import { useStatistics } from '@/hooks/useStatistics';
 import { useTimePeriodByDay } from '@/hooks/useTimePeriodByDay';
 
-export const useComplaintFilters = () => {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+export const useComplaintFilters = (externalDateRange?: DateRange) => {
+  const [internalDateRange, setInternalDateRange] = useState<
+    DateRange | undefined
+  >();
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedTrashType, setSelectedTrashType] =
     useState<string>('쓰레기 종류');
   const [selectedTimeline, setSelectedTimeline] =
     useState<string>('전체 시간대');
   const [selectedWeekday, setSelectedWeekday] = useState<string>('전체 요일');
+
+  const dateRange = externalDateRange ?? internalDateRange;
+  // Always provide a function for setDateRange - no-op when external dateRange is provided
+  const setDateRange: (range: DateRange | undefined) => void = externalDateRange
+    ? () => {
+        // No-op when external dateRange is provided
+      }
+    : setInternalDateRange;
 
   const {
     transformedData,
@@ -194,7 +204,12 @@ export const useComplaintFilters = () => {
 
       handleAreaSelectionChange(allAreas);
     }
-  }, [selectedWeekday, selectedTrashType, selectedAreas.length, handleAreaSelectionChange]);
+  }, [
+    selectedWeekday,
+    selectedTrashType,
+    selectedAreas.length,
+    handleAreaSelectionChange,
+  ]);
 
   return {
     // State
