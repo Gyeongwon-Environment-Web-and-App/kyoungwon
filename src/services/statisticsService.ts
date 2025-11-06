@@ -43,12 +43,31 @@ export const statisticsService = {
   async getAllByCategories(
     categories: string[],
     dateRange?: DateRange
-  ): Promise<{ message: string; data: Record<string, { count: number }> }> {
+  ): Promise<{
+    message: string;
+    data: Record<
+      string,
+      {
+        total_count: number;
+        trucks: Array<{ count: number; drivers: string[]; truck_no: string }>;
+      }
+    >;
+  }> {
     try {
       const { startDate, endDate } = getDateRangeFromPicker(dateRange);
       const response = await apiClient.post<{
         message: string;
-        data: Record<string, { count: number }>;
+        data: Record<
+          string,
+          {
+            total_count: number;
+            trucks: Array<{
+              count: number;
+              drivers: string[];
+              truck_no: string;
+            }>;
+          }
+        >;
       }>(`/stat/all_by_categories`, {
         startDate,
         endDate,

@@ -19,7 +19,17 @@ interface UseInitialStatsForPiesResult {
   posNegPie: PieDatum[];
   loading: boolean;
   error: string | null;
-  rawCategories: Record<string, { count: number }> | null;
+  rawCategories: Record<
+    string,
+    {
+      total_count: number;
+      trucks: Array<{
+        count: number;
+        drivers: string[];
+        truck_no: string;
+      }>;
+    }
+  > | null;
   rawRegions: Record<string, { count: number }> | null;
   rawDays: Record<string, { count: number }> | null;
   rawPosNeg: { pos: number; neg: number } | null;
@@ -51,7 +61,14 @@ export function useInitialStats({
   const [posNegPie, setPosNegPie] = useState<PieDatum[]>([]);
   const [rawCategories, setRawCategories] = useState<Record<
     string,
-    { count: number }
+    {
+      total_count: number;
+      trucks: Array<{
+        count: number;
+        drivers: string[];
+        truck_no: string;
+      }>;
+    }
   > | null>(null);
   const [rawRegions, setRawRegions] = useState<Record<
     string,
@@ -124,7 +141,7 @@ export function useInitialStats({
         setCategoryPie(
           Object.entries(catData).map(([name, v]) => ({
             name,
-            value: Number(v?.count ?? 0),
+            value: Number(v?.total_count ?? 0),
           }))
         );
         setRegionPie(orderedRegionArray);
