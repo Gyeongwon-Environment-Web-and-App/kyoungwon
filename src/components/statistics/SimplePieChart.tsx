@@ -13,16 +13,38 @@ const SimplePieChartComponent: React.FC<SimplePieChartProps> = ({
 }) => {
   // 파이 차트 계산
   const pieData = useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!data || data.length === 0) {
+      return [];
+    }
 
     const total = data.reduce((sum, item) => sum + item.value, 0);
-    if (total === 0) return [];
+    if (total === 0) {
+      return [];
+    }
+
+    // Filter out zero-value items to avoid invalid SVG paths
+    const nonZeroData = data.filter((item) => item.value > 0);
+
+    if (nonZeroData.length === 0) {
+      return [];
+    }
+
+    // Recalculate total with only non-zero values
+    const nonZeroTotal = nonZeroData.reduce((sum, item) => sum + item.value, 0);
+
+    if (nonZeroTotal === 0) {
+      return [];
+    }
 
     let currentAngle = 0;
 
     // Handle single data point case - create a full circle
-    if (data.length === 1) {
-      const item = data[0];
+    if (nonZeroData.length === 1) {
+      const item = nonZeroData[0];
+      const originalIndex = data.findIndex((d) => d.name === item.name);
+      const colorIndex = originalIndex % (colors?.length || 1);
+      const color =
+        colors && colors.length > 0 ? colors[colorIndex] : '#59B9FF';
       return [
         {
           ...item,
@@ -30,19 +52,25 @@ const SimplePieChartComponent: React.FC<SimplePieChartProps> = ({
           angle: 360,
           startAngle: 0,
           endAngle: 360,
-          color: colors[0],
+          color,
           pathData: createFullCirclePath(110, 60),
         },
       ];
     }
 
-    return data.map((item, index) => {
-      const percentage = (item.value / total) * 100;
-      const angle = (item.value / total) * 360;
+    const result = nonZeroData.map((item) => {
+      const percentage = (item.value / nonZeroTotal) * 100;
+      const angle = (item.value / nonZeroTotal) * 360;
       const startAngle = currentAngle;
       const endAngle = currentAngle + angle;
 
       currentAngle += angle;
+
+      // Find original index in data array for correct color mapping
+      const originalIndex = data.findIndex((d) => d.name === item.name);
+      const colorIndex = originalIndex % (colors?.length || 1);
+      const color =
+        colors && colors.length > 0 ? colors[colorIndex] : '#59B9FF';
 
       return {
         ...item,
@@ -50,10 +78,12 @@ const SimplePieChartComponent: React.FC<SimplePieChartProps> = ({
         angle,
         startAngle,
         endAngle,
-        color: colors[index % colors.length],
+        color,
         pathData: createPieSlicePath(startAngle, endAngle, 110, 60),
       };
     });
+
+    return result;
   }, [data, colors]);
 
   // 데이터 유효성 검사
@@ -75,6 +105,17 @@ const SimplePieChartComponent: React.FC<SimplePieChartProps> = ({
         className={`w-full h-80 flex items-center justify-center ${className}`}
       >
         <div className="text-gray-500">데이터 값이 모두 0입니다.</div>
+      </div>
+    );
+  }
+
+  // Safety check: If pieData is empty but data has values, show error
+  if (pieData.length === 0 && total > 0) {
+    return (
+      <div
+        className={`w-full h-80 flex items-center justify-center ${className}`}
+      >
+        <div className="text-red-500">차트 렌더링 오류 (데이터 확인 필요)</div>
       </div>
     );
   }
@@ -173,7 +214,57 @@ function createFullCirclePath(
   return `${outerCircle} ${innerCircle} Z`;
 }
 
-// Memoized component to prevent infinite loops
-export const SimplePieChart = memo(SimplePieChartComponent);
+// Memoized component with custom comparison to ensure updates when data changes
+export const SimplePieChart = memo(
+  SimplePieChartComponent,
+  (prevProps, nextProps) => {
+    // Handle empty arrays
+    if (prevProps.data.length === 0 && nextProps.data.length === 0) {
+      // Both empty, compare colors and className
+      if (prevProps.colors.length !== nextProps.colors.length) {
+        return false;
+      }
+      return prevProps.className === nextProps.className;
+    }
+
+    // If data length changed, need to re-render
+    if (prevProps.data.length !== nextProps.data.length) {
+      return false; // Re-render
+    }
+
+    // If colors length changed, need to re-render
+    if (prevProps.colors.length !== nextProps.colors.length) {
+      return false; // Re-render
+    }
+
+    // Compare data array contents (name and value)
+    const dataEqual = prevProps.data.every((item, i) => {
+      const nextItem = nextProps.data[i];
+      if (!nextItem) return false;
+      return item.name === nextItem.name && item.value === nextItem.value;
+    });
+
+    if (!dataEqual) {
+      return false; // Re-render if data changed
+    }
+
+    // Compare colors array
+    const colorsEqual = prevProps.colors.every(
+      (color, i) => color === nextProps.colors[i]
+    );
+
+    if (!colorsEqual) {
+      return false; // Re-render if colors changed
+    }
+
+    // Compare className
+    if (prevProps.className !== nextProps.className) {
+      return false; // Re-render
+    }
+
+    // All props are equal, skip re-render
+    return true;
+  }
+);
 
 export default SimplePieChart;

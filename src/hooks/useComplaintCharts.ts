@@ -42,7 +42,7 @@ const ColorMappings = {
   // Complaint types
   complaints: {
     '반복 민원': '#FF0000',
-    '생활 민원': '#a8a8a8',
+    '일반 민원': '#a8a8a8',
     부정적: '#FF0000',
     긍정적: '#a8a8a8',
   } as Record<string, string>,
@@ -56,7 +56,7 @@ const ColorMappings = {
 const mapComplaintLabel = (label: string): string => {
   const labelMap: Record<string, string> = {
     부정적: '반복 민원',
-    긍정적: '생활 민원',
+    긍정적: '일반 민원',
   };
   return labelMap[label] || label;
 };

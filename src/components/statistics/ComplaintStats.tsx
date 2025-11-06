@@ -68,7 +68,6 @@ const ComplaintStats = () => {
     // weekdayStats,
     // complaintTypeColors,
     // dongComplaintColors,
-    complaintDataColors,
     getTrashTypeColor,
     getTrashColor,
     getRegionColor,
@@ -447,52 +446,76 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${(selectedAreas.length > 0 ? regionPosNegData : posNegPie).reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
-            <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
-              <div className="md:w-[60%] w-[100%] flex">
-                <div className="inline-flex flex-col gap-2 w-20  md:mr-10 text-center mt-4">
-                  {(selectedAreas.length > 0
-                    ? regionPosNegData
-                    : posNegPie
-                  ).map((item) => (
-                    <span
-                      key={item.name}
-                      className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
-                      style={{ backgroundColor: getComplaintColor(item.name) }}
-                    >
-                      {mapComplaintLabel(item.name)}
-                    </span>
-                  ))}
-                </div>
-                <SimplePieChart
-                  data={selectedAreas.length > 0 ? regionPosNegData : posNegPie}
-                  colors={complaintDataColors}
-                />
-              </div>
-              <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-                {(selectedAreas.length > 0 ? regionPosNegData : posNegPie).map(
-                  (item) => (
-                    <div
-                      key={item.name}
-                      className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="h-3 w-3 rounded-full"
-                          style={{
-                            backgroundColor: getComplaintColor(item.name),
-                          }}
-                        />
-                        <span className="text-md font-semibold">
-                          {mapComplaintLabel(item.name)}
-                        </span>
+            {(() => {
+              // Determine the correct data source
+              let posNegData;
+              if (selectedAreas.length > 0) {
+                posNegData = regionPosNegData;
+              } else if (
+                selectedTrashType &&
+                selectedTrashType !== '전체통계' &&
+                selectedTrashType !== '쓰레기 종류' &&
+                chartData.complaintData.length > 0
+              ) {
+                // Use category-specific data when a specific trash type is selected
+                posNegData = chartData.complaintData;
+              } else {
+                // Use overall stats (전체통계)
+                posNegData = posNegPie;
+              }
+
+              // Compute colors based on the selected data source
+              const posNegColors = posNegData.map((item) =>
+                getComplaintColor(item.name)
+              );
+
+              return (
+                <>
+                  <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${posNegData.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
+                  <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
+                    <div className="md:w-[60%] w-[100%] flex">
+                      <div className="inline-flex flex-col gap-2 w-20  md:mr-10 text-center mt-4">
+                        {posNegData.map((item) => (
+                          <span
+                            key={item.name}
+                            className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
+                            style={{
+                              backgroundColor: getComplaintColor(item.name),
+                            }}
+                          >
+                            {mapComplaintLabel(item.name)}
+                          </span>
+                        ))}
                       </div>
-                      <p className="text-md font-semibold">{item.value}건</p>
+                      <SimplePieChart data={posNegData} colors={posNegColors} />
                     </div>
-                  )
-                )}
-              </div>
-            </div>
+                    <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
+                      {posNegData.map((item) => (
+                        <div
+                          key={item.name}
+                          className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="h-3 w-3 rounded-full"
+                              style={{
+                                backgroundColor: getComplaintColor(item.name),
+                              }}
+                            />
+                            <span className="text-md font-semibold">
+                              {mapComplaintLabel(item.name)}
+                            </span>
+                          </div>
+                          <p className="text-md font-semibold">
+                            {item.value}건
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </section>
         )}
         {selectedWeekday === '전체 요일' && hasUserInteracted && (

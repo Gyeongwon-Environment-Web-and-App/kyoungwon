@@ -130,7 +130,7 @@ export function useInitialStats({
         setRegionPie(orderedRegionArray);
         setDaysBar(daysArray);
         setPosNegPie([
-          { name: '생활 민원', value: posNegData.pos },
+          { name: '일반 민원', value: posNegData.pos },
           { name: '반복 민원', value: posNegData.neg },
         ]);
       } catch (err: unknown) {

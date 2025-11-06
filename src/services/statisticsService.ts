@@ -281,6 +281,7 @@ export const statisticsService = {
         startDate,
         endDate,
       });
+      console.log('statsService-getAllByPosNeg:', response.data);
       return response.data.data;
     } catch (error) {
       console.error('statsService-getAllByPosNeg:', error);
