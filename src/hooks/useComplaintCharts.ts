@@ -31,12 +31,12 @@ const ColorMappings = {
 
   // Regions/Dongs
   regions: {
-    쌍문1동: '#72E900',
-    쌍문2동: '#8ADEAB',
-    쌍문3동: '#3CC092',
-    쌍문4동: '#00BA13',
-    방학1동: '#007A0C',
-    방학3동: '#004207',
+    쌍문1동: '#80E480',
+    쌍문2동: '#5CA55C',
+    쌍문3동: '#437743',
+    쌍문4동: '#264426',
+    방학1동: '#E5C93A',
+    방학3동: '#B69F2E',
   } as Record<string, string>,
 
   // Complaint types
