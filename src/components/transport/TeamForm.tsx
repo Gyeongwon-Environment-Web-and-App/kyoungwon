@@ -56,7 +56,7 @@ const TeamForm: React.FC = () => {
           <div
             className={`flex col-span-2 text-sm border border-light-border rounded w-full`}
           >
-            {['일반', '음식물', '재활용', '클린', '수송'].map(
+            {['생활', '음식물', '재활용', '클린', '수송'].map(
               (label, idx, arr) => (
                 <button
                   key={label}

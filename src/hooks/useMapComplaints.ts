@@ -8,7 +8,7 @@ import type { Complaint } from '@/types/complaint';
 // Map English filter IDs to Korean category names for API
 const mapCategoryToKorean = (categoryId: string): string => {
   const categoryMap: Record<string, string> = {
-    general: '일반',
+    general: '생활',
     recycle: '재활용',
     food: '음식물',
     others: '기타',

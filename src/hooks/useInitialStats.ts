@@ -25,7 +25,7 @@ interface UseInitialStatsForPiesResult {
   rawPosNeg: { pos: number; neg: number } | null;
 }
 
-const DEFAULT_CATEGORIES = ['일반', '재활용', '음식물', '기타'];
+const DEFAULT_CATEGORIES = ['생활', '재활용', '음식물', '기타'];
 const DEFAULT_REGIONS = [
   '쌍문1동',
   '쌍문2동',
@@ -130,10 +130,9 @@ export function useInitialStats({
         setRegionPie(orderedRegionArray);
         setDaysBar(daysArray);
         setPosNegPie([
-          { name: '일반 민원', value: posNegData.pos },
+          { name: '생활 민원', value: posNegData.pos },
           { name: '반복 민원', value: posNegData.neg },
         ]);
-
       } catch (err: unknown) {
         if (!isMounted) return;
         const msg =

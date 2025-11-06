@@ -43,7 +43,7 @@ const getCategoryIcon = (category: string): string => {
       return recycle;
     case '음식물':
       return food;
-    case '일반':
+    case '생활':
       return general;
     case '기타':
       return other;
@@ -302,11 +302,7 @@ const ComplaintDetail: React.FC = () => {
                 });
               })()}
               {selectedComplaint?.source.bad ? (
-                <img
-                  src={bad}
-                  alt="반복민원 태그"
-                  className="w-14 md:w-16"
-                />
+                <img src={bad} alt="반복민원 태그" className="w-14 md:w-16" />
               ) : (
                 ''
               )}

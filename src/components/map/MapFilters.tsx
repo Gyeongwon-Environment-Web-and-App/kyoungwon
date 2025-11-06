@@ -43,7 +43,7 @@ const filterOptions = [
     icon: allComp,
     iconWhite: allComp_white,
   },
-  { id: 'general', label: '일반', icon: general, iconWhite: gen_white },
+  { id: 'general', label: '생활', icon: general, iconWhite: gen_white },
   { id: 'recycle', label: '재활용', icon: recycle, iconWhite: rec_white },
   { id: 'food', label: '음식물', icon: food, iconWhite: food_white },
   { id: 'others', label: '기타', icon: others, iconWhite: oth_white },

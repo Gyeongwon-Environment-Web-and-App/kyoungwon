@@ -97,8 +97,8 @@ export const complaints: Complaint[] = [
     id: 3,
     address: '서울특별시 도봉구 시루봉로 59',
     datetime: '2025-01-13T07:15:12',
-    category: '일반',
-    type: '일반',
+    category: '생활',
+    type: '생활',
     content: '대형폐기물 수거 요청',
     route: '경원환경',
     source: {
@@ -130,7 +130,7 @@ export const complaints: Complaint[] = [
     teams: [
       {
         id: 3,
-        category: '일반',
+        category: '생활',
         team_nm: '경원환경',
         drivers: [
           {
@@ -146,8 +146,8 @@ export const complaints: Complaint[] = [
     id: 4,
     address: '서울특별시 도봉구 우이천로 152',
     datetime: '2025-01-12T19:48:00',
-    category: '일반',
-    type: '일반',
+    category: '생활',
+    type: '생활',
     content: '불법투기 신고',
     route: '경원환경',
     source: {
@@ -179,7 +179,7 @@ export const complaints: Complaint[] = [
     teams: [
       {
         id: 4,
-        category: '일반',
+        category: '생활',
         team_nm: '경원환경',
         drivers: [
           {
@@ -279,8 +279,8 @@ export const complaints: Complaint[] = [
     id: 7,
     address: '서울특별시 도봉구 해등로 12길 9',
     datetime: '2025-01-09T17:12:45',
-    category: '일반',
-    type: '일반',
+    category: '생활',
+    type: '생활',
     content: '아파트 특수마대 수거 요청',
     route: '120신고센터',
     source: {
@@ -305,7 +305,7 @@ export const complaints: Complaint[] = [
     teams: [
       {
         id: 7,
-        category: '일반',
+        category: '생활',
         team_nm: '120신고센터',
         drivers: [
           {
@@ -321,8 +321,8 @@ export const complaints: Complaint[] = [
     id: 8,
     address: '서울특별시 도봉구 해등로 198',
     datetime: '2025-01-08T20:12:45',
-    category: '일반',
-    type: '일반',
+    category: '생활',
+    type: '생활',
     content: '한의원 앞 쓰레기 수거 요청',
     route: '경원환경',
     source: {
@@ -347,7 +347,7 @@ export const complaints: Complaint[] = [
     teams: [
       {
         id: 8,
-        category: '일반',
+        category: '생활',
         team_nm: '경원환경',
         drivers: [
           {

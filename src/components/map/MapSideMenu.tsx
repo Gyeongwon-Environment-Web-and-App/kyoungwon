@@ -105,7 +105,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       <div
         className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
       >
-        {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => {
+        {['재활용', '생활', '음식물', '기타'].map((label, idx, arr) => {
           const isSelected = selectedCategory === label;
           return (
             <button

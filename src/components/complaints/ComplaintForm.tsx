@@ -573,7 +573,7 @@ export default function ComplaintForm({
           <div
             className={`flex col-span-3 md:my-5 text-[0.73rem] md:text-sm border border-light-border rounded`}
           >
-            {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => (
+            {['재활용', '생활', '음식물', '기타'].map((label, idx, arr) => (
               <button
                 tabIndex={idx + 9}
                 key={label}
@@ -605,7 +605,7 @@ export default function ComplaintForm({
           {/* <input
             type="text"
             value={
-              !['재활용', '일반', '음식물', '기타'].includes(
+              !['재활용', '생활', '음식물', '기타'].includes(
                 formData.categories && formData.categories[0]
                   ? formData.categories[0]
                   : ''

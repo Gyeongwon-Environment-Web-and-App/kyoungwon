@@ -24,7 +24,7 @@ const ColorMappings = {
   // Trash types
   trash: {
     재활용: '#58CC02',
-    일반: '#59B9FF',
+    생활: '#59B9FF',
     기타: '#AF8AFF',
     음식물: '#F5694A',
   } as Record<string, string>,
@@ -42,7 +42,7 @@ const ColorMappings = {
   // Complaint types
   complaints: {
     '반복 민원': '#FF0000',
-    '일반 민원': '#a8a8a8',
+    '생활 민원': '#a8a8a8',
     부정적: '#FF0000',
     긍정적: '#a8a8a8',
   } as Record<string, string>,
@@ -56,7 +56,7 @@ const ColorMappings = {
 const mapComplaintLabel = (label: string): string => {
   const labelMap: Record<string, string> = {
     부정적: '반복 민원',
-    긍정적: '일반 민원',
+    긍정적: '생활 민원',
   };
   return labelMap[label] || label;
 };

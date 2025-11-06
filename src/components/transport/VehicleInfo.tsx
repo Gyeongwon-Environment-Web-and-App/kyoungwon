@@ -76,7 +76,7 @@ const VehicleInfo: React.FC = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full text-center">
                 <DropdownMenuItem className="">재활용</DropdownMenuItem>
-                <DropdownMenuItem className="">일반</DropdownMenuItem>
+                <DropdownMenuItem className="">생활</DropdownMenuItem>
                 <DropdownMenuItem className="">음식물</DropdownMenuItem>
                 <DropdownMenuItem className="">클린 / 수송</DropdownMenuItem>
               </DropdownMenuContent>

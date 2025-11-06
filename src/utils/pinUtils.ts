@@ -55,7 +55,7 @@ export const getPinImageSrc = (
   const categoryMap: Record<string, string> = {
     재활용: 'recycle',
     음식물: 'food',
-    일반: 'general',
+    생활: 'general',
     기타: 'others',
   };
 

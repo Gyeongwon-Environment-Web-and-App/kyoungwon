@@ -143,7 +143,7 @@ const ComplaintTable: React.FC = () => {
     navigate(`/map/overview/complaints/${complaintId}`);
   };
 
-  const ALLOWED_CATEGORIES = ['음식물', '재활용', '일반', '기타'];
+  const ALLOWED_CATEGORIES = ['음식물', '재활용', '생활', '기타'];
 
   // 컬럼 정의
   const columns: ColumnDef<ComplaintWithCallback>[] = [
@@ -227,7 +227,9 @@ const ComplaintTable: React.FC = () => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="text-center cursor-pointer truncate">{shortAddress}</div>
+                <div className="text-center cursor-pointer truncate">
+                  {shortAddress}
+                </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-md break-words text-base text-black">
@@ -645,11 +647,11 @@ const ComplaintTable: React.FC = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
-                      handleFilterChange('일반');
+                      handleFilterChange('생활');
                     }}
                     className="text-[#59B9FF]"
                   >
-                    일반
+                    생활
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {

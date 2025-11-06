@@ -9,7 +9,7 @@ export interface PolygonServiceResponse {
 
 /**
  * Fetch polygon data for a specific category
- * @param category - The category to fetch polygons for (e.g., '음식물', '재활용', '일반', '기타')
+ * @param category - The category to fetch polygons for (e.g., '음식물', '재활용', '생활', '기타')
  * @returns Promise with polygon data or error
  */
 export const fetchPolygonsByCategory = async (
@@ -28,7 +28,7 @@ export const fetchPolygonsByCategory = async (
 
 // Get available categories for polygon data
 export const getAvailableCategories = (): string[] => {
-  return ['음식물', '재활용', '일반', '기타'];
+  return ['음식물', '재활용', '생활', '기타'];
 };
 
 /**

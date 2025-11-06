@@ -159,11 +159,11 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    handleTrashTypeChange('일반');
+                    handleTrashTypeChange('생활');
                   }}
                   className="text-[#59B9FF]"
                 >
-                  일반
+                  생활
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
@@ -465,37 +465,32 @@ const ComplaintStats = () => {
                   ))}
                 </div>
                 <SimplePieChart
-                  data={
-                    selectedAreas.length > 0
-                      ? regionPosNegData
-                      : posNegPie
-                  }
+                  data={selectedAreas.length > 0 ? regionPosNegData : posNegPie}
                   colors={complaintDataColors}
                 />
               </div>
               <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-                {(selectedAreas.length > 0
-                  ? regionPosNegData
-                  : posNegPie
-                ).map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{
-                          backgroundColor: getComplaintColor(item.name),
-                        }}
-                      />
-                      <span className="text-md font-semibold">
-                        {mapComplaintLabel(item.name)}
-                      </span>
+                {(selectedAreas.length > 0 ? regionPosNegData : posNegPie).map(
+                  (item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{
+                            backgroundColor: getComplaintColor(item.name),
+                          }}
+                        />
+                        <span className="text-md font-semibold">
+                          {mapComplaintLabel(item.name)}
+                        </span>
+                      </div>
+                      <p className="text-md font-semibold">{item.value}건</p>
                     </div>
-                    <p className="text-md font-semibold">{item.value}건</p>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           </section>

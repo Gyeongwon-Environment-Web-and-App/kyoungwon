@@ -35,7 +35,7 @@ const mapCategoryToTrashType = (category: string): string => {
     all: '전체통계',
     food: '음식물',
     recycle: '재활용',
-    general: '일반',
+    general: '생활',
     others: '기타',
   };
   return categoryMap[category] || '전체통계';

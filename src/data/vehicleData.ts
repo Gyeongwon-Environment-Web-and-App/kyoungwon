@@ -6,7 +6,7 @@ export const drivers: VehicleDriver[] = [
   {
     name: '김철수',
     phoneNum: '01012345678',
-    category: '일반',
+    category: '생활',
     teamNum: '1조',
   },
   {
@@ -36,7 +36,7 @@ export const drivers: VehicleDriver[] = [
   {
     name: '한소영',
     phoneNum: '01067890123',
-    category: '일반',
+    category: '생활',
     teamNum: '3조',
   },
   {
@@ -204,7 +204,7 @@ export const vehicles: VehicleFormData[] = [
 export const teams: Team[] = [
   {
     teamName: '1팀',
-    category: '일반',
+    category: '생활',
     selectedVehicles: ['12가 3456', '34나 7890'],
     region: '쌍문1동',
     drivers: [drivers[0], drivers[1]],
@@ -239,7 +239,7 @@ export const teams: Team[] = [
   },
   {
     teamName: '6팀',
-    category: '일반',
+    category: '생활',
     selectedVehicles: ['34사 7890'],
     region: '쌍문1동',
     drivers: [drivers[5], drivers[0]],
@@ -274,7 +274,7 @@ export const teams: Team[] = [
   },
   {
     teamName: '11팀',
-    category: '일반',
+    category: '생활',
     selectedVehicles: ['12가 3456', '56다 1234'],
     region: '방학1동',
     drivers: [drivers[0], drivers[2]],

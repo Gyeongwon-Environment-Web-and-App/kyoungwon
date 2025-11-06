@@ -315,7 +315,7 @@ export const complaintService = {
       });
 
       // Filter to only include allowed categories
-      const allowedCategories = ['음식물', '재활용', '일반', '기타'];
+      const allowedCategories = ['음식물', '재활용', '생활', '기타'];
       const categories = response.data.categories || response.data || [];
 
       const filteredCategories = categories.filter((category: string) =>
@@ -332,7 +332,7 @@ export const complaintService = {
     } catch (error) {
       console.error('Error fetching all categories:', error);
       // Return fallback categories if API fails
-      return ['음식물', '재활용', '일반', '기타'];
+      return ['음식물', '재활용', '생활', '기타'];
     }
   },
 

@@ -131,12 +131,12 @@ const NoticeForm: React.FC = () => {
         <div className="flex items-center justify-center mb-6 md:mb-8">
           <TextForward
             options={[
-              '일반팀에게 전달',
+              '생활팀에게 전달',
               '음식물팀에게 전달',
               '재활용팀에게 전달',
               '전체팀에게 전달',
             ]}
-            mobileOptions={['일반', '음식물', '재활용', '전체']} // 모바일용 짧은 텍스트
+            mobileOptions={['생활', '음식물', '재활용', '전체']} // 모바일용 짧은 텍스트
             selectedValues={getNotifyData()}
             onChange={(updatedList) => updateFormData({ notify: updatedList })}
           />

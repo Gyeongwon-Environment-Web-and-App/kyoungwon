@@ -23,7 +23,7 @@ const getCategoryIcon = (category: string): string => {
       return recycle;
     case '음식물':
       return food;
-    case '일반':
+    case '생활':
       return general;
     case '기타':
       return other;

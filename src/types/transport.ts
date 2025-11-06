@@ -47,7 +47,7 @@ export interface TeamFormData {
 
 export interface Team {
   teamName: string;
-  category: '일반' | '음식물' | '재활용' | '클린' | '수송';
+  category: '생활' | '음식물' | '재활용' | '클린' | '수송';
   selectedVehicles: string[];
   region: string;
   drivers: VehicleDriver[];

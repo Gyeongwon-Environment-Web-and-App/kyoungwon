@@ -13,7 +13,7 @@ const ICON_PATHS = {
   category: {
     재활용: '/src/assets/icons/categories/tags/recycle.svg',
     음식물: '/src/assets/icons/categories/tags/food.svg',
-    일반: '/src/assets/icons/categories/tags/general.svg',
+    생활: '/src/assets/icons/categories/tags/general.svg',
     기타: '/src/assets/icons/categories/tags/other.svg',
   },
   repeat: '/src/assets/icons/categories/tags/repeat.svg',
@@ -102,7 +102,7 @@ export const usePinManager = ({
     const categoryMap: Record<string, string> = {
       재활용: 'recycle',
       음식물: 'food',
-      일반: 'general',
+      생활: 'general',
       기타: 'others',
     };
     return categoryMap[primaryCategory] || 'general';

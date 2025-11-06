@@ -106,7 +106,7 @@ export default function ComplaintConfirm({
                     ? recycle
                     : category === '기타'
                       ? other
-                      : category === '일반'
+                      : category === '생활'
                         ? general
                         : ''
               }
@@ -262,10 +262,7 @@ export default function ComplaintConfirm({
         })}
         <div className="flex items-center justify-center my-8">
           <TextForward
-            options={[
-              '소장님께 전달',
-              '팀장님께 전달',
-            ]}
+            options={['소장님께 전달', '팀장님께 전달']}
             mobileOptions={['소장님', '팀장님']} // 모바일용 짧은 텍스트
             selectedValues={getNotifyData()}
             onChange={(updatedList) =>
