@@ -423,7 +423,7 @@ const ComplaintStats = () => {
                         </AccordionTrigger>
                         <AccordionContent>
                           {trucks.length > 0 ? (
-                            <div className="pl-10 flex flex-col gap-2 py-2 text-md font-semibold">
+                            <div className="pl-10 flex flex-col gap-2 pt-3 pb-2text-md font-semibold">
                               {trucks.map((truck, index) => (
                                 <>
                                   <div key={truck.truck_no || index}>

@@ -2,6 +2,12 @@ import React, { useEffect, useMemo } from 'react';
 
 import type { DateRange } from 'react-day-picker';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { useComplaintCharts } from '@/hooks/useComplaintCharts';
 import { useComplaintFilters } from '@/hooks/useComplaintFilters';
 import { useInitialStats } from '@/hooks/useInitialStats';
@@ -122,10 +128,11 @@ const MapStats: React.FC<MapStatsProps> = ({
     dateRange !== undefined;
 
   // Fetch initial pies from server (categories and regions)
-  const { categoryPie, regionPie, daysBar, posNegPie } = useInitialStats({
-    dateRange,
-    selectedAreas,
-  });
+  const { categoryPie, regionPie, daysBar, posNegPie, rawCategories } =
+    useInitialStats({
+      dateRange,
+      selectedAreas,
+    });
 
   const displayDaysData = useMemo(() => {
     if (
@@ -172,7 +179,7 @@ const MapStats: React.FC<MapStatsProps> = ({
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-1.5">
+            {/* <div className="flex flex-col gap-1.5">
               {categoryPie.map((item) => (
                 <div
                   key={item.name}
@@ -188,6 +195,82 @@ const MapStats: React.FC<MapStatsProps> = ({
                   <p className="text-base font-semibold">{item.value}건</p>
                 </div>
               ))}
+            </div> */}
+            <div className="flex flex-col gap-1.5 w-full">
+              <Accordion type="multiple" className="w-full">
+                {categoryPie.map((item) => {
+                  const categoryData = rawCategories?.[item.name];
+                  const trucks = categoryData?.trucks || [];
+                  const hasTrucks = trucks.length > 0;
+                  console.log(item.name, 'hasTrucks:', hasTrucks);
+
+                  if (!hasTrucks) {
+                    return (
+                      <div className="flex items-center justify-between gap-2 pt-2 pb-3 border-b border-[#dcdcdc]">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-3 w-3 rounded-full"
+                            style={{
+                              backgroundColor: getTrashColor(item.name),
+                            }}
+                          />
+                          <span className="text-md font-semibold">
+                            {item.name}
+                          </span>
+                        </div>
+                        <p className="text-md font-semibold">{item.value}건</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <AccordionItem
+                      key={item.name}
+                      value={item.name}
+                      className="pt-2 pb-3 border-b border-[#dcdcdc]"
+                    >
+                      <AccordionTrigger className="">
+                        <div className="flex items-center justify-center gap-2">
+                          <span
+                            className="h-3 w-3 rounded-full"
+                            style={{
+                              backgroundColor: getTrashColor(item.name),
+                            }}
+                          />
+                          <span className="text-md font-semibold">
+                            {item.name}
+                          </span>
+                        </div>
+                        <p className="text-md font-semibold">{item.value}건</p>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {trucks.length > 0 ? (
+                          <div className="pl-10 flex flex-col gap-2 pt-3 pb-2 text-md font-semibold">
+                            {trucks.map((truck, index) => (
+                              <>
+                                <div key={truck.truck_no || index}>
+                                  <div className="flex items-center justify-between ">
+                                    <p>{truck.truck_no}</p>
+                                    <p>{truck.count}건</p>
+                                  </div>
+                                </div>
+                                {truck.drivers && truck.drivers.length > 0 && (
+                                  <div className="flex items-center justify-between pl-10">
+                                    <p className="">기사:</p>
+                                    <p>{truck.drivers.join(', ')}</p>
+                                  </div>
+                                )}
+                              </>
+                            ))}
+                          </div>
+                        ) : (
+                          <></>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
             </div>
           </div>
         </section>
