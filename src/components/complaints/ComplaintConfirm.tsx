@@ -183,7 +183,7 @@ export default function ComplaintConfirm({
                 </p>
                 <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
                   민원 내용
-                  <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem]">
+                  <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem] whitespace-pre-wrap">
                     {formData.content}{' '}
                   </span>
                 </p>

@@ -660,7 +660,7 @@ export default function ComplaintForm({
             tabIndex={14}
             id="content"
             value={formData.content}
-            className="md:col-span-4 col-span-3 border border-light-border px-3 md:py-2 md:mt-5 rounded w-full h-40 resize-none"
+            className="md:col-span-4 col-span-3 border border-light-border px-3 md:py-2 md:mt-5 rounded w-full h-40 resize-none whitespace-pre-wrap"
             onChange={(e) => updateFormData({ content: e.target.value })}
           />
 
