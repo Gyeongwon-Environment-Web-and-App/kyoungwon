@@ -9,7 +9,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { vehicles as vehicleList } from '@/data/vehicleData';
+import {
+  drivers as driverList,
+  vehicles as vehicleList,
+} from '@/data/vehicleData';
 import type { TeamFormData } from '@/types/transport';
 
 import { Button } from '../ui/button';
@@ -20,7 +23,9 @@ const TeamForm: React.FC = () => {
   const [formData, setFormData] = useState<TeamFormData>({
     category: '',
     teamName: '',
+    regions: [],
     selectedVehicles: [],
+    selectedDrivers: [],
   });
   const { teamId } = useParams();
   const isEditMode = Boolean(teamId);
@@ -32,17 +37,22 @@ const TeamForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.category.trim() ||
-      !formData.teamName.trim() ||
-      formData.selectedVehicles.length < 1
-    ) {
+    if (!formData.category.trim() || !formData.teamName.trim() || formData.regions.length < 1) {
       alert('필수 입력창을 모두 입력해주세요.');
       return;
     }
 
     console.log('팀 정보 전송완료:', formData);
     // Handle form submission logic here
+  };
+
+  const toggleRegions = (area: string) => {
+    const isSelected = formData.regions.includes(area);
+    updateFormData({
+      regions: isSelected
+        ? formData.regions.filter((a) => a !== area)
+        : [...formData.regions, area],
+    });
   };
 
   return (
@@ -91,10 +101,74 @@ const TeamForm: React.FC = () => {
             placeholder="예시: 1팀"
           />
 
+          {/* 담당 구역 */}
+          <label className="col-span-1 font-bold">
+            담당 구역
+            <span className="text-red pr-0"> *</span>
+          </label>
+          <div className="col-span-2 w-full">
+            <div
+              className={`flex text-sm border border-light-border rounded mb-2`}
+            >
+              {['쌍문1동', '쌍문2동', '쌍문3동', '쌍문4동'].map(
+                (label, idx, arr) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className={`
+                    flex-1 flex items-center justify-center px-2 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    ${formData.regions.includes(label) ? 'bg-lighter-green' : ''}
+                    ${idx === 0 ? 'rounded-l' : ''}
+                    ${idx === arr.length - 1 ? 'rounded-r' : ''}
+                  `}
+                    style={{
+                      borderRight:
+                        idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+                    }}
+                    onClick={() => toggleRegions(label)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.regions.includes(label)}
+                      className="mr-2 w-4 h-4 cursor-pointer hidden md:block"
+                    />
+                    {label}
+                  </button>
+                )
+              )}
+            </div>
+            <div className={`flex text-sm border border-light-border rounded w-[50%]`}>
+              {['방학1동', '방학2동'].map((label, idx, arr) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={`
+                    flex-1 flex items-center justify-center px-2 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    ${formData.regions.includes(label) ? 'bg-lighter-green' : ''}
+                    ${idx === 0 ? 'rounded-l' : ''}
+                    ${idx === arr.length - 1 ? 'rounded-r' : ''}
+                  `}
+                  style={{
+                    borderRight:
+                      idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+                  }}
+                  onClick={() => toggleRegions(label)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.regions.includes(label)}
+                    className="mr-2 w-4 h-4 cursor-pointer hidden md:block"
+                  />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 차량 선택 */}
           <label className="col-span-1 font-bold">
             차량 선택
-            <span className="text-red pr-0"> *</span>
+            {/* <span className="text-red pr-0"> *</span> */}
           </label>
           <div className="col-span-2">
             <DropdownMenu>
@@ -136,29 +210,106 @@ const TeamForm: React.FC = () => {
             </DropdownMenu>
           </div>
 
-          <div className="col-span-1"></div>
-          <div className="col-span-2 flex flex-wrap items-center">
-            {/* 선택된 차량 표시 */}
-            {formData.selectedVehicles.map((vehicleNum) => (
-              <div key={vehicleNum} className="flex items-center gap-x-2">
-                {vehicleNum}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="cursor-pointer p-0 hover:bg-white mr-4"
-                  onClick={() =>
-                    updateFormData({
-                      selectedVehicles: formData.selectedVehicles.filter(
-                        (v) => v !== vehicleNum
-                      ),
-                    })
-                  }
-                >
-                  <X className="h-4 w-4 text-red" />
-                </Button>
+          {formData.selectedVehicles.length > 0 && (
+            <>
+              <div className="col-span-1"></div>
+              <div className="col-span-2 flex flex-wrap items-center">
+                {/* 선택된 차량 표시 */}
+                {formData.selectedVehicles.map((vehicleNum) => (
+                  <div key={vehicleNum} className="flex items-center gap-x-2">
+                    {vehicleNum}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="cursor-pointer p-0 hover:bg-white mr-4"
+                      onClick={() =>
+                        updateFormData({
+                          selectedVehicles: formData.selectedVehicles.filter(
+                            (v) => v !== vehicleNum
+                          ),
+                        })
+                      }
+                    >
+                      <X className="h-4 w-4 text-red" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-            ))}
+            </>
+          )}
+
+          {/* 기사 선택 */}
+          <label className="col-span-1 font-bold">
+            기사 선택
+            {/* <span className="text-red pr-0"> *</span> */}
+          </label>
+          <div className="col-span-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="font-bold border border-light-border justify-between w-full md:w-[60%]"
+                >
+                  <span className="block md:hidden">기사</span>
+                  <span className="hidden md:block">기사 선택하기</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full">
+                {driverList.map((d) => (
+                  <DropdownMenuItem
+                    key={d.name}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      const driverName = d.name;
+                      setFormData((prev) => ({
+                        ...prev,
+                        selectedDrivers: prev.selectedDrivers.includes(d.name)
+                          ? prev.selectedDrivers.filter((d) => d !== driverName)
+                          : [...prev.selectedDrivers, driverName],
+                      }));
+                    }}
+                    className="text-base"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-2 text-base"
+                      checked={formData.selectedDrivers.includes(`${d.name}`)}
+                    />
+                    {`${d.name}`}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+
+          {formData.selectedDrivers.length > 0 && (
+            <>
+              <div className="col-span-1"></div>
+              <div className="col-span-2 flex flex-wrap items-center">
+                {/* 선택된 기사 표시 */}
+                {formData.selectedDrivers.map((driver) => (
+                  <div key={driver} className="flex items-center gap-x-2">
+                    {driver}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="cursor-pointer p-0 hover:bg-white mr-4"
+                      onClick={() => {
+                        updateFormData({
+                          selectedDrivers: formData.selectedDrivers.filter(
+                            (d) => d !== driver
+                          ),
+                        });
+                      }}
+                    >
+                      <X className="h-4 w-4 text-red" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

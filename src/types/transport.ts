@@ -1,8 +1,7 @@
 export interface DriverFormData {
   name: string;
   phoneNum: string;
-  category: string;
-  teamNum: string;
+  selectedTeam: string[];
   uploadedFiles: Array<{
     name: string;
     url: string;
@@ -42,13 +41,15 @@ export interface VehicleFormData {
 export interface TeamFormData {
   category: string;
   teamName: string;
+  regions: string[]
   selectedVehicles: string[];
+  selectedDrivers: string[];
 }
 
 export interface Team {
   teamName: string;
   category: '생활' | '음식물' | '재활용' | '클린' | '수송';
   selectedVehicles: string[];
-  region: string;
+  regions: string[];
   drivers: VehicleDriver[];
 }

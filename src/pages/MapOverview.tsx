@@ -28,6 +28,8 @@ export default function MapOverview() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const {
+    activeSidebar,
+    setMapCenter,
     sidebarOpen,
     mapCenter,
     mapZoom,
@@ -46,6 +48,21 @@ export default function MapOverview() {
     isGeocoding,
     geocodedPins,
   } = useMapOverviewStore();
+
+  const DEFAULT_MAP_CENTER = { lat: 37.657463236, lng: 127.035542772 };
+
+  const prevActiveSidebarRef = useRef<'complaint' | 'vehicle' | 'stats' | null>(null);
+
+  useEffect(() => {
+    const prevSidebar = prevActiveSidebarRef.current;
+    const currentSidebar = activeSidebar;
+
+    if (prevSidebar === 'complaint' && currentSidebar !== 'complaint') {
+      setMapCenter(DEFAULT_MAP_CENTER);
+    }
+
+    prevActiveSidebarRef.current = currentSidebar;
+  }, [activeSidebar, setMapCenter]);
 
   // Callback to reset category to 'all'
   const handleCategoryReset = useCallback(() => {
@@ -125,6 +142,11 @@ export default function MapOverview() {
   useEffect(() => {
     const pathname = location.pathname;
 
+    if(!pathname.startsWith('/map/overview')) {
+      setMapCenter(DEFAULT_MAP_CENTER);
+      return;
+    }
+
     if (pathname.includes('/complaints/') && complaintId) {
       // Navigate to complaint detail view
       setSelectedComplaintId(complaintId);
@@ -185,6 +207,9 @@ export default function MapOverview() {
 
     // If sidebar is closed, navigate back to base overview
     if (!isOpen) {
+      if (activeSidebar !== 'complaint') {
+        setMapCenter(DEFAULT_MAP_CENTER);
+      }
       navigate('/map/overview');
     }
   };

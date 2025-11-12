@@ -2,10 +2,20 @@ import React, { useState } from 'react';
 
 import { useParams } from 'react-router-dom';
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { teams as teamList } from '@/data/vehicleData';
+
 import type { DriverFormData } from '@/types/transport';
 
 import { validatePhoneNumber } from '../../utils/validateDash';
 import GenericFileAttach from '../forms/GenericFileAttach';
+import { Button } from '../ui/button';
+import { ChevronDown, X } from 'lucide-react';
 
 // ! 수정 모드를 위해 interface로 prop 지정 필요
 
@@ -13,8 +23,7 @@ const DriverForm: React.FC = () => {
   const [formData, setFormData] = useState<DriverFormData>({
     name: '',
     phoneNum: '',
-    category: '',
-    teamNum: '',
+    selectedTeam: [],
     uploadedFiles: [],
   });
   const { driverId } = useParams();
@@ -29,9 +38,7 @@ const DriverForm: React.FC = () => {
 
     if (
       !formData.name.trim() ||
-      !formData.phoneNum.trim() ||
-      !formData.category.trim() ||
-      !formData.teamNum.trim()
+      !formData.phoneNum.trim()
     ) {
       alert('필수 입력창을 모두 입력해주세요.');
       return;
@@ -78,48 +85,6 @@ const DriverForm: React.FC = () => {
             placeholder={`'-'를 빼고 입력하세요`}
           />
 
-          {/* 담당 팀 */}
-          <label className="col-span-1 font-bold">
-            담당 팀<span className="text-red pr-0"> *</span>
-          </label>
-          <div
-            className={`flex col-span-2 text-sm border border-light-border rounded w-full`}
-          >
-            {['생활', '음식물', '재활용', '클린', '수송'].map(
-              (label, idx, arr) => (
-                <button
-                  key={label}
-                  type="button"
-                  className={`
-                  flex-1 px-1 md:px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                  ${formData.category === label ? 'bg-lighter-green' : ''}
-                  ${idx === 0 ? 'rounded-l' : ''}
-                  ${idx === arr.length - 1 ? 'rounded-r' : ''}
-                `}
-                  style={{
-                    borderRight:
-                      idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
-                  }}
-                  onClick={() => updateFormData({ category: label })}
-                >
-                  {label}
-                </button>
-              )
-            )}
-          </div>
-
-          {/* 조 */}
-          <label className="col-span-1 font-bold">
-            조<span className="text-red pr-0"> *</span>
-          </label>
-          <input
-            type="text"
-            value={formData.teamNum}
-            onChange={(e) => updateFormData({ teamNum: e.target.value })}
-            className="col-span-2 rounded border border-light-border text-base px-3 py-1.5 text-left  w-full"
-            placeholder="예시: 1조"
-          />
-
           {/* 파일 첨부 */}
           <label className="col-span-1 font-bold">사진 첨부</label>
           <div className="col-span-2">
@@ -133,6 +98,73 @@ const DriverForm: React.FC = () => {
                 }
               }}
             />
+          </div>
+
+          {/* 팀 선택 */}
+          <label className="col-span-1 font-bold">
+            팀 선택
+            {/* <span className="text-red pr-0"> *</span> */}
+          </label>
+          <div className="col-span-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="font-bold border border-light-border justify-between w-full md:w-[60%]"
+                >
+                  <span className="block md:hidden">팀 선택</span>
+                  <span className="hidden md:block">팀 선택하기</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full">
+                {teamList.map((t) => (
+                  <DropdownMenuItem
+                    key={t.teamName}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      const teamValue = `${t.category} ${t.teamName}`;
+                      setFormData(prev => ({
+                        ...prev,
+                        selectedTeam: prev.selectedTeam.includes(teamValue) ? prev.selectedTeam.filter(t => t !== teamValue) : [...prev.selectedTeam, teamValue],
+                      }));
+                    }}
+                    className="text-base"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-2 text-base"
+                      checked={formData.selectedTeam.includes(`${t.category} ${t.teamName}`)}
+                    />
+                    {`${t.category} ${t.teamName}`}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="col-span-1"></div>
+          <div className="col-span-2 flex flex-wrap items-center">
+            {/* 선택된 기사 표시 */}
+            {formData.selectedTeam.map((team) => (
+              <div key={team} className="flex items-center gap-x-2">
+                {team}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="cursor-pointer p-0 hover:bg-white mr-4"
+                  onClick={() => {
+                    updateFormData({
+                      selectedTeam: formData.selectedTeam.filter(
+                        (v) => v !== team
+                      ),
+                    })
+                  }}
+                >
+                  <X className="h-4 w-4 text-red" />
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
