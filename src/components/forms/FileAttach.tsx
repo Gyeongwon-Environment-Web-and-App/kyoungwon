@@ -1,105 +1,109 @@
 import React, { useRef, useState } from 'react';
 
-import type { ComplaintFormData } from '../../types/complaint';
+// Generic type for any form data with uploadedFiles
+type FileData = {
+  name: string;
+  url: string; // Will be Cloudflare key after upload, empty before
+  type: string;
+  size: number;
+  previewUrl?: string; // Local preview URL for images
+  file?: File; // Original File object (for later upload)
+};
 
-interface FileAttachProps {
-  formData: ComplaintFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ComplaintFormData>>;
+interface FileAttachProps<T extends { uploadedFiles: FileData[] }> {
+  formData: T;
+  setFormData: (updates: Partial<T> | ((prev: T) => T)) => void;
+  objectCategory: string; // Required: 'complaint', 'driver', 'vehicle', 'notice', etc.
+  showLabel?: boolean; // Optional: whether to show the label (default: true)
+  labelText?: string; // Optional: custom label text (default: '파일 첨부')
+  className?: string; // Optional: additional className for the container
 }
 
-const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
-  const [uploading, setUploading] = useState(false);
+function FileAttach<T extends { uploadedFiles: FileData[] }>({
+  formData,
+  setFormData,
+  objectCategory, // Reserved for future use (upload happens in confirm stage)
+  showLabel = true,
+  labelText = '파일 첨부',
+  className = '',
+}: FileAttachProps<T>) {
+  // objectCategory is reserved for future use - files are uploaded in ComplaintConfirm stage
+  void objectCategory;
   const [, setUploadedFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [fileUploadFail, setFileUploadFail] = useState(false);
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    setUploadedFileName(null); // 이전 업로드 상태 초기화
-    setUploading(true);
+    setUploadedFileName(null);
 
-    try {
-      // 백엔드 없이 로컬에서 파일 처리
-      const fileReader = new FileReader();
-
-      fileReader.onload = (event) => {
-        const fileUrl = event.target?.result as string;
-
-        // formData에 파일 정보 추가
-        const newFile = {
-          name: selectedFile.name,
-          url: fileUrl, // FileReader로 생성된 로컬 URL
-          type: selectedFile.type,
-          size: selectedFile.size,
-        };
-
-        console.log('새로 추가된 파일:', newFile);
-        console.log('파일 크기:', selectedFile.size, '바이트');
-
-        setFormData((prev) => ({
-          ...prev,
-          uploadedFiles: [...prev.uploadedFiles, newFile],
-        }));
-
-        setUploadedFileName(selectedFile.name);
-        setUploading(false);
-      };
-
-      fileReader.onerror = () => {
-        setFileUploadFail(true);
-        setUploading(false);
-        console.error('파일 읽기 실패');
-      };
-
-      // 파일을 Data URL로 읽기
-      fileReader.readAsDataURL(selectedFile);
-    } catch (err: unknown) {
-      setFileUploadFail(true);
-      console.error('파일 처리 중 에러 발생:', err);
-      setUploading(false);
+    // Create a local preview URL for images (for display purposes)
+    let previewUrl: string = '';
+    if (selectedFile.type.startsWith('image/')) {
+      previewUrl = URL.createObjectURL(selectedFile);
     }
+
+    // Store file locally without uploading
+    // Upload will happen in ComplaintConfirm stage
+    const newFile: FileData = {
+      name: selectedFile.name,
+      url: '', // Will be filled with Cloudflare key after upload
+      type: selectedFile.type || 'application/octet-stream',
+      size: selectedFile.size,
+      previewUrl: previewUrl || undefined,
+      file: selectedFile, // Store original File object for later upload
+    };
+
+    console.log('파일 선택됨 (업로드 대기):', newFile.name);
+    console.log('파일 크기:', selectedFile.size, '바이트');
+
+    // Update form data - handle both function and object updates
+    setFormData((prev) => ({
+      ...prev,
+      uploadedFiles: [...prev.uploadedFiles, newFile],
+    }));
+
+    setUploadedFileName(selectedFile.name);
   };
 
   return (
     <>
-      <label className="col-span-1 font-bold text-[1rem] md:py-5 pt-5">
-        파일 첨부
-      </label>
-      <div className="col-span-3">
+      {showLabel && (
+        <label className="col-span-1 font-bold text-[1rem] md:py-5 pt-5">
+          {labelText}
+        </label>
+      )}
+      <div className={showLabel ? 'col-span-3' : className || ''}>
         <input
           type="file"
           ref={fileInputRef}
           onChange={handleChange}
           style={{ display: 'none' }}
+          accept="image/*"
         />
 
         <button
           type="button"
           onClick={handleFileClick}
-          className="md:w-[200px] border border-light-border md:px-3 py-2 rounded text-center outline-none font-bold md:my-5"
+          className="w-36 md:w-[200px] border border-light-border px-2 md:px-3 py-1.5 md:py-2 rounded text-center outline-none text-xs md:text-sm font-bold"
         >
           파일 선택
         </button>
 
-        <span className="ml-5">
-          {uploading
-            ? '업로드 중...'
-            : formData.uploadedFiles.length > 0
-              ? formData.uploadedFiles[formData.uploadedFiles.length - 1].name
-              : fileUploadFail
-                ? '업로드 실패'
-                : '선택된 파일 없음'}
+        <span className="ml-5 text-sm md:text-base">
+          {formData.uploadedFiles.length > 0
+            ? formData.uploadedFiles[formData.uploadedFiles.length - 1].name
+            : '선택된 파일 없음'}
         </span>
       </div>
-      <div className="col-span-1"></div>
+      {showLabel && <div className="col-span-1"></div>}
     </>
   );
-};
+}
 
 export default FileAttach;

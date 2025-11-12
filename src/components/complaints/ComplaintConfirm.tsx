@@ -5,6 +5,7 @@ import general from '../../assets/icons/categories/tags/general.svg';
 import other from '../../assets/icons/categories/tags/other.svg';
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
 import X from '../../assets/icons/navigation/arrows/X.svg';
+import { uploadFilesToCloudflare } from '../../services/fileUploadService';
 import { useComplaintFormStore } from '../../stores/complaintFormStore';
 import { formatAddressWithDong } from '../../utils/dongMapping';
 import DateTimeBox from '../forms/DateTimeBox';
@@ -25,10 +26,8 @@ export default function ComplaintConfirm({
   const { formData, driverData, updateFormData } = useComplaintFormStore();
   const [formattedAddress, setFormattedAddress] = useState(formData.address);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-
-  // ! 파일 업로드 확인
-  // console.log("uploadedFiles length:", formData.uploadedFiles.length);
-  // console.log("uploadedFiles:", formData.uploadedFiles);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Format address with dong info asynchronously
   useEffect(() => {
@@ -52,6 +51,66 @@ export default function ComplaintConfirm({
 
     formatAddress();
   }, [formData.address]);
+
+  // Function to upload pending files to Cloudflare
+  const uploadPendingFiles = async (): Promise<boolean> => {
+    // Find files that haven't been uploaded yet (have file object but no url/key)
+    const filesToUpload = formData.uploadedFiles.filter(
+      (file) => file.file && !file.url
+    );
+
+    if (filesToUpload.length === 0) {
+      return true; // No files to upload, proceed
+    }
+
+    setIsUploadingFiles(true);
+    setUploadError(null);
+
+    try {
+      const fileObjects = filesToUpload
+        .map((f) => f.file)
+        .filter((f): f is File => f !== undefined);
+
+      console.log('파일 업로드 시작:', fileObjects.length, '개 파일');
+
+      // Upload files to Cloudflare
+      const uploadedFiles = await uploadFilesToCloudflare(
+        fileObjects,
+        'complaint'
+      );
+
+      // Update formData with Cloudflare keys
+      const updatedFiles = formData.uploadedFiles.map((file) => {
+        if (file.file && !file.url) {
+          // Find the corresponding uploaded file
+          const uploaded = uploadedFiles.find(
+            (uf) => uf.originalName === file.name
+          );
+          if (uploaded) {
+            return {
+              ...file,
+              url: uploaded.key, // Store Cloudflare key
+              // Keep previewUrl and other properties
+            };
+          }
+        }
+        return file;
+      });
+
+      updateFormData({ uploadedFiles: updatedFiles });
+
+      console.log('파일 업로드 완료:', uploadedFiles);
+      setIsUploadingFiles(false);
+      return true; // Upload successful
+    } catch (error) {
+      console.error('파일 업로드 실패:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : '파일 업로드에 실패했습니다.';
+      setUploadError(errorMessage);
+      setIsUploadingFiles(false);
+      return false; // Upload failed
+    }
+  };
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -220,7 +279,7 @@ export default function ComplaintConfirm({
                             {file.type.startsWith('image/') ? (
                               <div className="w-8 h-8 rounded overflow-hidden relative group mr-2">
                                 <img
-                                  src={file.url}
+                                  src={file.previewUrl || file.url}
                                   alt={file.name}
                                   className="w-8 h-8 object-cover"
                                   onError={(e) => {
@@ -274,14 +333,52 @@ export default function ComplaintConfirm({
         </div>
       </form>
 
+      {/* 파일 업로드 상태 표시 */}
+      {isUploadingFiles && (
+        <div className="text-center mt-5 mb-2">
+          <div className="inline-flex items-center gap-2 text-sm text-gray-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+            <span>파일 업로드 중...</span>
+          </div>
+        </div>
+      )}
+
+      {!isUploadingFiles &&
+        formData.uploadedFiles.some((file) => file.file && !file.url) && (
+          <div className="text-center mt-5 mb-2">
+            <p className="text-sm text-gray-600">
+              파일{' '}
+              {formData.uploadedFiles.filter((f) => f.file && !f.url).length}
+              개가 업로드 대기 중입니다.
+              <br />
+              '민원 전송' 버튼을 클릭하면 파일이 업로드됩니다.
+            </p>
+          </div>
+        )}
+
+      {uploadError && (
+        <div className="text-center mt-5 mb-2">
+          <p className="text-sm text-red-500">{uploadError}</p>
+        </div>
+      )}
+
       {/* 제출 버튼 */}
       <div className="text-center mt-5">
         <button
           type="submit"
-          className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded"
-          onClick={onSubmit}
+          className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={async () => {
+            // Upload files first, then submit
+            const uploadSuccess = await uploadPendingFiles();
+            if (uploadSuccess) {
+              onSubmit();
+            } else {
+              alert('파일 업로드에 실패했습니다. 다시 시도해주세요.');
+            }
+          }}
+          disabled={isUploadingFiles}
         >
-          민원 전송
+          {isUploadingFiles ? '파일 업로드 중...' : '민원 전송'}
         </button>
       </div>
     </div>

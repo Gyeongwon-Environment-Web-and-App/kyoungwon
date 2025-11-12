@@ -115,9 +115,11 @@ export interface ComplaintFormData {
   };
   uploadedFiles: Array<{
     name: string;
-    url: string;
+    url: string; // Cloudflare key (used for submission, empty until upload)
     type: string;
     size: number;
+    previewUrl?: string; // Optional: local preview URL for images (for display only)
+    file?: File; // Original File object (for later upload in confirm stage)
   }>;
 }
 

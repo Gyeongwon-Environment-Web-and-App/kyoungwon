@@ -650,6 +650,7 @@ export default function ComplaintForm({
                 updateFormData(updates);
               }
             }}
+            objectCategory="complaint"
           />
 
           {/* 민원 내용 */}
@@ -701,7 +702,7 @@ export default function ComplaintForm({
           className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1"
           onClick={handleSubmit}
         >
-          '검토 및 전송'
+          검토 및 전송
         </button>
       </div>
     </div>

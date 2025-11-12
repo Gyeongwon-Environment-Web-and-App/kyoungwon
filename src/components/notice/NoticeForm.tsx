@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 
 import type { NoticeFormData } from '@/types/notice';
 
-import GenericFileAttach from '../forms/GenericFileAttach';
+import FileAttach from '../forms/FileAttach';
 import TextForward from '../forms/TextForward';
 
 const NoticeForm: React.FC = () => {
@@ -101,7 +101,7 @@ const NoticeForm: React.FC = () => {
           {/* 파일 첨부 */}
           <label className="col-span-1 font-bold">파일 첨부</label>
           <div className="col-span-3">
-            <GenericFileAttach
+            <FileAttach
               formData={formData}
               setFormData={(updates) => {
                 if (typeof updates === 'function') {

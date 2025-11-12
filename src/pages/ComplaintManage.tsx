@@ -115,6 +115,25 @@ const ComplaintManage = () => {
       // 1. 백엔드 API 형식에 맞춘 데이터 준비
       console.log(formData.categories);
 
+      // Transform uploadedFiles to objectInfos format
+      // Filter out files that haven't been uploaded yet (no url/key)
+      const uploadedFiles = formData.uploadedFiles.filter((file) => file.url);
+
+      if (
+        formData.uploadedFiles.length > 0 &&
+        uploadedFiles.length < formData.uploadedFiles.length
+      ) {
+        alert(
+          '일부 파일이 아직 업로드되지 않았습니다. 잠시 후 다시 시도해주세요.'
+        );
+        return;
+      }
+
+      const objectInfos = uploadedFiles.map((file) => ({
+        objectKey: file.url, // Cloudflare key is stored in url field
+        filenameOriginal: file.name, // Original filename is stored in name field
+      }));
+
       const complaintData = {
         address: formData.address,
         datetime: formData.datetime || new Date().toISOString(),
@@ -132,9 +151,11 @@ const ComplaintManage = () => {
           manager:
             formData.notify?.usernames?.includes('소장님께 전달') || false,
         },
+        ...(objectInfos.length > 0 && {objectInfos}), // Include uploaded file keys
       };
 
-      console.log(complaintData);
+      console.log('민원 제출 데이터:', complaintData);
+      console.log('파일 정보:', objectInfos);
 
       // 2. apiClient를 사용하여 백엔드로 전송 (자동으로 토큰 추가됨)
       const response = await apiClient.post('/complaint/create', complaintData);

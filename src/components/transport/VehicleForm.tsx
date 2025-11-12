@@ -6,7 +6,7 @@ import type { VehicleFormData } from '@/types/transport';
 
 import attention from '../../assets/icons/common/attention.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';
-import GenericFileAttach from '../forms/GenericFileAttach';
+import FileAttach from '../forms/FileAttach';
 
 // ! 수정 모드를 위해 interface로 prop 지정 필요
 
@@ -140,7 +140,7 @@ const VehicleForm: React.FC = () => {
           {/* 파일 첨부 */}
           <label className="col-span-1 font-bold">사진 첨부</label>
           <div className="col-span-2">
-            <GenericFileAttach
+            <FileAttach
               formData={{ uploadedFiles: formData.uploadedFiles }}
               // ! 여기 나중에 수정필요
               setFormData={(updates) => {

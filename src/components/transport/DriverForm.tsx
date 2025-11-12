@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { ChevronDown, X } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -9,13 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { teams as teamList } from '@/data/vehicleData';
-
 import type { DriverFormData } from '@/types/transport';
 
 import { validatePhoneNumber } from '../../utils/validateDash';
-import GenericFileAttach from '../forms/GenericFileAttach';
+import FileAttach from '../forms/FileAttach';
 import { Button } from '../ui/button';
-import { ChevronDown, X } from 'lucide-react';
 
 // ! 수정 모드를 위해 interface로 prop 지정 필요
 
@@ -36,10 +35,7 @@ const DriverForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.name.trim() ||
-      !formData.phoneNum.trim()
-    ) {
+    if (!formData.name.trim() || !formData.phoneNum.trim()) {
       alert('필수 입력창을 모두 입력해주세요.');
       return;
     }
@@ -88,7 +84,7 @@ const DriverForm: React.FC = () => {
           {/* 파일 첨부 */}
           <label className="col-span-1 font-bold">사진 첨부</label>
           <div className="col-span-2">
-            <GenericFileAttach
+            <FileAttach
               formData={formData}
               setFormData={(updates) => {
                 if (typeof updates === 'function') {
@@ -124,9 +120,11 @@ const DriverForm: React.FC = () => {
                     onSelect={(e) => {
                       e.preventDefault();
                       const teamValue = `${t.category} ${t.teamName}`;
-                      setFormData(prev => ({
+                      setFormData((prev) => ({
                         ...prev,
-                        selectedTeam: prev.selectedTeam.includes(teamValue) ? prev.selectedTeam.filter(t => t !== teamValue) : [...prev.selectedTeam, teamValue],
+                        selectedTeam: prev.selectedTeam.includes(teamValue)
+                          ? prev.selectedTeam.filter((t) => t !== teamValue)
+                          : [...prev.selectedTeam, teamValue],
                       }));
                     }}
                     className="text-base"
@@ -134,7 +132,9 @@ const DriverForm: React.FC = () => {
                     <input
                       type="checkbox"
                       className="mr-2 text-base"
-                      checked={formData.selectedTeam.includes(`${t.category} ${t.teamName}`)}
+                      checked={formData.selectedTeam.includes(
+                        `${t.category} ${t.teamName}`
+                      )}
                     />
                     {`${t.category} ${t.teamName}`}
                   </DropdownMenuItem>
@@ -158,7 +158,7 @@ const DriverForm: React.FC = () => {
                       selectedTeam: formData.selectedTeam.filter(
                         (v) => v !== team
                       ),
-                    })
+                    });
                   }}
                 >
                   <X className="h-4 w-4 text-red" />
