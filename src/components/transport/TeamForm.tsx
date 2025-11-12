@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { ChevronDown, X } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
   drivers as driverList,
   vehicles as vehicleList,
 } from '@/data/vehicleData';
+import { transportService } from '@/services/transportService';
 import type { TeamFormData } from '@/types/transport';
 
 import { Button } from '../ui/button';
@@ -27,23 +28,71 @@ const TeamForm: React.FC = () => {
     selectedVehicles: [],
     selectedDrivers: [],
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setSubmitError] = useState<string | null>(null);
   const { teamId } = useParams();
   const isEditMode = Boolean(teamId);
+  const navigate = useNavigate();
 
   const updateFormData = (updates: Partial<TeamFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.category.trim() || !formData.teamName.trim() || formData.regions.length < 1) {
+    // Step 1: Validation
+    if (
+      !formData.category.trim() ||
+      !formData.teamName.trim() ||
+      formData.regions.length < 1
+    ) {
       alert('필수 입력창을 모두 입력해주세요.');
       return;
     }
 
-    console.log('팀 정보 전송완료:', formData);
-    // Handle form submission logic here
+    // Step 2: Set loading state
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Step 3: Call the service
+      const result = await transportService.createTeam(formData);
+
+      // Step 4: Handle success
+      if (result.team) {
+        console.log('팀 등록 성공:', result.team);
+        alert(`팀 등록이 완료되었습니다. (팀명: ${result.team.team_nm})`);
+
+        // Step 5: Reset form
+        setFormData({
+          category: '',
+          teamName: '',
+          regions: [],
+          selectedVehicles: [],
+          selectedDrivers: [],
+        });
+
+        // Step 6: Navigate (optional - adjust route as needed)
+        navigate('/transport/team/info');
+      } else {
+        // Step 7: Handle error from service
+        setSubmitError(result.message || '팀 등록에 실패했습니다.');
+        alert(result.message || '팀 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      // Step 8: Handle unexpected errors
+      console.error('팀 등록 처리 중 오류:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '팀 등록 중 오류가 발생했습니다.';
+      setSubmitError(errorMessage);
+      alert(errorMessage);
+    } finally {
+      // Step 9: Reset loading state
+      setIsSubmitting(false);
+    }
   };
 
   const toggleRegions = (area: string) => {
@@ -130,6 +179,7 @@ const TeamForm: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={formData.regions.includes(label)}
+                      onChange={() => toggleRegions(label)}
                       className="mr-2 w-4 h-4 cursor-pointer hidden md:block"
                     />
                     {label}
@@ -137,7 +187,9 @@ const TeamForm: React.FC = () => {
                 )
               )}
             </div>
-            <div className={`flex text-sm border border-light-border rounded w-[50%]`}>
+            <div
+              className={`flex text-sm border border-light-border rounded w-[50%]`}
+            >
               {['방학1동', '방학2동'].map((label, idx, arr) => (
                 <button
                   key={label}
@@ -157,6 +209,7 @@ const TeamForm: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={formData.regions.includes(label)}
+                    onChange={() => toggleRegions(label)}
                     className="mr-2 w-4 h-4 cursor-pointer hidden md:block"
                   />
                   {label}
@@ -202,6 +255,16 @@ const TeamForm: React.FC = () => {
                       type="checkbox"
                       className="mr-2 text-base"
                       checked={formData.selectedVehicles.includes(v.vehicleNum)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        const id = v.vehicleNum;
+                        const exists = formData.selectedVehicles.includes(id);
+                        updateFormData({
+                          selectedVehicles: exists
+                            ? formData.selectedVehicles.filter((x) => x !== id)
+                            : [...formData.selectedVehicles, id],
+                        });
+                      }}
                     />
                     {v.vehicleType} - {v.vehicleNum}
                   </DropdownMenuItem>
@@ -275,6 +338,18 @@ const TeamForm: React.FC = () => {
                       type="checkbox"
                       className="mr-2 text-base"
                       checked={formData.selectedDrivers.includes(`${d.name}`)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        const driverName = d.name;
+                        setFormData((prev) => ({
+                          ...prev,
+                          selectedDrivers: prev.selectedDrivers.includes(d.name)
+                            ? prev.selectedDrivers.filter(
+                                (d) => d !== driverName
+                              )
+                            : [...prev.selectedDrivers, driverName],
+                        }));
+                      }}
                     />
                     {`${d.name}`}
                   </DropdownMenuItem>
@@ -317,9 +392,12 @@ const TeamForm: React.FC = () => {
       <div className="text-center mt-5 pb-5">
         <button
           type="submit"
-          className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1"
+          disabled={isSubmitting}
+          className={`bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1 ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          {isEditMode ? '수정 완료' : '작성 완료'}
+          {isSubmitting ? '전송 중...' : isEditMode ? '수정 완료' : '작성 완료'}
         </button>
       </div>
     </form>

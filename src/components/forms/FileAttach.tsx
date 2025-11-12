@@ -1,13 +1,13 @@
 import React, { useRef, useState } from 'react';
 
 // Generic type for any form data with uploadedFiles
-type FileData = {
+export type FileData = {
   name: string;
-  url: string; // Will be Cloudflare key after upload, empty before
+  url: string;
   type: string;
   size: number;
-  previewUrl?: string; // Local preview URL for images
-  file?: File; // Original File object (for later upload)
+  previewUrl?: string;
+  file?: File;
 };
 
 interface FileAttachProps<T extends { uploadedFiles: FileData[] }> {
@@ -27,7 +27,7 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
   showLabel = true,
   labelText = '파일 첨부',
   className1 = '',
-  className2 = ''
+  className2 = '',
 }: FileAttachProps<T>) {
   // objectCategory is reserved for future use - files are uploaded in ComplaintConfirm stage
   void objectCategory;
@@ -76,7 +76,7 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
   return (
     <>
       {showLabel && (
-        <label className={`font-bold text-[1rem] ${className1}`}>
+        <label className={`font-bold text-lg ${className1}`}>
           {labelText}
         </label>
       )}

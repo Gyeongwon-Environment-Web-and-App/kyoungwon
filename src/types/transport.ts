@@ -1,13 +1,10 @@
+import type { FileData } from '@/components/forms/FileAttach';
+
 export interface DriverFormData {
   name: string;
   phoneNum: string;
   selectedTeam: string[];
-  uploadedFiles: Array<{
-    name: string;
-    url: string;
-    type: string;
-    size: number;
-  }>;
+  uploadedFiles: FileData[];
 }
 
 export interface VehicleDriver {
@@ -21,27 +18,15 @@ export interface VehicleFormData {
   vehicleType: string;
   vehicleNum: string;
   ton: string;
-  maxTon?: string;
   vehicleYear: string;
-  vehicleCategory: string;
-  uploadedFiles: Array<{
-    name: string;
-    url: string;
-    type: string;
-    size: number;
-  }>;
-  drivers: VehicleDriver[];
-  vehicleArea: string[];
+  uploadedFiles: FileData[];
   broken?: boolean;
-
-  selectedMainDriver: VehicleDriver | null;
-  selectedTeamMembers: VehicleDriver[];
 }
 
 export interface TeamFormData {
   category: string;
   teamName: string;
-  regions: string[]
+  regions: string[];
   selectedVehicles: string[];
   selectedDrivers: string[];
 }

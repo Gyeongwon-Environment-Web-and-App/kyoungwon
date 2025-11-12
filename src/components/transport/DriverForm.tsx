@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { ChevronDown, X } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { teams as teamList } from '@/data/vehicleData';
+import { transportService } from '@/services/transportService';
 import type { DriverFormData } from '@/types/transport';
 
 import { validatePhoneNumber } from '../../utils/validateDash';
@@ -25,30 +26,73 @@ const DriverForm: React.FC = () => {
     selectedTeam: [],
     uploadedFiles: [],
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setSubmitError] = useState<string | null>(null);
   const { driverId } = useParams();
   const isEditMode = Boolean(driverId);
+  const navigate = useNavigate();
 
   const updateFormData = (updates: Partial<DriverFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Step 1: Validation
     if (!formData.name.trim() || !formData.phoneNum.trim()) {
       alert('필수 입력창을 모두 입력해주세요.');
       return;
     }
 
-    // Validate phone number for dashes
+    // Step 2: Validate phone number
     const phoneValidation = validatePhoneNumber(formData.phoneNum);
     if (!phoneValidation.isValid) {
       alert(phoneValidation.message || '전화번호 형식이 올바르지 않습니다.');
       return;
     }
 
-    console.log('기사정보 전송완료:', formData);
-    // Handle form submission logic here
+    // Step 3: Set loading state
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Step 4: Call the service
+      const result = await transportService.createDriver(formData);
+
+      // Step 5: Handle success
+      if (result.driver) {
+        console.log('기사 등록 성공:', result.driver);
+        alert(`기사 등록이 완료되었습니다. (이름: ${result.driver.name})`);
+
+        // Step 6: Reset form
+        setFormData({
+          name: '',
+          phoneNum: '',
+          selectedTeam: [],
+          uploadedFiles: [],
+        });
+
+        // Step 7: Navigate (optional - adjust route as needed)
+        navigate('/transport/driver/info');
+      } else {
+        // Step 8: Handle error from service
+        setSubmitError(result.message || '기사 등록에 실패했습니다.');
+        alert(result.message || '기사 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      // Step 9: Handle unexpected errors
+      console.error('기사 등록 처리 중 오류:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '기사 등록 중 오류가 발생했습니다.';
+      setSubmitError(errorMessage);
+      alert(errorMessage);
+    } finally {
+      // Step 10: Reset loading state
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,19 +126,20 @@ const DriverForm: React.FC = () => {
           />
 
           {/* 파일 첨부 */}
-          <label className="col-span-1 font-bold">사진 첨부</label>
-          <div className="col-span-2">
-            <FileAttach
-              formData={formData}
-              setFormData={(updates) => {
-                if (typeof updates === 'function') {
-                  updateFormData(updates(formData));
-                } else {
-                  updateFormData(updates);
-                }
-              }}
-            />
-          </div>
+          <FileAttach
+            showLabel={true}
+            className1="col-span-1"
+            className2="col-span-2"
+            formData={formData}
+            setFormData={(updates) => {
+              if (typeof updates === 'function') {
+                updateFormData(updates(formData));
+              } else {
+                updateFormData(updates);
+              }
+            }}
+            objectCategory="driver"
+          />
 
           {/* 팀 선택 */}
           <label className="col-span-1 font-bold">
@@ -135,6 +180,16 @@ const DriverForm: React.FC = () => {
                       checked={formData.selectedTeam.includes(
                         `${t.category} ${t.teamName}`
                       )}
+                      onChange={(e) => {
+                        e.stopPropagation(); // Prevent triggering onSelect
+                        const teamValue = `${t.category} ${t.teamName}`;
+                        setFormData((prev) => ({
+                          ...prev,
+                          selectedTeam: prev.selectedTeam.includes(teamValue)
+                            ? prev.selectedTeam.filter((t) => t !== teamValue)
+                            : [...prev.selectedTeam, teamValue],
+                        }));
+                      }}
                     />
                     {`${t.category} ${t.teamName}`}
                   </DropdownMenuItem>
@@ -173,9 +228,12 @@ const DriverForm: React.FC = () => {
       <div className="text-center mt-5 pb-5">
         <button
           type="submit"
-          className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1"
+          disabled={isSubmitting}
+          className={`bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1 ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          {isEditMode ? '수정 완료' : '작성 완료'}
+          {isSubmitting ? '전송 중...' : isEditMode ? '수정 완료' : '작성 완료'}
         </button>
       </div>
     </form>

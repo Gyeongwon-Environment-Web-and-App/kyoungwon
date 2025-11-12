@@ -92,9 +92,11 @@ const VehicleInfo: React.FC = () => {
       </div>
       <div className="md:grid md:grid-cols-[1fr_1fr_1fr] gap-6">
         {vehicles.map((vehicle, index) => (
-          <div className="col-span-1 mb:mb-0 mb-6">
+          <div
+            key={vehicle.vehicleNum || index}
+            className="col-span-1 mb:mb-0 mb-6"
+          >
             <VehicleCard
-              key={index}
               vehicleType={vehicle.vehicleType}
               vehicleCategory={vehicle.vehicleCategory}
               vehicleNum={vehicle.vehicleNum}

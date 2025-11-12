@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import { transportService } from '@/services/transportService';
 import type { VehicleFormData } from '@/types/transport';
 
 import attention from '../../assets/icons/common/attention.svg';
@@ -15,46 +16,68 @@ const VehicleForm: React.FC = () => {
     vehicleType: '',
     vehicleNum: '',
     ton: '',
-    maxTon: '',
     vehicleYear: '',
-    vehicleCategory: '',
     uploadedFiles: [],
-    drivers: [],
-    selectedMainDriver: null,
-    selectedTeamMembers: [],
-    vehicleArea: [],
     broken: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setSubmitError] = useState<string | null>(null);
   const { vehicleId } = useParams();
   const isEditMode = Boolean(vehicleId);
-
-  // const handleFileUpdate = (fileUpdates: { uploadedFiles: Array<{name: string, url: string, type: string, size: number}> }) => {
-  //   updateFormData({ uploadedFiles: fileUpdates.uploadedFiles });
-  // };
+  const navigate = useNavigate();
 
   const updateFormData = (updates: Partial<VehicleFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
       !formData.vehicleType.trim() ||
       !formData.vehicleNum.trim() ||
       !formData.ton.trim() ||
-      !formData.vehicleYear.trim() ||
-      !formData.vehicleCategory.trim() ||
-      formData.vehicleArea.length === 0 ||
-      formData.vehicleArea.every((area) => !area.trim()) ||
-      !formData.selectedMainDriver
+      !formData.vehicleYear.trim()
     ) {
       alert('필수 입력창을 모두 입력해주세요.');
       return;
     }
 
-    console.log('차량정보 전송완료:', formData);
-    // Handle form submission logic here
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const result = await transportService.createVehicle(formData);
+
+      if (result.truck) {
+        console.log('차량 등록 성공:', result.truck);
+        alert(`차량 등록이 완료되었습니다. 차량번호: ${result.truck.truck_no}`);
+        setFormData({
+          vehicleType: '',
+          vehicleNum: '',
+          ton: '',
+          vehicleYear: '',
+          uploadedFiles: [],
+          broken: false,
+        });
+
+        navigate('/transport/vehicle/info');
+      } else {
+        // Error from service
+        setSubmitError(result.message || '차량 등록에 실패했습니다.');
+        alert(result.message || '차량 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('차량 등록 처리 중 오류:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '차량 등록 중 오류가 발생했습니다.';
+      setSubmitError(errorMessage);
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -140,8 +163,8 @@ const VehicleForm: React.FC = () => {
           {/* 파일 첨부 */}
           <FileAttach
             showLabel={true}
-            className1='col-span-1'
-            className2='col-span-2'
+            className1="col-span-1"
+            className2="col-span-2"
             formData={formData}
             setFormData={(updates) => {
               if (typeof updates === 'function') {
@@ -154,7 +177,7 @@ const VehicleForm: React.FC = () => {
           />
 
           {/* 고장 체크 */}
-          <div className='col-span-1'></div>
+          <div className="col-span-1"></div>
           <div className="col-span-2 flex items-center">
             <input
               tabIndex={15}
@@ -187,9 +210,12 @@ const VehicleForm: React.FC = () => {
       <div className="text-center mt-5 pb-5">
         <button
           type="submit"
-          className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1"
+          disabled={isSubmitting}
+          className={`bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1 ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          {isEditMode ? '수정 완료' : '작성 완료'}
+          {isSubmitting ? '전송 중...' : isEditMode ? '수정 완료' : '작성 완료'}
         </button>
       </div>
     </form>
