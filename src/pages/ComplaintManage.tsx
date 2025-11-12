@@ -116,18 +116,8 @@ const ComplaintManage = () => {
       console.log(formData.categories);
 
       // Transform uploadedFiles to objectInfos format
-      // Filter out files that haven't been uploaded yet (no url/key)
+      // Files are already uploaded by this point (handled in ComplaintConfirm)
       const uploadedFiles = formData.uploadedFiles.filter((file) => file.url);
-
-      if (
-        formData.uploadedFiles.length > 0 &&
-        uploadedFiles.length < formData.uploadedFiles.length
-      ) {
-        alert(
-          '일부 파일이 아직 업로드되지 않았습니다. 잠시 후 다시 시도해주세요.'
-        );
-        return;
-      }
 
       const objectInfos = uploadedFiles.map((file) => ({
         objectKey: file.url, // Cloudflare key is stored in url field
@@ -151,7 +141,7 @@ const ComplaintManage = () => {
           manager:
             formData.notify?.usernames?.includes('소장님께 전달') || false,
         },
-        ...(objectInfos.length > 0 && {objectInfos}), // Include uploaded file keys
+        ...(objectInfos.length > 0 && { objectInfos }), // Include uploaded file keys
       };
 
       console.log('민원 제출 데이터:', complaintData);
@@ -168,7 +158,6 @@ const ComplaintManage = () => {
       setIsPopupOpen(true);
     } catch (error) {
       console.error('민원 제출 실패:', error);
-
       alert('민원 제출에 실패했습니다. 다시 시도해주세요.');
     }
   };

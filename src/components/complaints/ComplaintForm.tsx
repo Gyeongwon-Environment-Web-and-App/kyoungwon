@@ -642,6 +642,8 @@ export default function ComplaintForm({
 
           {/* 파일 첨부 */}
           <FileAttach
+            className1='col-span-1 mb-4 mt-6'
+            className2='col-span-4 mb-4 mt-6'
             formData={formData}
             setFormData={(updates) => {
               if (typeof updates === 'function') {

@@ -14,9 +14,10 @@ interface FileAttachProps<T extends { uploadedFiles: FileData[] }> {
   formData: T;
   setFormData: (updates: Partial<T> | ((prev: T) => T)) => void;
   objectCategory: string; // Required: 'complaint', 'driver', 'vehicle', 'notice', etc.
-  showLabel?: boolean; // Optional: whether to show the label (default: true)
-  labelText?: string; // Optional: custom label text (default: '파일 첨부')
-  className?: string; // Optional: additional className for the container
+  showLabel?: boolean;
+  labelText?: string;
+  className1?: string;
+  className2?: string;
 }
 
 function FileAttach<T extends { uploadedFiles: FileData[] }>({
@@ -25,7 +26,8 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
   objectCategory, // Reserved for future use (upload happens in confirm stage)
   showLabel = true,
   labelText = '파일 첨부',
-  className = '',
+  className1 = '',
+  className2 = ''
 }: FileAttachProps<T>) {
   // objectCategory is reserved for future use - files are uploaded in ComplaintConfirm stage
   void objectCategory;
@@ -74,11 +76,11 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
   return (
     <>
       {showLabel && (
-        <label className="col-span-1 font-bold text-[1rem] md:py-5 pt-5">
+        <label className={`font-bold text-[1rem] ${className1}`}>
           {labelText}
         </label>
       )}
-      <div className={showLabel ? 'col-span-3' : className || ''}>
+      <div className={className2}>
         <input
           type="file"
           ref={fileInputRef}
@@ -101,7 +103,6 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
             : '선택된 파일 없음'}
         </span>
       </div>
-      {showLabel && <div className="col-span-1"></div>}
     </>
   );
 }

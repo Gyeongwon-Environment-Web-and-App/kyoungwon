@@ -114,7 +114,7 @@ const VehicleForm: React.FC = () => {
             ))}
           </div>
 
-          {/* 최대적재량 */}
+          {/* 최대적재량
           <label className="col-span-1 font-bold">최대적재량</label>
           <input
             type="text"
@@ -122,7 +122,7 @@ const VehicleForm: React.FC = () => {
             onChange={(e) => updateFormData({ maxTon: e.target.value })}
             className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base w-full"
             placeholder="예시: 0.7T"
-          />
+          /> */}
 
           {/* 연식 */}
           <label className="col-span-1 font-bold">
@@ -138,24 +138,24 @@ const VehicleForm: React.FC = () => {
           />
 
           {/* 파일 첨부 */}
-          <label className="col-span-1 font-bold">사진 첨부</label>
-          <div className="col-span-2">
-            <FileAttach
-              formData={{ uploadedFiles: formData.uploadedFiles }}
-              // ! 여기 나중에 수정필요
-              setFormData={(updates) => {
-                if (typeof updates === 'function') {
-                  updateFormData(updates(formData)); // Using stale formData
-                } else {
-                  updateFormData(updates);
-                }
-              }}
-            />
-          </div>
+          <FileAttach
+            showLabel={true}
+            className1='col-span-1'
+            className2='col-span-2'
+            formData={formData}
+            setFormData={(updates) => {
+              if (typeof updates === 'function') {
+                updateFormData(updates(formData));
+              } else {
+                updateFormData(updates);
+              }
+            }}
+            objectCategory="truck"
+          />
 
           {/* 고장 체크 */}
-          <div className="col-span-1"></div>
-          <div className="col-span-1 flex items-center">
+          <div className='col-span-1'></div>
+          <div className="col-span-2 flex items-center">
             <input
               tabIndex={15}
               type="checkbox"

@@ -26,8 +26,8 @@ export default function ComplaintConfirm({
   const { formData, driverData, updateFormData } = useComplaintFormStore();
   const [formattedAddress, setFormattedAddress] = useState(formData.address);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Format address with dong info asynchronously
   useEffect(() => {
@@ -52,63 +52,73 @@ export default function ComplaintConfirm({
     formatAddress();
   }, [formData.address]);
 
-  // Function to upload pending files to Cloudflare
-  const uploadPendingFiles = async (): Promise<boolean> => {
-    // Find files that haven't been uploaded yet (have file object but no url/key)
-    const filesToUpload = formData.uploadedFiles.filter(
-      (file) => file.file && !file.url
-    );
-
-    if (filesToUpload.length === 0) {
-      return true; // No files to upload, proceed
-    }
-
-    setIsUploadingFiles(true);
-    setUploadError(null);
+  const handleSubmitWithUpload = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      const fileObjects = filesToUpload
-        .map((f) => f.file)
-        .filter((f): f is File => f !== undefined);
-
-      console.log('파일 업로드 시작:', fileObjects.length, '개 파일');
-
-      // Upload files to Cloudflare
-      const uploadedFiles = await uploadFilesToCloudflare(
-        fileObjects,
-        'complaint'
+      // Step 1: Upload files if needed
+      const filesToUpload = formData.uploadedFiles.filter(
+        (file) => file.file && !file.url
       );
 
-      // Update formData with Cloudflare keys
-      const updatedFiles = formData.uploadedFiles.map((file) => {
-        if (file.file && !file.url) {
-          // Find the corresponding uploaded file
-          const uploaded = uploadedFiles.find(
-            (uf) => uf.originalName === file.name
-          );
-          if (uploaded) {
-            return {
-              ...file,
-              url: uploaded.key, // Store Cloudflare key
-              // Keep previewUrl and other properties
-            };
+      if (filesToUpload.length > 0) {
+        const fileObjects = filesToUpload
+          .map((f) => f.file)
+          .filter((f): f is File => f !== undefined);
+
+        console.log('파일 업로드 시작:', fileObjects.length, '개 파일');
+
+        // Upload files to Cloudflare
+        const uploadedFiles = await uploadFilesToCloudflare(
+          fileObjects,
+          'complaint'
+        );
+
+        // Update formData with Cloudflare keys
+        const updatedFiles = formData.uploadedFiles.map((file) => {
+          if (file.file && !file.url) {
+            const uploaded = uploadedFiles.find(
+              (uf) => uf.originalName === file.name
+            );
+            if (uploaded) {
+              return {
+                ...file,
+                url: uploaded.key,
+              };
+            }
           }
-        }
-        return file;
-      });
+          return file;
+        });
 
-      updateFormData({ uploadedFiles: updatedFiles });
+        updateFormData({ uploadedFiles: updatedFiles });
+        console.log('파일 업로드 완료');
+      }
 
-      console.log('파일 업로드 완료:', uploadedFiles);
-      setIsUploadingFiles(false);
-      return true; // Upload successful
+      // Step 2: Immediately proceed to submit complaint
+      // onSubmit() will be called, which handles the actual API call
+      try {
+        await onSubmit();
+      } catch (submitError) {
+        throw new Error(
+          submitError instanceof Error
+            ? submitError.message
+            : '민원 제출에 실패했습니다.'
+        );
+      }
+
+      // If we reach here, submission was successful
+      // (onSubmit handles success popup in ComplaintManage)
     } catch (error) {
-      console.error('파일 업로드 실패:', error);
+      console.error('파일 업로드 또는 민원 제출 실패:', error);
       const errorMessage =
-        error instanceof Error ? error.message : '파일 업로드에 실패했습니다.';
-      setUploadError(errorMessage);
-      setIsUploadingFiles(false);
-      return false; // Upload failed
+        error instanceof Error
+          ? error.message
+          : '파일 업로드 또는 민원 제출에 실패했습니다.';
+      setSubmitError(errorMessage);
+      // Don't proceed if upload or submission fails
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -333,32 +343,19 @@ export default function ComplaintConfirm({
         </div>
       </form>
 
-      {/* 파일 업로드 상태 표시 */}
-      {isUploadingFiles && (
+      {/* 파일 업로드 및 민원 전송 상태 표시 */}
+      {isSubmitting && (
         <div className="text-center mt-5 mb-2">
           <div className="inline-flex items-center gap-2 text-sm text-gray-600">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
-            <span>파일 업로드 중...</span>
+            <span>파일 업로드 및 민원 전송 중...</span>
           </div>
         </div>
       )}
 
-      {!isUploadingFiles &&
-        formData.uploadedFiles.some((file) => file.file && !file.url) && (
-          <div className="text-center mt-5 mb-2">
-            <p className="text-sm text-gray-600">
-              파일{' '}
-              {formData.uploadedFiles.filter((f) => f.file && !f.url).length}
-              개가 업로드 대기 중입니다.
-              <br />
-              '민원 전송' 버튼을 클릭하면 파일이 업로드됩니다.
-            </p>
-          </div>
-        )}
-
-      {uploadError && (
+      {submitError && (
         <div className="text-center mt-5 mb-2">
-          <p className="text-sm text-red-500">{uploadError}</p>
+          <p className="text-sm text-red-500">{submitError}</p>
         </div>
       )}
 
@@ -367,18 +364,10 @@ export default function ComplaintConfirm({
         <button
           type="submit"
           className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={async () => {
-            // Upload files first, then submit
-            const uploadSuccess = await uploadPendingFiles();
-            if (uploadSuccess) {
-              onSubmit();
-            } else {
-              alert('파일 업로드에 실패했습니다. 다시 시도해주세요.');
-            }
-          }}
-          disabled={isUploadingFiles}
+          onClick={handleSubmitWithUpload}
+          disabled={isSubmitting}
         >
-          {isUploadingFiles ? '파일 업로드 중...' : '민원 전송'}
+          {isSubmitting ? '파일 업로드 및 민원 전송 중...' : '민원 전송'}
         </button>
       </div>
     </div>
