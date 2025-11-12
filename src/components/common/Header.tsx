@@ -36,7 +36,7 @@ const menuItems = [
     submenu: [
       { name: '차량 정보', route: '/transport/vehicle/info' },
       { name: '기사 정보', route: '/transport/driver/info' },
-      { name: '팀 정보', route: '/transport/driver/info' },
+      { name: '팀 정보', route: '/transport/team/info' },
     ],
   },
   {

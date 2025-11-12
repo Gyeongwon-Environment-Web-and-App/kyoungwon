@@ -6,24 +6,25 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import DriverForm from '@/components/transport/DriverForm';
 import DriverInfo from '@/components/transport/DriverInfo';
+import TeamForm from '@/components/transport/TeamForm';
+import TeamInfo from '@/components/transport/TeamInfo';
 import VehicleForm from '@/components/transport/VehicleForm';
 import VehicleInfo from '@/components/transport/VehicleInfo';
 
 import driverIcon from '../assets/icons/common/driver.svg';
-import truckIcon from '../assets/icons/common/truck.svg';
 import teamIcon from '../assets/icons/common/team.svg';
+import truckIcon from '../assets/icons/common/truck.svg';
 import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';
 import PageLayout from '../components/layout/PageLayout';
 import { useAuthStore } from '../stores/authStore';
-import TeamForm from '@/components/transport/TeamForm';
-import TeamInfo from '@/components/transport/TeamInfo';
 
 const TransportManage: React.FC = () => {
   const { logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [popupType, setPopupType] = useState<'team' | 'driver' | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<
     | 'vehicleInfo'
@@ -92,27 +93,52 @@ const TransportManage: React.FC = () => {
     setActiveTab(nextTab);
   };
 
+  const handleTeamSubmit = () => {
+    setPopupType('team');
+    setIsPopupOpen(true);
+  };
+
+  const handleDriverSubmit = () => {
+    setPopupType('driver');
+    setIsPopupOpen(true);
+  };
+
+  const handlePopupFirstClick = () => {
+    setIsPopupOpen(false);
+    setPopupType(null);
+    if (popupType === 'team') {
+      navigate('/transport/team/info');
+    } else if (popupType === 'driver') {
+      navigate('/transport/driver/info');
+    }
+  };
+
+  const handlePopupSecondClick = () => {
+    setIsPopupOpen(false);
+    setPopupType(null);
+    navigate('/');
+  };
+
   return (
     <div className="w-screen h-screen">
       {isPopupOpen && (
         <Popup
           message={
             <>
-              <p>차량/기사정보 전송이</p>
+              <p>
+                {popupType === 'team' ? '팀 정보 전송이' : '기사 정보 전송이'}
+              </p>
               <p>완료되었습니다.</p>
             </>
           }
           yesNo={false}
-          onFirstClick={() => {
-            console.log('1st click');
-          }}
-          onSecondClick={() => {
-            console.log('2nd click');
-          }}
-          toHome={true}
-          onGoHome={() => {
-            console.log('reset form');
-          }}
+          onFirstClick={handlePopupFirstClick}
+          onFirstLabel={
+            popupType === 'team' ? '팀 정보 페이지' : '기사 정보 페이지'
+          }
+          onSecondClick={handlePopupSecondClick}
+          onSecondLabel={'홈으로 이동'}
+          toHome={false}
         />
       )}
       <Header onLogout={logout} />
@@ -159,8 +185,8 @@ const TransportManage: React.FC = () => {
                   : activeTab === 'driverForm'
                     ? '기사 등록 / 수정'
                     : activeTab === 'teamForm'
-                    ? '팀 등록 / 수정'
-                    : '팀 정보'
+                      ? '팀 등록 / 수정'
+                      : '팀 정보'
           }
         >
           {/* 민원 등록 콘텐츠 */}
@@ -182,12 +208,12 @@ const TransportManage: React.FC = () => {
             )}
             {activeTab === 'driverForm' && (
               <>
-                <DriverForm />
+                <DriverForm onSubmit={handleDriverSubmit} />
               </>
             )}
             {activeTab === 'teamForm' && (
               <>
-                <TeamForm />
+                <TeamForm onSubmit={handleTeamSubmit} />
               </>
             )}
             {activeTab === 'teamInfo' && (

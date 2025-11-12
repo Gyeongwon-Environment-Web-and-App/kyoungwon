@@ -17,9 +17,11 @@ import { validatePhoneNumber } from '../../utils/validateDash';
 import FileAttach from '../forms/FileAttach';
 import { Button } from '../ui/button';
 
-// ! 수정 모드를 위해 interface로 prop 지정 필요
+interface DriverFormProps {
+  onSubmit?: () => void;
+}
 
-const DriverForm: React.FC = () => {
+const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<DriverFormData>({
     name: '',
     phoneNum: '',
@@ -133,8 +135,13 @@ const DriverForm: React.FC = () => {
         });
 
         if (result.message) {
-          alert(result.message);
-          navigate('/transport/driver/info');
+          // Call onSubmit callback if provided (for popup)
+          if (onSubmit) {
+            onSubmit();
+          } else {
+            alert(result.message);
+            navigate('/transport/driver/info');
+          }
         } else {
           setSubmitError(result.message || '기사 수정에 실패했습니다.');
           alert(result.message || '기사 수정에 실패했습니다.');
@@ -146,7 +153,6 @@ const DriverForm: React.FC = () => {
         // Step 5: Handle success
         if (result.driver) {
           console.log('기사 등록 성공:', result.driver);
-          alert(`기사 등록이 완료되었습니다. (이름: ${result.driver.name})`);
 
           // Step 6: Reset form
           setFormData({
@@ -156,8 +162,13 @@ const DriverForm: React.FC = () => {
             uploadedFiles: [],
           });
 
-          // Step 7: Navigate (optional - adjust route as needed)
-          navigate('/transport/driver/info');
+          // Call onSubmit callback if provided (for popup)
+          if (onSubmit) {
+            onSubmit();
+          } else {
+            alert(`기사 등록이 완료되었습니다. (이름: ${result.driver.name})`);
+            navigate('/transport/driver/info');
+          }
         } else {
           // Step 8: Handle error from service
           setSubmitError(result.message || '기사 등록에 실패했습니다.');

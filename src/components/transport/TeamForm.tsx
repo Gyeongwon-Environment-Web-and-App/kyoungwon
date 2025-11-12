@@ -18,9 +18,11 @@ import type { TeamFormData } from '@/types/transport';
 
 import { Button } from '../ui/button';
 
-// ! 수정 모드를 위해 interface로 prop 지정 필요
+interface TeamFormProps {
+  onSubmit?: () => void;
+}
 
-const TeamForm: React.FC = () => {
+const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<TeamFormData>({
     category: '',
     teamName: '',
@@ -101,10 +103,14 @@ const TeamForm: React.FC = () => {
         // Step 4: Handle success
         if (result.message) {
           console.log('팀 수정 성공:', result.message);
-          alert(result.message || '팀 수정이 완료되었습니다.');
 
-          // Step 5: Navigate back to team info
-          navigate('/transport/team/info');
+          // Call onSubmit callback if provided (for popup)
+          if (onSubmit) {
+            onSubmit();
+          } else {
+            alert(result.message || '팀 수정이 완료되었습니다.');
+            navigate('/transport/team/info');
+          }
         } else {
           // Step 6: Handle error from service
           setSubmitError(result.message || '팀 수정에 실패했습니다.');
@@ -116,7 +122,6 @@ const TeamForm: React.FC = () => {
         // Step 4: Handle success
         if (result.team) {
           console.log('팀 등록 성공:', result.team);
-          alert(`팀 등록이 완료되었습니다. (팀명: ${result.team.team_nm})`);
 
           // Step 5: Reset form
           setFormData({
@@ -127,8 +132,13 @@ const TeamForm: React.FC = () => {
             selectedDrivers: [],
           });
 
-          // Step 6: Navigate (optional - adjust route as needed)
-          navigate('/transport/team/info');
+          // Call onSubmit callback if provided (for popup)
+          if (onSubmit) {
+            onSubmit();
+          } else {
+            alert(`팀 등록이 완료되었습니다. (팀명: ${result.team.team_nm})`);
+            navigate('/transport/team/info');
+          }
         } else {
           // Step 7: Handle error from service
           setSubmitError(result.message || '팀 등록에 실패했습니다.');
