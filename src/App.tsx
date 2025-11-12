@@ -102,6 +102,10 @@ const AppContent: React.FC = () => {
               element={<TransportManage />}
             />
             <Route
+              path="/transport/driver/form/:driverId"
+              element={<TransportManage />}
+            />
+            <Route
               path="/transport/driver/info"
               element={<TransportManage />}
             />
@@ -114,6 +118,10 @@ const AppContent: React.FC = () => {
               element={<TransportManage />}
             />
             <Route path="/transport/team/form" element={<TransportManage />} />
+            <Route
+              path="/transport/team/form/:teamId"
+              element={<TransportManage />}
+            />
             <Route path="/transport/team/info" element={<TransportManage />} />
 
             <Route path="/register" element={<Register />} />

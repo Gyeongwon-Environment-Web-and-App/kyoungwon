@@ -9,13 +9,46 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { teams } from '@/data/vehicleData';
+import { useTeams } from '@/hooks/useTeams';
+import { transportService } from '@/services/transportService';
 
 import { Button } from '../ui/button';
 import TeamCard from './TeamCard';
 
 const TeamInfo: React.FC = () => {
   const navigate = useNavigate();
+  const { teams, isLoading, fetchError, refetch } = useTeams();
+
+  const handleDeleteTeam = async (id: number) => {
+    try {
+      const response = await transportService.deleteTeam(id);
+
+      if (response.message) {
+        alert(response.message);
+        // Refetch teams after successful deletion
+        refetch();
+      }
+    } catch (error) {
+      console.error('팀 삭제 실패:', error);
+      alert('팀 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-gray-500">팀 목록을 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-red-500">오류: {fetchError}</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -67,14 +100,16 @@ const TeamInfo: React.FC = () => {
       </div>
       <div className="md:grid md:grid-cols-[1fr_1fr_1fr] gap-6">
         {teams.map((team, index) => (
-          <div className="col-span-1 mb-6 md:mb-0">
+          <div key={team.teamName || index} className="col-span-1 mb-6 md:mb-0">
             <TeamCard
               key={index}
               teamName={team.teamName}
               category={team.category}
               selectedVehicles={team.selectedVehicles}
-              region={team.region}
+              regions={team.regions}
               drivers={team.drivers}
+              teamId={team.id}
+              onDelete={handleDeleteTeam}
             />
           </div>
         ))}

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,24 +20,39 @@ import pin from '../../assets/icons/map_card/location_pin.svg';
 import truck from '../../assets/icons/map_card/truck.svg';
 import team from '../../assets/icons/transport/team.svg';
 
-interface DriverCardProps {
+interface TeamCardProps {
   teamName: string;
   category: string;
   selectedVehicles: string[];
-  region: string;
+  regions: string[];
   drivers: VehicleDriver[];
+  teamId: number;
+  onDelete: (id: number) => void;
 }
 
-const TeamCard: React.FC<DriverCardProps> = ({
+const TeamCard: React.FC<TeamCardProps> = ({
   teamName,
   category,
   selectedVehicles,
-  region,
+  regions,
   drivers,
+  teamId,
+  onDelete,
 }) => {
+  const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate(`/transport/team/form/${teamId}`);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm(`"${teamName}" 팀을 정말 삭제하시겠습니까?`)) {
+      onDelete(teamId);
+    }
+  };
   return (
     <div
-      className={`relative text-left flex flex-row md:flex-col items-center gap-1 px-4 py-3 md:py-6 rounded-lg border-2 border-light-green  cursor-default font-medium`}
+      className={`relative text-left flex flex-row md:flex-col items-center md:items-start gap-1 px-4 py-3 md:py-6 rounded-lg border-2 border-light-green  cursor-default font-medium`}
     >
       {/* 오른쪽 위 메뉴 */}
       <div className="absolute right-3 top-3 cursor-pointer">
@@ -44,13 +61,12 @@ const TeamCard: React.FC<DriverCardProps> = ({
             <img src={three} alt="수정/삭제" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full">
-            <DropdownMenuItem>수정하기</DropdownMenuItem>
-            <DropdownMenuItem>삭제하기</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleEdit}>수정하기</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDelete}>삭제하기</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {/* <img src={teamIcon} alt="" className="mr-2 md:w-20 w-16 my-4 opacity-80" /> */}
       <div className="flex flex-col span-y-1 font-normal">
         <div className="flex items-center mb-2 text-xl font-semibold">
           <img
@@ -70,7 +86,7 @@ const TeamCard: React.FC<DriverCardProps> = ({
         </div>
         <div className="flex items-center text-base md:text-lg">
           <img src={pin} alt="핀 아이콘" className="w-5 h-5 mr-1" />
-          <span className="">{region}</span>
+          <span className="">{regions.join(', ')}</span>
         </div>
         {selectedVehicles.length > 0 && (
           <div className="flex items-start text-base md:text-lg">

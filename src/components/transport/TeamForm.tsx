@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ChevronDown, X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -29,10 +29,45 @@ const TeamForm: React.FC = () => {
     selectedDrivers: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [, setSubmitError] = useState<string | null>(null);
   const { teamId } = useParams();
   const isEditMode = Boolean(teamId);
   const navigate = useNavigate();
+
+  // Fetch team data when in edit mode
+  useEffect(() => {
+    const loadTeamData = async () => {
+      if (!teamId) return;
+
+      try {
+        setIsLoading(true);
+        const response = await transportService.getTeamById(Number(teamId));
+
+        if (response.team && response.team.id) {
+          // Map API response to form data
+          setFormData({
+            category: response.team.category || '',
+            teamName: response.team.team_nm || '',
+            regions: response.team.official_regions || [],
+            selectedVehicles: response.team.trucks || [],
+            selectedDrivers: response.team.drivers.map((d) => d.name) || [],
+          });
+        } else {
+          alert(response.message || '팀 정보를 불러올 수 없습니다.');
+          navigate('/transport/team/info');
+        }
+      } catch (error) {
+        console.error('팀 정보 불러오기 실패:', error);
+        alert('팀 정보를 불러오는 중 오류가 발생했습니다.');
+        navigate('/transport/team/info');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTeamData();
+  }, [teamId, navigate]);
 
   const updateFormData = (updates: Partial<TeamFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -56,37 +91,62 @@ const TeamForm: React.FC = () => {
     setSubmitError(null);
 
     try {
-      // Step 3: Call the service
-      const result = await transportService.createTeam(formData);
+      // Step 3: Call the service (create or update based on mode)
+      if (isEditMode && teamId) {
+        const result = await transportService.updateTeam(
+          Number(teamId),
+          formData
+        );
 
-      // Step 4: Handle success
-      if (result.team) {
-        console.log('팀 등록 성공:', result.team);
-        alert(`팀 등록이 완료되었습니다. (팀명: ${result.team.team_nm})`);
+        // Step 4: Handle success
+        if (result.message) {
+          console.log('팀 수정 성공:', result.message);
+          alert(result.message || '팀 수정이 완료되었습니다.');
 
-        // Step 5: Reset form
-        setFormData({
-          category: '',
-          teamName: '',
-          regions: [],
-          selectedVehicles: [],
-          selectedDrivers: [],
-        });
-
-        // Step 6: Navigate (optional - adjust route as needed)
-        navigate('/transport/team/info');
+          // Step 5: Navigate back to team info
+          navigate('/transport/team/info');
+        } else {
+          // Step 6: Handle error from service
+          setSubmitError(result.message || '팀 수정에 실패했습니다.');
+          alert(result.message || '팀 수정에 실패했습니다.');
+        }
       } else {
-        // Step 7: Handle error from service
-        setSubmitError(result.message || '팀 등록에 실패했습니다.');
-        alert(result.message || '팀 등록에 실패했습니다.');
+        const result = await transportService.createTeam(formData);
+
+        // Step 4: Handle success
+        if (result.team) {
+          console.log('팀 등록 성공:', result.team);
+          alert(`팀 등록이 완료되었습니다. (팀명: ${result.team.team_nm})`);
+
+          // Step 5: Reset form
+          setFormData({
+            category: '',
+            teamName: '',
+            regions: [],
+            selectedVehicles: [],
+            selectedDrivers: [],
+          });
+
+          // Step 6: Navigate (optional - adjust route as needed)
+          navigate('/transport/team/info');
+        } else {
+          // Step 7: Handle error from service
+          setSubmitError(result.message || '팀 등록에 실패했습니다.');
+          alert(result.message || '팀 등록에 실패했습니다.');
+        }
       }
     } catch (error) {
       // Step 8: Handle unexpected errors
-      console.error('팀 등록 처리 중 오류:', error);
+      console.error(
+        isEditMode ? '팀 수정 처리 중 오류:' : '팀 등록 처리 중 오류:',
+        error
+      );
       const errorMessage =
         error instanceof Error
           ? error.message
-          : '팀 등록 중 오류가 발생했습니다.';
+          : isEditMode
+            ? '팀 수정 중 오류가 발생했습니다.'
+            : '팀 등록 중 오류가 발생했습니다.';
       setSubmitError(errorMessage);
       alert(errorMessage);
     } finally {
@@ -103,6 +163,14 @@ const TeamForm: React.FC = () => {
         : [...formData.regions, area],
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-gray-500">팀 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>

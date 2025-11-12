@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ChevronDown, X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,10 +27,66 @@ const DriverForm: React.FC = () => {
     uploadedFiles: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [, setSubmitError] = useState<string | null>(null);
+  const [originalFile, setOriginalFile] = useState<{
+    objectKey: string;
+    filenameOriginal: string;
+  } | null>(null);
   const { driverId } = useParams();
   const isEditMode = Boolean(driverId);
   const navigate = useNavigate();
+
+  // Fetch driver data when in edit mode
+  useEffect(() => {
+    const loadDriverData = async () => {
+      if (!driverId) return;
+
+      try {
+        setIsLoading(true);
+        const response = await transportService.getDriverById(Number(driverId));
+
+        if (response.driver && response.driver.id) {
+          // Map API response to form data
+          setFormData({
+            name: response.driver.name || '',
+            phoneNum: response.driver.phone_no || '',
+            selectedTeam: response.driver.team_nms || [],
+            uploadedFiles:
+              response.driver.files && response.driver.files.length > 0
+                ? [
+                    {
+                      url: response.driver.presigned_links[0]?.url || '',
+                      name: response.driver.files[0].filenameOriginal,
+                      type: response.driver.files[0].contentType || '',
+                      size: Number(response.driver.files[0].contentLength) || 0,
+                    },
+                  ]
+                : [],
+          });
+
+          // Store original file info for update
+          if (response.driver.files && response.driver.files.length > 0) {
+            setOriginalFile({
+              objectKey: response.driver.files[0].objectKey,
+              filenameOriginal: response.driver.files[0].filenameOriginal,
+            });
+          }
+        } else {
+          alert(response.message || '기사 정보를 불러올 수 없습니다.');
+          navigate('/transport/driver/info');
+        }
+      } catch (error) {
+        console.error('기사 정보 불러오기 실패:', error);
+        alert('기사 정보를 불러오는 중 오류가 발생했습니다.');
+        navigate('/transport/driver/info');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDriverData();
+  }, [driverId, navigate]);
 
   const updateFormData = (updates: Partial<DriverFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -57,36 +113,69 @@ const DriverForm: React.FC = () => {
     setSubmitError(null);
 
     try {
-      // Step 4: Call the service
-      const result = await transportService.createDriver(formData);
+      // Step 4: Call the service (create or update based on mode)
+      if (isEditMode && driverId) {
+        // Extract category and team_nm from first selectedTeam
+        // Format: "category teamName" or just "teamName"
+        const firstTeam = formData.selectedTeam[0] || '';
+        const teamParts = firstTeam.split(' ');
+        const category = teamParts.length > 1 ? teamParts[0] : '';
+        const team_nm =
+          teamParts.length > 1 ? teamParts.slice(1).join(' ') : firstTeam;
 
-      // Step 5: Handle success
-      if (result.driver) {
-        console.log('기사 등록 성공:', result.driver);
-        alert(`기사 등록이 완료되었습니다. (이름: ${result.driver.name})`);
-
-        // Step 6: Reset form
-        setFormData({
-          name: '',
-          phoneNum: '',
-          selectedTeam: [],
-          uploadedFiles: [],
+        const result = await transportService.updateDriver(Number(driverId), {
+          category,
+          team_nm,
+          official_region_nms: [], // TODO: Get from team data if available
+          truck_nos: [], // TODO: Get from team data if available
+          uploadedFiles: formData.uploadedFiles,
+          originalFile: originalFile || undefined,
         });
 
-        // Step 7: Navigate (optional - adjust route as needed)
-        navigate('/transport/driver/info');
+        if (result.message) {
+          alert(result.message);
+          navigate('/transport/driver/info');
+        } else {
+          setSubmitError(result.message || '기사 수정에 실패했습니다.');
+          alert(result.message || '기사 수정에 실패했습니다.');
+        }
       } else {
-        // Step 8: Handle error from service
-        setSubmitError(result.message || '기사 등록에 실패했습니다.');
-        alert(result.message || '기사 등록에 실패했습니다.');
+        // Create mode
+        const result = await transportService.createDriver(formData);
+
+        // Step 5: Handle success
+        if (result.driver) {
+          console.log('기사 등록 성공:', result.driver);
+          alert(`기사 등록이 완료되었습니다. (이름: ${result.driver.name})`);
+
+          // Step 6: Reset form
+          setFormData({
+            name: '',
+            phoneNum: '',
+            selectedTeam: [],
+            uploadedFiles: [],
+          });
+
+          // Step 7: Navigate (optional - adjust route as needed)
+          navigate('/transport/driver/info');
+        } else {
+          // Step 8: Handle error from service
+          setSubmitError(result.message || '기사 등록에 실패했습니다.');
+          alert(result.message || '기사 등록에 실패했습니다.');
+        }
       }
     } catch (error) {
       // Step 9: Handle unexpected errors
-      console.error('기사 등록 처리 중 오류:', error);
+      console.error(
+        isEditMode ? '기사 수정 처리 중 오류:' : '기사 등록 처리 중 오류:',
+        error
+      );
       const errorMessage =
         error instanceof Error
           ? error.message
-          : '기사 등록 중 오류가 발생했습니다.';
+          : isEditMode
+            ? '기사 수정 중 오류가 발생했습니다.'
+            : '기사 등록 중 오류가 발생했습니다.';
       setSubmitError(errorMessage);
       alert(errorMessage);
     } finally {
@@ -94,6 +183,14 @@ const DriverForm: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-gray-500">기사 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>

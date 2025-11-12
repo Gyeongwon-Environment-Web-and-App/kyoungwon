@@ -9,6 +9,152 @@ import type {
 
 import { uploadFilesToCloudflare } from './fileUploadService';
 
+// ============================================================================
+// Helper Functions for Common Operations
+// ============================================================================
+
+/**
+ * Generic error handler for API calls
+ * @param error - The error object from axios
+ * @param defaultMessage - Default error message if no specific error found
+ * @param context - Context for logging (e.g., '차량 등록', '기사 삭제')
+ * @param fallbackData - Optional fallback data to return on error
+ */
+function handleApiError<T extends { message: string }>(
+  error: unknown,
+  defaultMessage: string,
+  context: string,
+  fallbackData?: Partial<T>
+): T {
+  console.error(`transport service - ${context} 실패:`, error);
+
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const serverMessage = error.response?.data?.message;
+
+    if (status === 400) {
+      return {
+        message: '잘못된 요청입니다. 입력한 정보를 확인해주세요.',
+        ...fallbackData,
+      } as T;
+    } else if (status === 404) {
+      return {
+        message: context.includes('기사')
+          ? '기사를 찾을 수 없습니다.'
+          : '팀을 찾을 수 없습니다.',
+        ...fallbackData,
+      } as T;
+    } else if (status === 500) {
+      return {
+        message: '서버 오류가 발생했습니다.',
+        ...fallbackData,
+      } as T;
+    } else if (serverMessage) {
+      return {
+        message: serverMessage,
+        ...fallbackData,
+      } as T;
+    }
+  }
+
+  return {
+    message: defaultMessage,
+    ...fallbackData,
+  } as T;
+}
+
+/**
+ * Process file uploads for create/update operations
+ * @param uploadedFiles - Array of files from form data
+ * @param category - Category for file upload ('driver' | 'truck')
+ * @param originalFile - Optional original file info for update operations
+ * @returns Object info with objectKey and filenameOriginal, or undefined
+ */
+async function processFileUpload(
+  uploadedFiles: Array<{ file?: File; url?: string; name?: string }>,
+  category: 'driver' | 'truck',
+  originalFile?: { objectKey: string; filenameOriginal: string }
+): Promise<{ objectKey: string; filenameOriginal: string } | undefined> {
+  // Check for new files that need to be uploaded
+  const filesToUpload = uploadedFiles.filter((file) => file.file && !file.url);
+
+  if (filesToUpload.length > 0) {
+    // Upload new files to Cloudflare
+    const fileObjects = filesToUpload
+      .map((f) => f.file)
+      .filter((f): f is File => f !== undefined);
+
+    const uploadedFiles = await uploadFilesToCloudflare(fileObjects, category);
+
+    if (uploadedFiles.length > 0) {
+      const firstFile = uploadedFiles[0];
+      return {
+        objectKey: firstFile.key,
+        filenameOriginal: firstFile.originalName,
+      };
+    }
+  } else {
+    // Check if files were already uploaded or if file changed
+    const alreadyUploaded = uploadedFiles.find((f) => f.url);
+
+    if (alreadyUploaded) {
+      // For update operations, check if file changed
+      if (originalFile) {
+        const fileChanged =
+          alreadyUploaded.url !== originalFile.objectKey &&
+          alreadyUploaded.name;
+
+        if (fileChanged && alreadyUploaded.name) {
+          return {
+            objectKey: alreadyUploaded.url || '',
+            filenameOriginal: alreadyUploaded.name,
+          };
+        }
+        // File unchanged, don't include objectInfo
+        return undefined;
+      }
+
+      // For create operations, use existing file
+      if (alreadyUploaded.name) {
+        return {
+          objectKey: alreadyUploaded.url || '',
+          filenameOriginal: alreadyUploaded.name,
+        };
+      }
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Get default driver error response
+ */
+function getDefaultDriverError(): DriverApiResponseSingle['driver'] {
+  return {
+    id: 0,
+    name: '',
+    phone_no: '',
+    team_nms: [],
+    files: [],
+    presigned_links: [],
+  };
+}
+
+/**
+ * Get default team error response
+ */
+function getDefaultTeamError(): TeamApiResponseSingle['team'] {
+  return {
+    id: 0,
+    category: '',
+    team_nm: '',
+    trucks: [],
+    official_regions: [],
+    drivers: [],
+  };
+}
+
 export interface VehicleApiRequest {
   truck_no: string;
   brand_nm: string;
@@ -63,6 +209,43 @@ export interface DriverApiResponse {
   };
 }
 
+export interface DriverApiResponseSingle {
+  message: string;
+  driver: {
+    id: number;
+    name: string;
+    phone_no: string;
+    team_nms: string[];
+    files: Array<{
+      id: number;
+      objectKey: string;
+      contentType: string;
+      contentLength: string;
+      filenameOriginal: string;
+      createdAt: string;
+    }>;
+    presigned_links: Array<{
+      key: string;
+      url: string;
+    }>;
+  };
+}
+
+export interface UpdateDriverApiRequest {
+  category: string;
+  team_nm: string;
+  official_region_nms: string[];
+  truck_nos: string[];
+  objectInfo?: {
+    objectKey: string;
+    filenameOriginal: string;
+  };
+}
+
+export interface UpdateDriverApiResponse {
+  message: string;
+}
+
 export interface TeamApiRequest {
   team_nm: string;
   category: string;
@@ -80,45 +263,81 @@ export interface TeamApiResponse {
   };
 }
 
+export interface TeamsApiResponse {
+  message: string;
+  teams: Array<{
+    id: number;
+    category: string;
+    team_nm: string;
+    trucks: string[];
+    official_regions: string[];
+    drivers: Array<{
+      id: number;
+      name: string;
+      phone_no: string;
+    }>;
+  }>;
+}
+
+export interface DeleteTeamApiResponse {
+  message: string;
+}
+
+export interface DeleteDriverApiResponse {
+  message: string;
+}
+
+export interface DriversApiResponse {
+  message: string;
+  drivers_extended: Array<{
+    id: number;
+    name: string;
+    phone_no: string;
+    team_nms: string[];
+    presigned_links: Array<{
+      key: string;
+      url: string;
+    }>;
+  }>;
+}
+
+export interface TeamApiResponseSingle {
+  message: string;
+  team: {
+    id: number;
+    category: string;
+    team_nm: string;
+    trucks: string[];
+    official_regions: string[];
+    drivers: Array<{
+      id: number;
+      name: string;
+      phone_no: string;
+    }>;
+  };
+}
+
+export interface UpdateTeamApiRequest {
+  category: string;
+  team_nm: string;
+  official_region_nms: string[];
+  truck_nos: string[];
+  driver_nms: string[];
+}
+
+export interface UpdateTeamApiResponse {
+  message: string;
+}
+
 export const transportService = {
   createVehicle: async (
     formData: VehicleFormData
   ): Promise<VehicleApiResponse> => {
     try {
-      let objectInfo:
-        | { objectKey: string; filenameOriginal: string }
-        | undefined;
-
-      const filesToUpload = formData.uploadedFiles.filter(
-        (file) => file.file && !file.url
+      const objectInfo = await processFileUpload(
+        formData.uploadedFiles,
+        'truck'
       );
-
-      if (filesToUpload.length > 0) {
-        const fileObjects = filesToUpload
-          .map((f) => f.file)
-          .filter((f): f is File => f !== undefined);
-
-        const uploadedFiles = await uploadFilesToCloudflare(
-          fileObjects,
-          'truck'
-        );
-
-        if (uploadedFiles.length > 0) {
-          const firstFile = uploadedFiles[0];
-          objectInfo = {
-            objectKey: firstFile.key,
-            filenameOriginal: firstFile.originalName,
-          };
-        }
-      } else {
-        const alreadyUploaded = formData.uploadedFiles.find((f) => f.url);
-        if (alreadyUploaded) {
-          objectInfo = {
-            objectKey: alreadyUploaded.url,
-            filenameOriginal: alreadyUploaded.name,
-          };
-        }
-      }
 
       const apiData: VehicleApiRequest = {
         truck_no: formData.vehicleNum,
@@ -136,27 +355,11 @@ export const transportService = {
 
       return response.data;
     } catch (error) {
-      console.error('transport service - 차량 등록 실패:', error);
-
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
-          return {
-            message: '잘못된 요청입니다. 입력한 정보를 확인해주세요.',
-          };
-        } else if (error.response?.status === 500) {
-          return {
-            message: '서버 오류가 발생했습니다.',
-          };
-        } else if (error.response?.data?.message) {
-          return {
-            message: error.response.data.message,
-          };
-        }
-      }
-
-      return {
-        message: '차량 등록 중 오류가 발생했습니다.',
-      };
+      return handleApiError<VehicleApiResponse>(
+        error,
+        '차량 등록 중 오류가 발생했습니다.',
+        '차량 등록'
+      );
     }
   },
 
@@ -164,91 +367,130 @@ export const transportService = {
     formData: DriverFormData
   ): Promise<DriverApiResponse> => {
     try {
-      let objectInfo:
-        | { objectKey: string; filenameOriginal: string }
-        | undefined;
-      // Step 1: Check for files that need to be uploaded
-      const filesToUpload = formData.uploadedFiles.filter(
-        (file) => file.file && !file.url
+      const objectInfo = await processFileUpload(
+        formData.uploadedFiles,
+        'driver'
       );
 
-      // Step 2: Upload files to Cloudflare if needed
-      if (filesToUpload.length > 0) {
-        const fileObjects = filesToUpload
-          .map((f) => f.file)
-          .filter((f): f is File => f !== undefined);
-
-        // Upload to Cloudflare with 'driver' category
-        const uploadedFiles = await uploadFilesToCloudflare(
-          fileObjects,
-          'driver'
-        );
-
-        if (uploadedFiles.length > 0) {
-          // Use the first file (similar to vehicle - single file)
-          const firstFile = uploadedFiles[0];
-          objectInfo = {
-            objectKey: firstFile.key,
-            filenameOriginal: firstFile.originalName,
-          };
-        }
-      } else {
-        // Step 3: Check if files were already uploaded
-        const alreadyUploaded = formData.uploadedFiles.find((f) => f.url);
-        if (alreadyUploaded) {
-          objectInfo = {
-            objectKey: alreadyUploaded.url,
-            filenameOriginal: alreadyUploaded.name,
-          };
-        }
-      }
-      // Step 4: Prepare API request data
       const apiData: DriverApiRequest = {
         name: formData.name,
         phone_no: formData.phoneNum,
-        team_nms: formData.selectedTeam, // Array of strings like "생활 팀1", "음식물 팀2"
-        // Only include objectInfo if file exists
+        team_nms: formData.selectedTeam,
         ...(objectInfo && { objectInfo }),
       };
 
-      // Step 5: Make API call
       const response = await apiClient.post<DriverApiResponse>(
         '/tempDriver/create',
         apiData
       );
 
-      // Step 6: Return the response data directly
       return response.data;
     } catch (error) {
-      console.error('transport service - 기사 등록 실패:', error);
+      return handleApiError<DriverApiResponse>(
+        error,
+        '기사 등록 중 오류가 발생했습니다.',
+        '기사 등록'
+      );
+    }
+  },
 
-      // Step 7: Handle errors
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
-          return {
-            message: '잘못된 요청입니다. 입력한 정보를 확인해주세요.',
-          };
-        } else if (error.response?.status === 500) {
-          return {
-            message: '서버 오류가 발생했습니다.',
-          };
-        } else if (error.response?.data?.message) {
-          return {
-            message: error.response.data.message,
-          };
+  deleteDriver: async (id: number): Promise<DeleteDriverApiResponse> => {
+    try {
+      const response = await apiClient.delete<DeleteDriverApiResponse>(
+        `/tempDriver/delete/${id}`,
+        {
+          data: { id },
         }
-      }
+      );
 
-      return {
-        message: '기사 등록 중 오류가 발생했습니다.',
+      return response.data;
+    } catch (error) {
+      return handleApiError<DeleteDriverApiResponse>(
+        error,
+        '기사 삭제 중 오류가 발생했습니다.',
+        '기사 삭제'
+      );
+    }
+  },
+
+  getAllDrivers: async (): Promise<DriversApiResponse> => {
+    try {
+      const response =
+        await apiClient.get<DriversApiResponse>('/tempDriver/getAll');
+
+      console.log('getAllDrivers', response.data);
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<DriversApiResponse>(
+        error,
+        '기사 목록 불러오기 중 오류가 발생했습니다.',
+        '기사 목록 불러오기',
+        { drivers_extended: [] }
+      );
+    }
+  },
+
+  getDriverById: async (id: number): Promise<DriverApiResponseSingle> => {
+    try {
+      const response = await apiClient.get<DriverApiResponseSingle>(
+        `/tempDriver/get/${id}`
+      );
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<DriverApiResponseSingle>(
+        error,
+        '기사 정보 불러오기 중 오류가 발생했습니다.',
+        '기사 정보 불러오기',
+        { driver: getDefaultDriverError() }
+      );
+    }
+  },
+
+  updateDriver: async (
+    id: number,
+    formData: {
+      category: string;
+      team_nm: string;
+      official_region_nms: string[];
+      truck_nos: string[];
+      uploadedFiles: Array<{ file?: File; url?: string; name?: string }>;
+      originalFile?: { objectKey: string; filenameOriginal: string };
+    }
+  ): Promise<UpdateDriverApiResponse> => {
+    try {
+      const objectInfo = await processFileUpload(
+        formData.uploadedFiles,
+        'driver',
+        formData.originalFile
+      );
+
+      const apiData: UpdateDriverApiRequest = {
+        category: formData.category,
+        team_nm: formData.team_nm,
+        official_region_nms: formData.official_region_nms,
+        truck_nos: formData.truck_nos,
+        ...(objectInfo && { objectInfo }),
       };
+
+      const response = await apiClient.patch<UpdateDriverApiResponse>(
+        `/tempDriver/edit/${id}`,
+        apiData
+      );
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<UpdateDriverApiResponse>(
+        error,
+        '기사 수정 중 오류가 발생했습니다.',
+        '기사 수정'
+      );
     }
   },
 
   createTeam: async (formData: TeamFormData): Promise<TeamApiResponse> => {
     try {
-      // Step 1: Prepare API request data
-      // No file upload needed for teams
       const apiData: TeamApiRequest = {
         team_nm: formData.teamName,
         category: formData.category,
@@ -257,37 +499,109 @@ export const transportService = {
         driver_nms: formData.selectedDrivers,
       };
 
-      // Step 2: Make API call
       const response = await apiClient.post<TeamApiResponse>(
         '/tempTeam/create',
         apiData
       );
 
-      // Step 3: Return the response data directly
       return response.data;
     } catch (error) {
-      console.error('transport service - 팀 등록 실패:', error);
+      return handleApiError<TeamApiResponse>(
+        error,
+        '팀 등록 중 오류가 발생했습니다.',
+        '팀 등록'
+      );
+    }
+  },
 
-      // Step 4: Handle errors
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
-          return {
-            message: '잘못된 요청입니다. 입력한 정보를 확인해주세요.',
-          };
-        } else if (error.response?.status === 500) {
-          return {
-            message: '서버 오류가 발생했습니다.',
-          };
-        } else if (error.response?.data?.message) {
-          return {
-            message: error.response.data.message,
-          };
+  getAllTeams: async (): Promise<TeamsApiResponse> => {
+    try {
+      const response =
+        await apiClient.get<TeamsApiResponse>('/tempTeam/getAll');
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<TeamsApiResponse>(
+        error,
+        '팀 목록 불러오기 중 오류가 발생했습니다.',
+        '팀 목록 불러오기',
+        { teams: [] }
+      );
+    }
+  },
+
+  deleteTeam: async (id: number): Promise<DeleteTeamApiResponse> => {
+    try {
+      const response = await apiClient.delete<DeleteTeamApiResponse>(
+        `/tempTeam/delete/${id}`,
+        {
+          data: { id },
         }
+      );
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<DeleteTeamApiResponse>(
+        error,
+        '팀 삭제 중 오류가 발생했습니다.',
+        '팀 삭제'
+      );
+    }
+  },
+
+  getTeamById: async (id: number): Promise<TeamApiResponseSingle> => {
+    try {
+      const response =
+        await apiClient.get<TeamsApiResponse>('/tempTeam/getAll');
+
+      const team = response.data.teams?.find((t) => t.id === id);
+
+      if (!team) {
+        return {
+          message: '팀을 찾을 수 없습니다.',
+          team: getDefaultTeamError(),
+        };
       }
 
       return {
-        message: '팀 등록 중 오류가 발생했습니다.',
+        message: response.data.message || '팀 정보를 불러왔습니다.',
+        team,
       };
+    } catch (error) {
+      return handleApiError<TeamApiResponseSingle>(
+        error,
+        '팀 정보 불러오기 중 오류가 발생했습니다.',
+        '팀 정보 불러오기',
+        { team: getDefaultTeamError() }
+      );
+    }
+  },
+
+  updateTeam: async (
+    id: number,
+    formData: TeamFormData
+  ): Promise<UpdateTeamApiResponse> => {
+    try {
+      const apiData: UpdateTeamApiRequest = {
+        category: formData.category,
+        team_nm: formData.teamName,
+        official_region_nms: formData.regions,
+        truck_nos: formData.selectedVehicles,
+        driver_nms: formData.selectedDrivers,
+      };
+
+      const response = await apiClient.patch<UpdateTeamApiResponse>(
+        `/tempTeam/edit/${id}`,
+        apiData
+      );
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<UpdateTeamApiResponse>(
+        error,
+        '팀 수정 중 오류가 발생했습니다.',
+        '팀 수정'
+      );
     }
   },
 };

@@ -32,9 +32,18 @@ export interface TeamFormData {
 }
 
 export interface Team {
+  id: number;
   teamName: string;
   category: '생활' | '음식물' | '재활용' | '클린' | '수송';
   selectedVehicles: string[];
   regions: string[];
   drivers: VehicleDriver[];
+}
+
+export interface Driver {
+  id: number;
+  name: string;
+  phoneNum: string;
+  teamNms: string[];
+  presignedLink?: string;
 }
