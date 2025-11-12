@@ -47,3 +47,15 @@ export interface Driver {
   teamNms: string[];
   presignedLink?: string;
 }
+
+export interface Vehicle {
+  id: number;
+  vehicleType: string;
+  vehicleNum: string;
+  ton: string;
+  vehicleYear: string;
+  status: string; // 'okay' | 'broken'
+  presignedLink?: string;
+  driverName?: string;
+  driverPhoneNum?: string;
+}

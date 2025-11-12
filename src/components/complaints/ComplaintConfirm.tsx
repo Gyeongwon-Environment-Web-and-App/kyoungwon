@@ -14,7 +14,7 @@ import TextForward from '../forms/TextForward';
 // import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
 interface ComplaintConfirmProps {
-  onSubmit: () => void;
+  onSubmit: (uploadedFileKeys?: string[]) => void | Promise<void>;
   onBack?: () => void;
 }
 
@@ -95,10 +95,19 @@ export default function ComplaintConfirm({
         console.log('파일 업로드 완료');
       }
 
-      // Step 2: Immediately proceed to submit complaint
-      // onSubmit() will be called, which handles the actual API call
+      // Step 2: Collect all uploaded file keys (both newly uploaded and already uploaded)
+      // Get the latest state after update
+      const currentFormData = useComplaintFormStore.getState().formData;
+      const allUploadedFileKeys = currentFormData.uploadedFiles
+        .filter((file) => file.url && file.url.trim() !== '') // Only files that have been uploaded (have a key)
+        .map((file) => file.url as string); // Extract the Cloudflare keys
+
+      console.log('전송할 파일 키들:', allUploadedFileKeys);
+
+      // Step 3: Immediately proceed to submit complaint with file keys
+      // Pass file keys directly to avoid timing issues with store updates
       try {
-        await onSubmit();
+        await onSubmit(allUploadedFileKeys);
       } catch (submitError) {
         throw new Error(
           submitError instanceof Error

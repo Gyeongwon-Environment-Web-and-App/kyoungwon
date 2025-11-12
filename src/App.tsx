@@ -117,6 +117,10 @@ const AppContent: React.FC = () => {
               path="/transport/vehicle/form"
               element={<TransportManage />}
             />
+            <Route
+              path="/transport/vehicle/form/:vehicleId"
+              element={<TransportManage />}
+            />
             <Route path="/transport/team/form" element={<TransportManage />} />
             <Route
               path="/transport/team/form/:teamId"

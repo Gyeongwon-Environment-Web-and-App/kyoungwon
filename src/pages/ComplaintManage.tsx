@@ -110,18 +110,34 @@ const ComplaintManage = () => {
   };
 
   // !백엔드로 정보 전송
-  const onSubmit = async () => {
+  const onSubmit = async (uploadedFileKeys?: string[]) => {
     try {
       // 1. 백엔드 API 형식에 맞춘 데이터 준비
       console.log(formData.categories);
 
       // Transform uploadedFiles to objectInfos format
-      // Files are already uploaded by this point (handled in ComplaintConfirm)
-      const uploadedFiles = formData.uploadedFiles.filter((file) => file.url);
+      // Use file keys passed directly from ComplaintConfirm, or fallback to store
+      let fileKeys: string[] = [];
 
-      const objectInfos = uploadedFiles.map((file) => ({
-        objectKey: file.url, // Cloudflare key is stored in url field
-        filenameOriginal: file.name, // Original filename is stored in name field
+      if (uploadedFileKeys && uploadedFileKeys.length > 0) {
+        // Use file keys passed directly (preferred - avoids timing issues)
+        fileKeys = uploadedFileKeys;
+      } else {
+        // Fallback: get from store (for backward compatibility)
+        const uploadedFiles = formData.uploadedFiles.filter((file) => file.url);
+        fileKeys = uploadedFiles.map((file) => file.url as string);
+      }
+
+      // Get file names from store for objectInfos
+      const uploadedFiles = formData.uploadedFiles.filter((file) => file.url);
+      const fileKeyToNameMap = new Map(
+        uploadedFiles.map((file) => [file.url as string, file.name])
+      );
+
+      const objectInfos = fileKeys.map((key) => ({
+        objectKey: key, // Cloudflare key
+        filenameOriginal:
+          fileKeyToNameMap.get(key) || key.split('/').pop() || 'file', // Original filename
       }));
 
       const complaintData = {
@@ -146,6 +162,7 @@ const ComplaintManage = () => {
 
       console.log('민원 제출 데이터:', complaintData);
       console.log('파일 정보:', objectInfos);
+      console.log('파일 키 개수:', fileKeys.length);
 
       // 2. apiClient를 사용하여 백엔드로 전송 (자동으로 토큰 추가됨)
       const response = await apiClient.post('/complaint/create', complaintData);
@@ -196,6 +213,8 @@ const ComplaintManage = () => {
             setShowConfirm(false);
             navigate('/complaints/table');
           }}
+          onFirstLabel="민원 위치로 이동"
+          onSecondLabel="민원 관리로 이동"
           toHome={true}
           onGoHome={() => {
             resetForm();

@@ -9,7 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { vehicles } from '@/data/vehicleData';
+import { useVehicles } from '@/hooks/useVehicles';
+import { transportService } from '@/services/transportService';
 
 import { Button } from '../ui/button';
 import VehicleCard from './VehicleCard';
@@ -17,6 +18,48 @@ import VehicleCard from './VehicleCard';
 const VehicleInfo: React.FC = () => {
   const [focus, setFocus] = useState('');
   const navigate = useNavigate();
+  const { vehicles, isLoading, fetchError, refetch } = useVehicles();
+
+  const handleDeleteVehicle = async (id: number) => {
+    try {
+      const response = await transportService.deleteVehicle(id);
+
+      if (response.message) {
+        alert(response.message);
+        // Refetch vehicles after successful deletion
+        refetch();
+      }
+    } catch (error) {
+      console.error('차량 삭제 실패:', error);
+      alert('차량 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-gray-500">차량 목록을 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-red-500">오류: {fetchError}</p>
+      </div>
+    );
+  }
+
+  // Filter vehicles based on status filter
+  const filteredVehicles = vehicles.filter((vehicle) => {
+    if (focus === '운행중') {
+      return vehicle.status === 'okay';
+    } else if (focus === '고장') {
+      return vehicle.status === 'broken';
+    }
+    return true; // '전체' or no filter
+  });
 
   return (
     <>
@@ -57,9 +100,15 @@ const VehicleInfo: React.FC = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full text-center">
-                <DropdownMenuItem className="">전체</DropdownMenuItem>
-                <DropdownMenuItem className="">운행중</DropdownMenuItem>
-                <DropdownMenuItem className="">고장</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFocus('전체')}>
+                  전체
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFocus('운행중')}>
+                  운행중
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFocus('고장')}>
+                  고장
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -91,19 +140,21 @@ const VehicleInfo: React.FC = () => {
         </button>
       </div>
       <div className="md:grid md:grid-cols-[1fr_1fr_1fr] gap-6">
-        {vehicles.map((vehicle, index) => (
+        {filteredVehicles.map((vehicle, index) => (
           <div
-            key={vehicle.vehicleNum || index}
+            key={vehicle.id || vehicle.vehicleNum || index}
             className="col-span-1 mb:mb-0 mb-6"
           >
             <VehicleCard
               vehicleType={vehicle.vehicleType}
-              vehicleCategory={vehicle.vehicleCategory}
               vehicleNum={vehicle.vehicleNum}
+              vehicleYear={vehicle.vehicleYear}
               ton={vehicle.ton}
-              maxTon={vehicle.maxTon}
-              selectedMainDriver={vehicle.selectedMainDriver?.name || '미지정'}
-              status={vehicle.broken}
+              selectedMainDriver={vehicle.driverName || '미지정'}
+              status={vehicle.status === 'broken'}
+              vehicleId={vehicle.id}
+              onDelete={handleDeleteVehicle}
+              presignedLink={vehicle.presignedLink}
             />
           </div>
         ))}

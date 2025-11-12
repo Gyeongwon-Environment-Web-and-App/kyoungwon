@@ -23,6 +23,7 @@ interface MapComplaint {
   type: string;
   route: string;
   bad: boolean;
+  files: string[];
 }
 
 const formatDate = (date: Date): string => {
@@ -85,11 +86,11 @@ const convertComplaintExtendedToComplaint = (
         team.drivers.map((driver) => driver.name)
       ),
     },
-    uploadedFiles: [], // Not provided in API response
     status: complaintExtended.status,
     bad: complaintExtended.bad,
     user: complaintExtended.user,
     teams: complaintExtended.teams,
+    presigned_links: complaintExtended.presigned_links || [],
   };
 };
 
@@ -117,7 +118,6 @@ const convertComplaintForCategoryToComplaint = (
     notify: {
       usernames: [],
     },
-    uploadedFiles: [],
     status: complaintForCategory.status,
     bad: complaintForCategory.bad,
     user: {
@@ -129,6 +129,7 @@ const convertComplaintForCategoryToComplaint = (
       ...team,
       drivers: [],
     })),
+    presigned_links: [],
   };
 };
 
@@ -155,7 +156,6 @@ const convertMapComplaintToComplaint = (
     notify: {
       usernames: [],
     },
-    uploadedFiles: [],
     status: mapComplaint.status === 'true',
     bad: mapComplaint.bad,
     user: {
@@ -171,6 +171,7 @@ const convertMapComplaintToComplaint = (
         drivers: [],
       },
     ],
+    presigned_links: [],
   };
 };
 

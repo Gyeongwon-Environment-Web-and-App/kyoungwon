@@ -24,7 +24,9 @@ const TransportManage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [popupType, setPopupType] = useState<'team' | 'driver' | null>(null);
+  const [popupType, setPopupType] = useState<
+    'team' | 'driver' | 'vehicle' | null
+  >(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<
     | 'vehicleInfo'
@@ -103,6 +105,11 @@ const TransportManage: React.FC = () => {
     setIsPopupOpen(true);
   };
 
+  const handleVehicleSubmit = () => {
+    setPopupType('vehicle');
+    setIsPopupOpen(true);
+  };
+
   const handlePopupFirstClick = () => {
     setIsPopupOpen(false);
     setPopupType(null);
@@ -110,6 +117,8 @@ const TransportManage: React.FC = () => {
       navigate('/transport/team/info');
     } else if (popupType === 'driver') {
       navigate('/transport/driver/info');
+    } else if (popupType === 'vehicle') {
+      navigate('/transport/vehicle/info');
     }
   };
 
@@ -126,7 +135,11 @@ const TransportManage: React.FC = () => {
           message={
             <>
               <p>
-                {popupType === 'team' ? '팀 정보 전송이' : '기사 정보 전송이'}
+                {popupType === 'team'
+                  ? '팀 정보 전송이'
+                  : popupType === 'driver'
+                    ? '기사 정보 전송이'
+                    : '차량 정보 전송이'}
               </p>
               <p>완료되었습니다.</p>
             </>
@@ -134,7 +147,11 @@ const TransportManage: React.FC = () => {
           yesNo={false}
           onFirstClick={handlePopupFirstClick}
           onFirstLabel={
-            popupType === 'team' ? '팀 정보 페이지' : '기사 정보 페이지'
+            popupType === 'team'
+              ? '팀 정보 페이지'
+              : popupType === 'driver'
+                ? '기사 정보 페이지'
+                : '차량 정보 페이지'
           }
           onSecondClick={handlePopupSecondClick}
           onSecondLabel={'홈으로 이동'}
@@ -198,7 +215,7 @@ const TransportManage: React.FC = () => {
             )}
             {activeTab === 'vehicleForm' && (
               <>
-                <VehicleForm />
+                <VehicleForm onSubmit={handleVehicleSubmit} />
               </>
             )}
             {activeTab === 'driverInfo' && (

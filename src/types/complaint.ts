@@ -28,6 +28,11 @@ export interface Team {
   drivers: Driver[];
 }
 
+export interface PresignedLink {
+  key: string;
+  url: string;
+}
+
 // Team interface for category API response (without drivers)
 export interface TeamForCategory {
   id: number;
@@ -40,7 +45,7 @@ export interface ComplaintExtended {
   datetime: string;
   content: string;
   status: boolean;
-  category: string; // Changed from categories array to single category string
+  category: string;
   type: string;
   route: string;
   bad: boolean;
@@ -48,6 +53,7 @@ export interface ComplaintExtended {
   address: Address;
   source: Source;
   teams: Team[];
+  presigned_links: PresignedLink[];
 }
 
 export interface ComplaintApiResponse {
@@ -86,6 +92,7 @@ export interface ComplaintForCategory {
     bad: boolean;
   };
   teams: TeamForCategory[];
+  files: string[];
 }
 
 export interface ComplaintByCategoryApiResponse {
@@ -115,11 +122,11 @@ export interface ComplaintFormData {
   };
   uploadedFiles: Array<{
     name: string;
-    url: string; // Cloudflare key (used for submission, empty until upload)
+    url: string;
     type: string;
     size: number;
-    previewUrl?: string; // Optional: local preview URL for images (for display only)
-    file?: File; // Original File object (for later upload in confirm stage)
+    previewUrl?: string;
+    file?: File;
   }>;
 }
 
@@ -144,17 +151,11 @@ export interface Complaint {
     latitude: number;
     longitude: number;
   };
-  uploadedFiles: Array<{
-    name: string;
-    url: string;
-    type: string;
-    size: number;
-  }>;
-  // Fields from API response
   status: boolean;
   bad: boolean;
   user: User;
   teams: Team[];
+  presigned_links: PresignedLink[];
 }
 
 export interface DriverInfo {

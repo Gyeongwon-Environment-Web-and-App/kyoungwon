@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -38,6 +38,7 @@ interface ComplaintListCardProps {
 
 const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
   const navigate = useNavigate();
+  const [imageError, setImageError] = useState(false);
 
   const handleCardClick = () => {
     // 페이지 이동 전 현재 경로 저장
@@ -47,13 +48,35 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
     navigate(`/map/overview/complaints/${complaint.id}`);
   };
 
+  // Get the first image from presigned_links array, fallback to sample
+  const getImageUrl = () => {
+    if (
+      complaint.presigned_links &&
+      complaint.presigned_links.length > 0 &&
+      !imageError
+    ) {
+      return complaint.presigned_links[0].url;
+    }
+    return sample;
+  };
+
+  const imageUrl = getImageUrl();
+
   return (
     <div className="cursor-pointer" onClick={handleCardClick}>
       <div className="flex items-center md:items-start gap-3 ">
         <img
-          src={sample}
-          alt="임시 이미지"
+          src={imageUrl}
+          alt={
+            complaint.presigned_links && complaint.presigned_links.length > 0
+              ? '민원 이미지'
+              : '임시 이미지'
+          }
           className="rounded-lg w-28 xsm:w-32 md:w-40"
+          onError={() => {
+            // If image fails to load, fallback to sample
+            setImageError(true);
+          }}
         />
         <div className="py-1">
           <div className="flex gap-1 overflow-hidden">

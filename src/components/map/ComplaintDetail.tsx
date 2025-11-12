@@ -275,7 +275,16 @@ const ComplaintDetail: React.FC = () => {
 
       {/* Complaint Details */}
       <div className="p-2 py-0 md:p-4 md:py-2">
-        <img src={sample} alt="샘플사진" className="rounded-sm mb-3 md:mb-6" />
+        <img
+          src={
+            selectedComplaint?.presigned_links &&
+            selectedComplaint.presigned_links.length > 0
+              ? selectedComplaint.presigned_links[0].url
+              : sample
+          }
+          alt="민원 이미지"
+          className="rounded-sm mb-3 md:mb-6"
+        />
         <div className="space-y-1 md:space-y-2">
           <div className="flex gap-2 items-center">
             <div className="flex gap-1">

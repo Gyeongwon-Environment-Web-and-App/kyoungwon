@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -9,9 +9,11 @@ import attention from '../../assets/icons/common/attention.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';
 import FileAttach from '../forms/FileAttach';
 
-// ! 수정 모드를 위해 interface로 prop 지정 필요
+interface VehicleFormProps {
+  onSubmit?: () => void;
+}
 
-const VehicleForm: React.FC = () => {
+const VehicleForm: React.FC<VehicleFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<VehicleFormData>({
     vehicleType: '',
     vehicleNum: '',
@@ -21,10 +23,87 @@ const VehicleForm: React.FC = () => {
     broken: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [, setSubmitError] = useState<string | null>(null);
+  const [originalFile, setOriginalFile] = useState<{
+    objectKey: string;
+    filenameOriginal: string;
+  } | null>(null);
   const { vehicleId } = useParams();
   const isEditMode = Boolean(vehicleId);
   const navigate = useNavigate();
+
+  // Fetch vehicle data when in edit mode
+  useEffect(() => {
+    const loadVehicleData = async () => {
+      if (!vehicleId) return;
+
+      try {
+        setIsLoading(true);
+        const response = await transportService.getVehicleById(
+          Number(vehicleId)
+        );
+
+        if (response.truck && response.truck.id) {
+          // Map API response to form data
+          // Note: getAllVehicles doesn't return files array, only presigned_link
+          setFormData({
+            vehicleType: response.truck.brand_nm || '',
+            vehicleNum: response.truck.truck_no || '',
+            ton: response.truck.size || '',
+            vehicleYear: response.truck.year || '',
+            uploadedFiles:
+              response.truck.files && response.truck.files.length > 0
+                ? [
+                    {
+                      url: response.truck.presigned_link || '',
+                      name: response.truck.files[0].filenameOriginal,
+                      type: response.truck.files[0].contentType || '',
+                      size: Number(response.truck.files[0].contentLength) || 0,
+                    },
+                  ]
+                : response.truck.presigned_link
+                  ? [
+                      {
+                        url: response.truck.presigned_link,
+                        name: 'existing-file', // Placeholder since filename not available from getAllVehicles
+                        type: '',
+                        size: 0,
+                      },
+                    ]
+                  : [],
+            broken: response.truck.status === 'broken',
+          });
+
+          // Store original file info for update
+          if (response.truck.files && response.truck.files.length > 0) {
+            setOriginalFile({
+              objectKey: response.truck.files[0].objectKey,
+              filenameOriginal: response.truck.files[0].filenameOriginal,
+            });
+          } else if (response.truck.presigned_link) {
+            // If we only have presigned_link, use it as objectKey
+            // This is a workaround since getAllVehicles doesn't provide full file info
+            setOriginalFile({
+              objectKey: response.truck.presigned_link,
+              filenameOriginal: 'existing-file',
+            });
+          }
+        } else {
+          alert(response.message || '차량 정보를 불러올 수 없습니다.');
+          navigate('/transport/vehicle/info');
+        }
+      } catch (error) {
+        console.error('차량 정보 불러오기 실패:', error);
+        alert('차량 정보를 불러오는 중 오류가 발생했습니다.');
+        navigate('/transport/vehicle/info');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadVehicleData();
+  }, [vehicleId, navigate]);
 
   const updateFormData = (updates: Partial<VehicleFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -47,38 +126,87 @@ const VehicleForm: React.FC = () => {
     setSubmitError(null);
 
     try {
-      const result = await transportService.createVehicle(formData);
-
-      if (result.truck) {
-        console.log('차량 등록 성공:', result.truck);
-        alert(`차량 등록이 완료되었습니다. 차량번호: ${result.truck.truck_no}`);
-        setFormData({
-          vehicleType: '',
-          vehicleNum: '',
-          ton: '',
-          vehicleYear: '',
-          uploadedFiles: [],
-          broken: false,
+      if (isEditMode && vehicleId) {
+        // Update mode
+        const result = await transportService.updateVehicle(Number(vehicleId), {
+          vehicleType: formData.vehicleType,
+          vehicleNum: formData.vehicleNum,
+          ton: formData.ton,
+          vehicleYear: formData.vehicleYear,
+          broken: formData.broken || false,
+          uploadedFiles: formData.uploadedFiles,
+          originalFile: originalFile || undefined,
         });
 
-        navigate('/transport/vehicle/info');
+        if (result.message) {
+          // Call onSubmit callback if provided (for popup)
+          if (onSubmit) {
+            onSubmit();
+          } else {
+            alert(result.message || '차량 수정이 완료되었습니다.');
+            navigate('/transport/vehicle/info');
+          }
+        } else {
+          setSubmitError(result.message || '차량 수정에 실패했습니다.');
+          alert(result.message || '차량 수정에 실패했습니다.');
+        }
       } else {
-        // Error from service
-        setSubmitError(result.message || '차량 등록에 실패했습니다.');
-        alert(result.message || '차량 등록에 실패했습니다.');
+        // Create mode
+        const result = await transportService.createVehicle(formData);
+
+        if (result.truck) {
+          console.log('차량 등록 성공:', result.truck);
+
+          // Step 5: Reset form
+          setFormData({
+            vehicleType: '',
+            vehicleNum: '',
+            ton: '',
+            vehicleYear: '',
+            uploadedFiles: [],
+            broken: false,
+          });
+
+          // Call onSubmit callback if provided (for popup)
+          if (onSubmit) {
+            onSubmit();
+          } else {
+            alert(
+              `차량 등록이 완료되었습니다. 차량번호: ${result.truck.truck_no}`
+            );
+            navigate('/transport/vehicle/info');
+          }
+        } else {
+          // Error from service
+          setSubmitError(result.message || '차량 등록에 실패했습니다.');
+          alert(result.message || '차량 등록에 실패했습니다.');
+        }
       }
     } catch (error) {
-      console.error('차량 등록 처리 중 오류:', error);
+      console.error(
+        isEditMode ? '차량 수정 처리 중 오류:' : '차량 등록 처리 중 오류:',
+        error
+      );
       const errorMessage =
         error instanceof Error
           ? error.message
-          : '차량 등록 중 오류가 발생했습니다.';
+          : isEditMode
+            ? '차량 수정 중 오류가 발생했습니다.'
+            : '차량 등록 중 오류가 발생했습니다.';
       setSubmitError(errorMessage);
       alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-gray-500">차량 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>

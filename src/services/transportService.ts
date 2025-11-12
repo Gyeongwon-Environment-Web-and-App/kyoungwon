@@ -38,10 +38,14 @@ function handleApiError<T extends { message: string }>(
         ...fallbackData,
       } as T;
     } else if (status === 404) {
+      let notFoundMessage = '항목을 찾을 수 없습니다.';
+      if (context.includes('기사')) {
+        notFoundMessage = '기사를 찾을 수 없습니다.';
+      } else if (context.includes('차량')) {
+        notFoundMessage = '차량을 찾을 수 없습니다.';
+      }
       return {
-        message: context.includes('기사')
-          ? '기사를 찾을 수 없습니다.'
-          : '팀을 찾을 수 없습니다.',
+        message: notFoundMessage,
         ...fallbackData,
       } as T;
     } else if (status === 500) {
@@ -329,6 +333,65 @@ export interface UpdateTeamApiResponse {
   message: string;
 }
 
+export interface VehiclesApiResponse {
+  message: string;
+  trucks: Array<{
+    id: number;
+    truck_no: string;
+    brand_nm: string;
+    size: string;
+    year: string;
+    status: string;
+    presigned_links?: Array<{
+      key: string;
+      url: string;
+    }>;
+    driver_name?: string;
+    driver_phone_no?: string;
+  }>;
+}
+
+export interface DeleteVehicleApiResponse {
+  message: string;
+}
+
+export interface VehicleApiResponseSingle {
+  message: string;
+  truck: {
+    id: number;
+    truck_no: string;
+    brand_nm: string;
+    size: string;
+    year: string;
+    status: string;
+    presigned_link?: string;
+    files?: Array<{
+      id: number;
+      objectKey: string;
+      contentType: string;
+      contentLength: string;
+      filenameOriginal: string;
+      createdAt: string;
+    }>;
+  };
+}
+
+export interface UpdateVehicleApiRequest {
+  truck_no: string;
+  brand_nm: string;
+  size: string;
+  year: string;
+  status: string;
+  objectInfo?: {
+    objectKey: string;
+    filenameOriginal: string;
+  };
+}
+
+export interface UpdateVehicleApiResponse {
+  message: string;
+}
+
 export const transportService = {
   createVehicle: async (
     formData: VehicleFormData
@@ -601,6 +664,147 @@ export const transportService = {
         error,
         '팀 수정 중 오류가 발생했습니다.',
         '팀 수정'
+      );
+    }
+  },
+
+  getAllVehicles: async (): Promise<VehiclesApiResponse> => {
+    try {
+      const response =
+        await apiClient.get<VehiclesApiResponse>('/tempTruck/getAll');
+
+      console.log('getAllVehicles:', response.data);
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<VehiclesApiResponse>(
+        error,
+        '차량 목록 불러오기 중 오류가 발생했습니다.',
+        '차량 목록 불러오기',
+        { trucks: [] }
+      );
+    }
+  },
+
+  deleteVehicle: async (id: number): Promise<DeleteVehicleApiResponse> => {
+    try {
+      const response = await apiClient.delete<DeleteVehicleApiResponse>(
+        `/tempTruck/delete/${id}`,
+        {
+          data: { id },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<DeleteVehicleApiResponse>(
+        error,
+        '차량 삭제 중 오류가 발생했습니다.',
+        '차량 삭제'
+      );
+    }
+  },
+
+  getVehicleById: async (id: number): Promise<VehicleApiResponseSingle> => {
+    try {
+      const response =
+        await apiClient.get<VehiclesApiResponse>('/tempTruck/getAll');
+
+      const truck = response.data.trucks?.find((t) => t.id === id);
+
+      if (!truck) {
+        return {
+          message: '차량을 찾을 수 없습니다.',
+          truck: {
+            id: 0,
+            truck_no: '',
+            brand_nm: '',
+            size: '',
+            year: '',
+            status: 'okay',
+            files: [],
+          },
+        };
+      }
+
+      // Extract presigned_link from presigned_links array if available
+      const presignedLink =
+        truck.presigned_links && truck.presigned_links.length > 0
+          ? truck.presigned_links[0].url
+          : undefined;
+
+      return {
+        message: response.data.message || '차량 정보를 불러왔습니다.',
+        truck: {
+          id: truck.id,
+          truck_no: truck.truck_no,
+          brand_nm: truck.brand_nm,
+          size: truck.size,
+          year: truck.year,
+          status: truck.status,
+          presigned_link: presignedLink,
+          files: [],
+        },
+      };
+    } catch (error) {
+      return handleApiError<VehicleApiResponseSingle>(
+        error,
+        '차량 정보 불러오기 중 오류가 발생했습니다.',
+        '차량 정보 불러오기',
+        {
+          truck: {
+            id: 0,
+            truck_no: '',
+            brand_nm: '',
+            size: '',
+            year: '',
+            status: 'okay',
+            files: [],
+          },
+        }
+      );
+    }
+  },
+
+  updateVehicle: async (
+    id: number,
+    formData: {
+      vehicleType: string;
+      vehicleNum: string;
+      ton: string;
+      vehicleYear: string;
+      broken: boolean;
+      uploadedFiles: Array<{ file?: File; url?: string; name?: string }>;
+      originalFile?: { objectKey: string; filenameOriginal: string };
+    }
+  ): Promise<UpdateVehicleApiResponse> => {
+    try {
+      const objectInfo = await processFileUpload(
+        formData.uploadedFiles,
+        'truck',
+        formData.originalFile
+      );
+
+      const apiData: UpdateVehicleApiRequest = {
+        truck_no: formData.vehicleNum,
+        brand_nm: formData.vehicleType,
+        size: formData.ton,
+        year: formData.vehicleYear,
+        status: formData.broken ? 'broken' : 'okay',
+        ...(objectInfo && { objectInfo }),
+      };
+
+      const response = await apiClient.patch<UpdateVehicleApiResponse>(
+        `/tempTruck/edit/${id}`,
+        apiData
+      );
+
+      return response.data;
+    } catch (error) {
+      return handleApiError<UpdateVehicleApiResponse>(
+        error,
+        '차량 수정 중 오류가 발생했습니다.',
+        '차량 수정'
       );
     }
   },
