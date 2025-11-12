@@ -582,6 +582,8 @@ export const transportService = {
       const response =
         await apiClient.get<TeamsApiResponse>('/tempTeam/getAll');
 
+        console.log('getAllTeams:', response.data);
+
       return response.data;
     } catch (error) {
       return handleApiError<TeamsApiResponse>(

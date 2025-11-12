@@ -72,7 +72,7 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               ? '민원 이미지'
               : '임시 이미지'
           }
-          className="rounded-lg w-28 xsm:w-32 md:w-40"
+          className="rounded-lg w-28 xsm:w-32 md:w-40 max-h-28"
           onError={() => {
             // If image fails to load, fallback to sample
             setImageError(true);
