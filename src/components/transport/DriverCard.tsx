@@ -72,7 +72,7 @@ const DriverCard: React.FC<DriverCardProps> = ({
         </div>
         <div className="flex items-center text-base md:text-lg">
           <img src={team} alt="소속팀" className="mr-1 h-6 w-6" />
-          <span className="">
+          <span className="break-keep break-normal">
             {teamNms.length > 0 ? teamNms.join(', ') : '소속 팀 없음'}
           </span>
         </div>

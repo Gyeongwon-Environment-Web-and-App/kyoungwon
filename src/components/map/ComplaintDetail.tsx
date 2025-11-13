@@ -56,6 +56,7 @@ const ComplaintDetail: React.FC = () => {
   const { complaintId } = useParams<{ complaintId: string }>();
   const [addressFrequency, setAddressFrequency] = useState<number | null>(null);
   const [phoneFrequency, setPhoneFrequency] = useState<number | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const navigate = useNavigate();
 
   const {
@@ -188,6 +189,9 @@ const ComplaintDetail: React.FC = () => {
         fetchPhoneFrequency(phoneNo);
       }
 
+      // Reset image index when complaint changes
+      setCurrentImageIndex(0);
+
       // setFrequencyLoading(false);
     }
   }, [selectedComplaint]);
@@ -275,16 +279,58 @@ const ComplaintDetail: React.FC = () => {
 
       {/* Complaint Details */}
       <div className="p-2 py-0 md:p-4 md:py-2">
-        <img
-          src={
-            selectedComplaint?.presigned_links &&
-            selectedComplaint.presigned_links.length > 0
-              ? selectedComplaint.presigned_links[0].url
-              : sample
-          }
-          alt="민원 이미지"
-          className="rounded-sm mb-3 md:mb-6"
-        />
+        <div className="relative mb-3 md:mb-6">
+          <img
+            src={
+              selectedComplaint?.presigned_links &&
+              selectedComplaint.presigned_links.length > 0
+                ? selectedComplaint.presigned_links[currentImageIndex]?.url ||
+                  sample
+                : sample
+            }
+            alt="민원 이미지"
+            className="rounded-sm w-full"
+          />
+          {selectedComplaint?.presigned_links &&
+            selectedComplaint.presigned_links.length > 1 && (
+              <>
+                <button
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-1.5 md:p-2 transition-all"
+                  onClick={() => {
+                    setCurrentImageIndex((prev) =>
+                      prev > 0
+                        ? prev - 1
+                        : selectedComplaint.presigned_links.length - 1
+                    );
+                  }}
+                  aria-label="이전 이미지"
+                >
+                  <img
+                    src={leftArrow}
+                    alt="이전 이미지"
+                    className="w-4 h-4 md:w-5 md:h-5"
+                  />
+                </button>
+                <button
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-1.5 md:p-2 transition-all"
+                  onClick={() => {
+                    setCurrentImageIndex((prev) =>
+                      prev < selectedComplaint.presigned_links.length - 1
+                        ? prev + 1
+                        : 0
+                    );
+                  }}
+                  aria-label="다음 이미지"
+                >
+                  <img
+                    src={rightArrow}
+                    alt="다음 이미지"
+                    className="w-4 h-4 md:w-5 md:h-5"
+                  />
+                </button>
+              </>
+            )}
+        </div>
         <div className="space-y-1 md:space-y-2">
           <div className="flex gap-2 items-center">
             <div className="flex gap-1">
