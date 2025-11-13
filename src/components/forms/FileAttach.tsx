@@ -76,7 +76,7 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
   return (
     <>
       {showLabel && (
-        <label className={`font-bold text-lg ${className1}`}>
+        <label className={`font-bold md:text-lg ${className1}`}>
           {labelText}
         </label>
       )}
