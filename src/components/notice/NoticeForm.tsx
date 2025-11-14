@@ -110,6 +110,7 @@ const NoticeForm: React.FC = () => {
                   updateFormData(updates);
                 }
               }}
+              objectCategory="notice"
             />
           </div>
           <div className="col-span-1"></div>

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { act, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -27,7 +27,6 @@ const TransportManage: React.FC = () => {
   const [popupType, setPopupType] = useState<
     'team' | 'driver' | 'vehicle' | null
   >(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<
     | 'vehicleInfo'
     | 'vehicleForm'
@@ -66,10 +65,9 @@ const TransportManage: React.FC = () => {
       | 'teamForm'
   ) => {
     if (
-      (activeTab === 'driverForm' ||
-        activeTab === 'vehicleForm' ||
-        activeTab === 'teamForm') &&
-      hasUnsavedChanges
+      activeTab === 'driverForm' ||
+      activeTab === 'vehicleForm' ||
+      activeTab === 'teamForm'
     ) {
       const confirmLeave = window.confirm(
         '작성 중인 내용이 있습니다. 정말 나가시겠습니까?'

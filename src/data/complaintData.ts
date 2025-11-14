@@ -4,7 +4,10 @@ import type { Complaint } from '../types/complaint';
 export const complaints: Complaint[] = [
   {
     id: 1,
-    address: '서울특별시 도봉구 방학로 101',
+    address: {
+      address: '서울특별시 도봉구 방학로 101',
+      region_nm: '방학동',
+    },
     datetime: '2025-01-15T09:38:00',
     category: '재활용',
     type: '재활용',
@@ -21,14 +24,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6634,
       longitude: 127.0444,
     },
-    uploadedFiles: [
-      {
-        name: 'styrofoam_photo.jpg',
-        url: '/uploads/styrofoam_photo.jpg',
-        type: 'image/jpeg',
-        size: 1024000,
-      },
-    ],
     status: true,
     bad: false,
     user: {
@@ -50,10 +45,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 2,
-    address: '서울특별시 도봉구 쌍문로 45길 20',
+    address: {
+      address: '서울특별시 도봉구 쌍문로 45길 20',
+      region_nm: '쌍문동',
+    },
     datetime: '2025-01-14T14:22:31',
     category: '음식물',
     type: '음식물',
@@ -70,7 +69,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6489,
       longitude: 127.0347,
     },
-    uploadedFiles: [],
     status: true,
     bad: true,
     user: {
@@ -92,10 +90,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 3,
-    address: '서울특별시 도봉구 시루봉로 59',
+    address: {
+      address: '서울특별시 도봉구 시루봉로 59',
+      region_nm: '시루봉동',
+    },
     datetime: '2025-01-13T07:15:12',
     category: '생활',
     type: '생활',
@@ -112,14 +114,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6589,
       longitude: 127.0398,
     },
-    uploadedFiles: [
-      {
-        name: 'large_waste.jpg',
-        url: '/uploads/large_waste.jpg',
-        type: 'image/jpeg',
-        size: 2048000,
-      },
-    ],
     status: true,
     bad: false,
     user: {
@@ -141,10 +135,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 4,
-    address: '서울특별시 도봉구 우이천로 152',
+    address: {
+      address: '서울특별시 도봉구 우이천로 152',
+      region_nm: '우이동',
+    },
     datetime: '2025-01-12T19:48:00',
     category: '생활',
     type: '생활',
@@ -161,14 +159,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6534,
       longitude: 127.0289,
     },
-    uploadedFiles: [
-      {
-        name: 'illegal_dumping.jpg',
-        url: '/uploads/illegal_dumping.jpg',
-        type: 'image/jpeg',
-        size: 1536000,
-      },
-    ],
     status: false,
     bad: true,
     user: {
@@ -190,10 +180,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 5,
-    address: '서울특별시 도봉구 도봉로 108가길 11',
+    address: {
+      address: '서울특별시 도봉구 도봉로 108가길 11',
+      region_nm: '도봉동',
+    },
     datetime: '2025-01-11T11:05:55',
     category: '음식물',
     type: '음식물',
@@ -210,7 +204,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6489,
       longitude: 127.0347,
     },
-    uploadedFiles: [],
     status: false,
     bad: false,
     user: {
@@ -232,10 +225,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 6,
-    address: '서울특별시 도봉구 덕릉로 63',
+    address: {
+      address: '서울특별시 도봉구 덕릉로 63',
+      region_nm: '덕릉동',
+    },
     datetime: '2025-01-10T06:30:00',
     category: '음식물',
     type: '음식물',
@@ -252,7 +249,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6534,
       longitude: 127.0289,
     },
-    uploadedFiles: [],
     status: false,
     bad: false,
     user: {
@@ -274,10 +270,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 7,
-    address: '서울특별시 도봉구 해등로 12길 9',
+    address: {
+      address: '서울특별시 도봉구 해등로 12길 9',
+      region_nm: '해등동',
+    },
     datetime: '2025-01-09T17:12:45',
     category: '생활',
     type: '생활',
@@ -294,7 +294,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6489,
       longitude: 127.0347,
     },
-    uploadedFiles: [],
     status: false,
     bad: false,
     user: {
@@ -316,10 +315,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 8,
-    address: '서울특별시 도봉구 해등로 198',
+    address: {
+      address: '서울특별시 도봉구 해등로 198',
+      region_nm: '해등동',
+    },
     datetime: '2025-01-08T20:12:45',
     category: '생활',
     type: '생활',
@@ -336,7 +339,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6489,
       longitude: 127.0347,
     },
-    uploadedFiles: [],
     status: true,
     bad: false,
     user: {
@@ -358,10 +360,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 9,
-    address: '서울특별시 도봉구 방학로 203',
+    address: {
+      address: '서울특별시 도봉구 방학로 203',
+      region_nm: '방학동',
+    },
     datetime: '2025-01-16T08:30:00',
     category: '재활용',
     type: '재활용',
@@ -378,7 +384,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6634,
       longitude: 127.0444,
     },
-    uploadedFiles: [],
     status: true,
     bad: false,
     user: {
@@ -400,10 +405,14 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
   {
     id: 10,
-    address: '서울특별시 도봉구 쌍문로 78길 15',
+    address: {
+      address: '서울특별시 도봉구 쌍문로 78길 15',
+      region_nm: '쌍문동',
+    },
     datetime: '2025-01-16T15:45:30',
     category: '음식물',
     type: '음식물',
@@ -420,7 +429,6 @@ export const complaints: Complaint[] = [
       latitude: 37.6489,
       longitude: 127.0347,
     },
-    uploadedFiles: [],
     status: true,
     bad: true,
     user: {
@@ -442,5 +450,6 @@ export const complaints: Complaint[] = [
         ],
       },
     ],
+    presigned_links: [],
   },
 ];

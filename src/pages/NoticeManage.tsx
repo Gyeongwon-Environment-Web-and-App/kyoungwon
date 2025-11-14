@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import NoticeDetail from '@/components/notice/NoticeDetail';
 import NoticeForm from '@/components/notice/NoticeForm';
 import NoticeTable from '@/components/notice/NoticeTable';
@@ -10,15 +11,13 @@ import NoticeTable from '@/components/notice/NoticeTable';
 import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';
 import PageLayout from '../components/layout/PageLayout';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { useAuthStore } from '../stores/authStore';
 
 const NoticeManage: React.FC = () => {
   const { logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isPopupOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'table' | 'detail' | 'form'>(
     'table'
   );
@@ -41,7 +40,7 @@ const NoticeManage: React.FC = () => {
   }, [location.pathname, setActiveTab]);
 
   const handleTabClick = (nextTab: 'table' | 'detail' | 'form') => {
-    if (activeTab === 'form' && nextTab !== 'form' && hasUnsavedChanges) {
+    if (activeTab === 'form' && nextTab !== 'form') {
       const confirmLeave = window.confirm(
         '작성 중인 공지사항이 있습니다. 정말 나가시겠습니까?'
       );
