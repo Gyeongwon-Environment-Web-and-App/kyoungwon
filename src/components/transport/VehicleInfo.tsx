@@ -62,7 +62,7 @@ const VehicleInfo: React.FC = () => {
   // Filter vehicles based on status filter
   const filteredVehicles = vehicles.filter((vehicle) => {
     if (focus === '운행중') {
-      return vehicle.status === 'okay';
+      return vehicle.status !== 'broken';
     } else if (focus === '고장') {
       return vehicle.status === 'broken';
     }
@@ -120,7 +120,7 @@ const VehicleInfo: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div>
+          {/* <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -138,7 +138,7 @@ const VehicleInfo: React.FC = () => {
                 <DropdownMenuItem className="">클린 / 수송</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </div> */}
         </div>
         <button
           className="py-1.5 px-2 md:px-5 rounded-lg bg-light-green hover:bg-[#009d10] font-bold text-white"

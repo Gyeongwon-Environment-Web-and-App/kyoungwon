@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,8 @@ import { Button } from '../ui/button';
 import TeamCard from './TeamCard';
 
 const TeamInfo: React.FC = () => {
+  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
+
   const navigate = useNavigate();
   const { teams, isLoading, fetchError, refetch } = useTeams();
 
@@ -33,6 +35,16 @@ const TeamInfo: React.FC = () => {
       alert('팀 삭제 중 오류가 발생했습니다.');
     }
   };
+
+  const filteredTeams = useMemo(() => {
+    if (selectedCategory === '전체') {
+      return teams;
+    }
+    if (selectedCategory === '클린 / 수송') {
+      return teams.filter(team => team.category === '클린' || team.category === '수송');
+    }
+    return teams.filter(team => team.category === selectedCategory);
+  }, [teams, selectedCategory]);
 
   if (isLoading) {
     return (
@@ -62,7 +74,7 @@ const TeamInfo: React.FC = () => {
     <div>
       <div className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 md:gap-4">
-          <div>
+          {/* <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -78,7 +90,7 @@ const TeamInfo: React.FC = () => {
                 <DropdownMenuItem className="">등록 순</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </div> */}
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -86,28 +98,29 @@ const TeamInfo: React.FC = () => {
                   variant="outline"
                   className="font-bold border border-light-border justify-between"
                 >
-                  수거 종류
+                  {selectedCategory === '전체' ? '수거 종류' : selectedCategory}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full text-center">
-                <DropdownMenuItem className="">재활용</DropdownMenuItem>
-                <DropdownMenuItem className="">생활</DropdownMenuItem>
-                <DropdownMenuItem className="">음식물</DropdownMenuItem>
-                <DropdownMenuItem className="">클린 / 수송</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedCategory('전체')} className="">전체</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedCategory('재활용')} className="">재활용</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedCategory('생활')} className="">생활</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedCategory('음식물')} className="">음식물</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedCategory('클린 / 수송')} className="">클린 / 수송</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
         <button
           className="py-1.5 px-2 md:px-5 rounded-lg bg-light-green hover:bg-[#009d10] font-bold text-white"
-          onClick={() => navigate('/transport/driver/form')}
+          onClick={() => navigate('/transport/team/form')}
         >
           등록하기
         </button>
       </div>
       <div className="md:grid md:grid-cols-[1fr_1fr_1fr] gap-6">
-        {teams.map((team, index) => (
+        {filteredTeams.map((team, index) => (
           <div key={team.teamName || index} className="col-span-1 mb-6 md:mb-0">
             <TeamCard
               key={index}

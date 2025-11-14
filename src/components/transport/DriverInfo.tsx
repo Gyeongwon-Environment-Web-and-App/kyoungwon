@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,10 @@ import { Button } from '../ui/button';
 import DriverCard from './DriverCard';
 
 const DriverInfo: React.FC = () => {
+  const [sortOrder, setSortOrder] = useState<'가나다 순' | '등록 순'>(
+    '등록 순'
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const navigate = useNavigate();
   const { drivers, isLoading, fetchError, refetch } = useDrivers();
 
@@ -33,6 +37,30 @@ const DriverInfo: React.FC = () => {
       alert('기사 삭제 중 오류가 발생했습니다.');
     }
   };
+
+  const filteredAndSortedDrivers = useMemo(() => {
+    // First filter by category
+    let result = drivers;
+    if (selectedCategory !== '전체') {
+      if (selectedCategory === '클린 / 수송') {
+        result = drivers.filter((driver) =>
+          driver.teamNms.some(
+            (team) => team.includes('클린') || team.includes('수송')
+          )
+        );
+      } else {
+        result = drivers.filter((driver) =>
+          driver.teamNms.some((team) => team.includes(selectedCategory))
+        );
+      }
+    }
+
+    // Then sort
+    if (sortOrder === '가나다 순') {
+      return [...result].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
+    return result; // 등록 순 - original order
+  }, [drivers, selectedCategory, sortOrder]);
 
   if (isLoading) {
     return (
@@ -69,13 +97,17 @@ const DriverInfo: React.FC = () => {
                   variant="outline"
                   className="font-bold border border-light-border justify-between"
                 >
-                  정렬 방식
+                  {sortOrder}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full text-center">
-                <DropdownMenuItem className="">가나다 순</DropdownMenuItem>
-                <DropdownMenuItem className="">등록 순</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOrder('가나다 순')}>
+                  가나다 순
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOrder('등록 순')}>
+                  등록 순
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -86,15 +118,41 @@ const DriverInfo: React.FC = () => {
                   variant="outline"
                   className="font-bold border border-light-border justify-between"
                 >
-                  수거 종류
+                  {selectedCategory === '전체' ? '수거 종류' : selectedCategory}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full text-center">
-                <DropdownMenuItem className="">재활용</DropdownMenuItem>
-                <DropdownMenuItem className="">생활</DropdownMenuItem>
-                <DropdownMenuItem className="">음식물</DropdownMenuItem>
-                <DropdownMenuItem className="">클린 / 수송</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedCategory('전체')}
+                  className=""
+                >
+                  전체
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedCategory('재활용')}
+                  className=""
+                >
+                  재활용
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedCategory('생활')}
+                  className=""
+                >
+                  생활
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedCategory('음식물')}
+                  className=""
+                >
+                  음식물
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedCategory('클린 / 수송')}
+                  className=""
+                >
+                  클린 / 수송
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -107,7 +165,7 @@ const DriverInfo: React.FC = () => {
         </button>
       </div>
       <div className="md:grid md:grid-cols-[1fr_1fr_1fr_1fr] gap-6">
-        {drivers.map((driver) => {
+        {filteredAndSortedDrivers.map((driver) => {
           return (
             <div key={driver.id} className="col-span-1 mb-6 md:mb-0">
               <DriverCard
