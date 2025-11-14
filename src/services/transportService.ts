@@ -514,32 +514,67 @@ export const transportService = {
   updateDriver: async (
     id: number,
     formData: {
-      category: string;
-      team_nm: string;
-      official_region_nms: string[];
-      truck_nos: string[];
-      uploadedFiles: Array<{ file?: File; url?: string; name?: string }>;
+      category?: string;
+      team_nm?: string;
+      official_region_nms?: string[];
+      truck_nos?: string[];
+      uploadedFiles?: Array<{ file?: File; url?: string; name?: string }>;
       originalFile?: { objectKey: string; filenameOriginal: string };
     }
   ): Promise<UpdateDriverApiResponse> => {
     try {
-      const objectInfo = await processFileUpload(
-        formData.uploadedFiles,
-        'driver',
-        formData.originalFile
-      );
+      const apiData: Partial<UpdateDriverApiRequest> = {};
 
-      const apiData: UpdateDriverApiRequest = {
-        category: formData.category,
-        team_nm: formData.team_nm,
-        official_region_nms: formData.official_region_nms,
-        truck_nos: formData.truck_nos,
-        ...(objectInfo && { objectInfo }),
-      };
+      // Only include fields that are provided
+      if (formData.category !== undefined) {
+        apiData.category = formData.category;
+      }
+      if (formData.team_nm !== undefined) {
+        apiData.team_nm = formData.team_nm;
+      }
+      if (formData.official_region_nms !== undefined) {
+        apiData.official_region_nms = formData.official_region_nms;
+      }
+      if (formData.truck_nos !== undefined) {
+        apiData.truck_nos = formData.truck_nos;
+      }
+
+      // Handle file upload if provided
+      if (formData.uploadedFiles) {
+        const objectInfo = await processFileUpload(
+          formData.uploadedFiles,
+          'driver',
+          formData.originalFile
+        );
+        if (objectInfo) {
+          apiData.objectInfo = objectInfo;
+        }
+      }
+
+      // Remove undefined fields to send only changed fields
+      const cleanedApiData: Partial<UpdateDriverApiRequest> = {};
+      if (apiData.category !== undefined)
+        cleanedApiData.category = apiData.category;
+      if (apiData.team_nm !== undefined)
+        cleanedApiData.team_nm = apiData.team_nm;
+      if (apiData.official_region_nms !== undefined)
+        cleanedApiData.official_region_nms = apiData.official_region_nms;
+      if (apiData.truck_nos !== undefined)
+        cleanedApiData.truck_nos = apiData.truck_nos;
+      if (apiData.objectInfo !== undefined)
+        cleanedApiData.objectInfo = apiData.objectInfo;
+
+      console.log('🟢 transportService.updateDriver - Final API Request:', {
+        endpoint: `/tempDriver/edit/${id}`,
+        method: 'PATCH',
+        payload: cleanedApiData,
+        id: id,
+        hasBearerToken: !!localStorage.getItem('userToken'),
+      });
 
       const response = await apiClient.patch<UpdateDriverApiResponse>(
         `/tempDriver/edit/${id}`,
-        apiData
+        cleanedApiData
       );
 
       return response.data;
@@ -582,7 +617,7 @@ export const transportService = {
       const response =
         await apiClient.get<TeamsApiResponse>('/tempTeam/getAll');
 
-        console.log('getAllTeams:', response.data);
+      console.log('getAllTeams:', response.data);
 
       return response.data;
     } catch (error) {
@@ -644,20 +679,52 @@ export const transportService = {
 
   updateTeam: async (
     id: number,
-    formData: TeamFormData
+    formData: TeamFormData | Partial<UpdateTeamApiRequest>
   ): Promise<UpdateTeamApiResponse> => {
     try {
-      const apiData: UpdateTeamApiRequest = {
-        category: formData.category,
-        team_nm: formData.teamName,
-        official_region_nms: formData.regions,
-        truck_nos: formData.selectedVehicles,
-        driver_nms: formData.selectedDrivers,
-      };
+      // Check if formData is already in API format (partial update)
+      // Check for any API field name (team_nm, category, official_region_nms, truck_nos, driver_nms)
+      const isPartialUpdate =
+        'team_nm' in formData ||
+        'category' in formData ||
+        'official_region_nms' in formData ||
+        'truck_nos' in formData ||
+        'driver_nms' in formData;
+
+      const apiData: Partial<UpdateTeamApiRequest> = isPartialUpdate
+        ? (formData as Partial<UpdateTeamApiRequest>)
+        : {
+            category: (formData as TeamFormData).category,
+            team_nm: (formData as TeamFormData).teamName,
+            official_region_nms: (formData as TeamFormData).regions,
+            truck_nos: (formData as TeamFormData).selectedVehicles,
+            driver_nms: (formData as TeamFormData).selectedDrivers,
+          };
+
+      // Remove undefined fields to send only changed fields
+      const cleanedApiData: Partial<UpdateTeamApiRequest> = {};
+      if (apiData.category !== undefined)
+        cleanedApiData.category = apiData.category;
+      if (apiData.team_nm !== undefined)
+        cleanedApiData.team_nm = apiData.team_nm;
+      if (apiData.official_region_nms !== undefined)
+        cleanedApiData.official_region_nms = apiData.official_region_nms;
+      if (apiData.truck_nos !== undefined)
+        cleanedApiData.truck_nos = apiData.truck_nos;
+      if (apiData.driver_nms !== undefined)
+        cleanedApiData.driver_nms = apiData.driver_nms;
+
+      console.log('🔵 transportService.updateTeam - Final API Request:', {
+        endpoint: `/tempTeam/edit/${id}`,
+        method: 'PATCH',
+        payload: cleanedApiData,
+        id: id,
+        hasBearerToken: !!localStorage.getItem('userToken'),
+      });
 
       const response = await apiClient.patch<UpdateTeamApiResponse>(
         `/tempTeam/edit/${id}`,
-        apiData
+        cleanedApiData
       );
 
       return response.data;
@@ -770,35 +837,121 @@ export const transportService = {
 
   updateVehicle: async (
     id: number,
-    formData: {
-      vehicleType: string;
-      vehicleNum: string;
-      ton: string;
-      vehicleYear: string;
-      broken: boolean;
-      uploadedFiles: Array<{ file?: File; url?: string; name?: string }>;
-      originalFile?: { objectKey: string; filenameOriginal: string };
-    }
+    formData:
+      | {
+          vehicleType: string;
+          vehicleNum: string;
+          ton: string;
+          vehicleYear: string;
+          broken: boolean;
+          uploadedFiles: Array<{ file?: File; url?: string; name?: string }>;
+          originalFile?: { objectKey: string; filenameOriginal: string };
+        }
+      | (Partial<UpdateVehicleApiRequest> & {
+          uploadedFiles?: Array<{
+            file?: File;
+            url?: string;
+            name?: string;
+          }>;
+          originalFile?: { objectKey: string; filenameOriginal: string };
+        })
   ): Promise<UpdateVehicleApiResponse> => {
     try {
-      const objectInfo = await processFileUpload(
-        formData.uploadedFiles,
-        'truck',
-        formData.originalFile
-      );
+      // Check if formData is already in API format (partial update)
+      const isPartialUpdate =
+        'truck_no' in formData ||
+        'brand_nm' in formData ||
+        'size' in formData ||
+        'year' in formData ||
+        'status' in formData;
 
-      const apiData: UpdateVehicleApiRequest = {
-        truck_no: formData.vehicleNum,
-        brand_nm: formData.vehicleType,
-        size: formData.ton,
-        year: formData.vehicleYear,
-        status: formData.broken ? 'broken' : 'okay',
-        ...(objectInfo && { objectInfo }),
-      };
+      const apiData: Partial<UpdateVehicleApiRequest> = {};
+
+      if (isPartialUpdate) {
+        // Handle partial update (API format)
+        const partialData = formData as Partial<UpdateVehicleApiRequest> & {
+          uploadedFiles?: Array<{ file?: File; url?: string; name?: string }>;
+          originalFile?: { objectKey: string; filenameOriginal: string };
+        };
+
+        if (partialData.truck_no !== undefined) {
+          apiData.truck_no = partialData.truck_no;
+        }
+        if (partialData.brand_nm !== undefined) {
+          apiData.brand_nm = partialData.brand_nm;
+        }
+        if (partialData.size !== undefined) {
+          apiData.size = partialData.size;
+        }
+        if (partialData.year !== undefined) {
+          apiData.year = partialData.year;
+        }
+        if (partialData.status !== undefined) {
+          apiData.status = partialData.status;
+        }
+
+        // Handle file upload if provided
+        if (partialData.uploadedFiles) {
+          const objectInfo = await processFileUpload(
+            partialData.uploadedFiles,
+            'truck',
+            partialData.originalFile
+          );
+          if (objectInfo) {
+            apiData.objectInfo = objectInfo;
+          }
+        }
+      } else {
+        // Handle full update (form format)
+        const fullData = formData as {
+          vehicleType: string;
+          vehicleNum: string;
+          ton: string;
+          vehicleYear: string;
+          broken: boolean;
+          uploadedFiles: Array<{ file?: File; url?: string; name?: string }>;
+          originalFile?: { objectKey: string; filenameOriginal: string };
+        };
+
+        const objectInfo = await processFileUpload(
+          fullData.uploadedFiles,
+          'truck',
+          fullData.originalFile
+        );
+
+        apiData.truck_no = fullData.vehicleNum;
+        apiData.brand_nm = fullData.vehicleType;
+        apiData.size = fullData.ton;
+        apiData.year = fullData.vehicleYear;
+        apiData.status = fullData.broken ? 'broken' : 'okay';
+        if (objectInfo) {
+          apiData.objectInfo = objectInfo;
+        }
+      }
+
+      // Remove undefined fields to send only changed fields
+      const cleanedApiData: Partial<UpdateVehicleApiRequest> = {};
+      if (apiData.truck_no !== undefined)
+        cleanedApiData.truck_no = apiData.truck_no;
+      if (apiData.brand_nm !== undefined)
+        cleanedApiData.brand_nm = apiData.brand_nm;
+      if (apiData.size !== undefined) cleanedApiData.size = apiData.size;
+      if (apiData.year !== undefined) cleanedApiData.year = apiData.year;
+      if (apiData.status !== undefined) cleanedApiData.status = apiData.status;
+      if (apiData.objectInfo !== undefined)
+        cleanedApiData.objectInfo = apiData.objectInfo;
+
+      console.log('🟡 transportService.updateVehicle - Final API Request:', {
+        endpoint: `/tempTruck/edit/${id}`,
+        method: 'PATCH',
+        payload: cleanedApiData,
+        id: id,
+        hasBearerToken: !!localStorage.getItem('userToken'),
+      });
 
       const response = await apiClient.patch<UpdateVehicleApiResponse>(
         `/tempTruck/edit/${id}`,
-        apiData
+        cleanedApiData
       );
 
       return response.data;

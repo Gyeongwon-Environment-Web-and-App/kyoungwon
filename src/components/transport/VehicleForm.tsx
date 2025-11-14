@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { transportService } from '@/services/transportService';
 import type { VehicleFormData } from '@/types/transport';
+import { computeDiffWithMapping } from '@/utils/computeDiff';
 
 import attention from '../../assets/icons/common/attention.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';
@@ -22,6 +23,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ onSubmit }) => {
     uploadedFiles: [],
     broken: false,
   });
+  const [originalData, setOriginalData] = useState<VehicleFormData | null>(
+    null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [, setSubmitError] = useState<string | null>(null);
@@ -47,7 +51,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ onSubmit }) => {
         if (response.truck && response.truck.id) {
           // Map API response to form data
           // Note: getAllVehicles doesn't return files array, only presigned_link
-          setFormData({
+          const loadedData: VehicleFormData = {
             vehicleType: response.truck.brand_nm || '',
             vehicleNum: response.truck.truck_no || '',
             ton: response.truck.size || '',
@@ -73,7 +77,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ onSubmit }) => {
                     ]
                   : [],
             broken: response.truck.status === 'broken',
-          });
+          };
+          setFormData(loadedData);
+          // Store original data for diff comparison
+          setOriginalData(loadedData);
 
           // Store original file info for update
           if (response.truck.files && response.truck.files.length > 0) {
@@ -126,17 +133,55 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ onSubmit }) => {
     setSubmitError(null);
 
     try {
-      if (isEditMode && vehicleId) {
-        // Update mode
-        const result = await transportService.updateVehicle(Number(vehicleId), {
-          vehicleType: formData.vehicleType,
-          vehicleNum: formData.vehicleNum,
-          ton: formData.ton,
-          vehicleYear: formData.vehicleYear,
-          broken: formData.broken || false,
-          uploadedFiles: formData.uploadedFiles,
-          originalFile: originalFile || undefined,
+      if (isEditMode && vehicleId && originalData) {
+        // Compute diff to only send changed fields
+        const fieldMap = {
+          vehicleType: 'brand_nm',
+          vehicleNum: 'truck_no',
+          ton: 'size',
+          vehicleYear: 'year',
+          broken: 'status',
+        } as const;
+
+        const changes = computeDiffWithMapping<
+          VehicleFormData,
+          import('@/services/transportService').UpdateVehicleApiRequest
+        >(originalData, formData, fieldMap);
+
+        // Transform status field if broken changed
+        if ('status' in changes) {
+          changes.status = formData.broken ? 'broken' : 'okay';
+        }
+
+        // Check if file changed
+        const fileChanged =
+          JSON.stringify(formData.uploadedFiles) !==
+          JSON.stringify(originalData.uploadedFiles);
+
+        // Only proceed if there are changes
+        if (Object.keys(changes).length === 0 && !fileChanged) {
+          alert('변경된 내용이 없습니다.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const vehicleUpdatePayload = {
+          ...changes,
+          ...(fileChanged && {
+            uploadedFiles: formData.uploadedFiles,
+            originalFile: originalFile || undefined,
+          }),
+        };
+
+        console.log('🟡 VehicleForm - Update Request Payload:', {
+          vehicleId: Number(vehicleId),
+          payload: vehicleUpdatePayload,
         });
+
+        const result = await transportService.updateVehicle(
+          Number(vehicleId),
+          vehicleUpdatePayload
+        );
 
         if (result.message) {
           // Call onSubmit callback if provided (for popup)

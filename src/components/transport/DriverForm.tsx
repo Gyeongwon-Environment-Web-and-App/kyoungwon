@@ -12,6 +12,7 @@ import {
 import { useTeams } from '@/hooks/useTeams';
 import { transportService } from '@/services/transportService';
 import type { DriverFormData } from '@/types/transport';
+import { computeDiff } from '@/utils/computeDiff';
 
 import { validatePhoneNumber } from '../../utils/validateDash';
 import FileAttach from '../forms/FileAttach';
@@ -28,6 +29,7 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
     selectedTeam: [],
     uploadedFiles: [],
   });
+  const [originalData, setOriginalData] = useState<DriverFormData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [, setSubmitError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
 
         if (response.driver && response.driver.id) {
           // Map API response to form data
-          setFormData({
+          const loadedData: DriverFormData = {
             name: response.driver.name || '',
             phoneNum: response.driver.phone_no || '',
             selectedTeam: response.driver.team_nms || [],
@@ -68,7 +70,10 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
                     },
                   ]
                 : [],
-          });
+          };
+          setFormData(loadedData);
+          // Store original data for diff comparison
+          setOriginalData(loadedData);
 
           // Store original file info for update
           if (response.driver.files && response.driver.files.length > 0) {
@@ -119,23 +124,83 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
 
     try {
       // Step 4: Call the service (create or update based on mode)
-      if (isEditMode && driverId) {
-        // Extract category and team_nm from first selectedTeam
-        // Format: "category teamName" or just "teamName"
-        const firstTeam = formData.selectedTeam[0] || '';
-        const teamParts = firstTeam.split(' ');
-        const category = teamParts.length > 1 ? teamParts[0] : '';
-        const team_nm =
-          teamParts.length > 1 ? teamParts.slice(1).join(' ') : firstTeam;
+      if (isEditMode && driverId && originalData) {
+        // Compute diff for form data fields
+        const formChanges = computeDiff(originalData, formData);
 
-        const result = await transportService.updateDriver(Number(driverId), {
-          category,
-          team_nm,
-          official_region_nms: [], // TODO: Get from team data if available
-          truck_nos: [], // TODO: Get from team data if available
-          uploadedFiles: formData.uploadedFiles,
-          originalFile: originalFile || undefined,
+        // Build partial update object
+        const updateData: Partial<{
+          category: string;
+          team_nm: string;
+          official_region_nms: string[];
+          truck_nos: string[];
+          uploadedFiles: typeof formData.uploadedFiles;
+          originalFile: typeof originalFile;
+        }> = {};
+
+        // Check if selectedTeam changed
+        if ('selectedTeam' in formChanges) {
+          // Extract category and team_nm from first selectedTeam
+          // Format: "category teamName" or just "teamName"
+          const firstTeam = formData.selectedTeam[0] || '';
+          const teamParts = firstTeam.split(' ');
+          const category = teamParts.length > 1 ? teamParts[0] : '';
+          const team_nm =
+            teamParts.length > 1 ? teamParts.slice(1).join(' ') : firstTeam;
+
+          updateData.category = category;
+          updateData.team_nm = team_nm;
+          // TODO: Get from team data if available
+          updateData.official_region_nms = [];
+          updateData.truck_nos = [];
+        }
+
+        // Check if file changed
+        const fileChanged =
+          'uploadedFiles' in formChanges ||
+          (formData.uploadedFiles.length > 0 &&
+            JSON.stringify(formData.uploadedFiles) !==
+              JSON.stringify(originalData.uploadedFiles));
+
+        if (fileChanged) {
+          updateData.uploadedFiles = formData.uploadedFiles;
+        }
+
+        // Only proceed if there are changes
+        if (Object.keys(updateData).length === 0 && !fileChanged) {
+          alert('변경된 내용이 없습니다.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const driverUpdatePayload = {
+          ...(updateData.category !== undefined && {
+            category: updateData.category,
+          }),
+          ...(updateData.team_nm !== undefined && {
+            team_nm: updateData.team_nm,
+          }),
+          ...(updateData.official_region_nms !== undefined && {
+            official_region_nms: updateData.official_region_nms,
+          }),
+          ...(updateData.truck_nos !== undefined && {
+            truck_nos: updateData.truck_nos,
+          }),
+          ...(fileChanged && {
+            uploadedFiles: formData.uploadedFiles,
+            originalFile: originalFile || undefined,
+          }),
+        };
+
+        console.log('🟢 DriverForm - Update Request Payload:', {
+          driverId: Number(driverId),
+          payload: driverUpdatePayload,
         });
+
+        const result = await transportService.updateDriver(
+          Number(driverId),
+          driverUpdatePayload
+        );
 
         if (result.message) {
           // Call onSubmit callback if provided (for popup)

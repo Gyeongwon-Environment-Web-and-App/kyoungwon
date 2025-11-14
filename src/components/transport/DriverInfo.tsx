@@ -45,7 +45,15 @@ const DriverInfo: React.FC = () => {
   if (fetchError) {
     return (
       <div className="flex justify-center items-center py-12">
-        <p className="text-red-500">오류: {fetchError}</p>
+        <p className="text-red-500">오류가 발생했습니다</p>
+      </div>
+    );
+  }
+
+  if (!isLoading && !fetchError && drivers.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-gray-500">기사 정보가 없습니다</p>
       </div>
     );
   }
@@ -100,7 +108,6 @@ const DriverInfo: React.FC = () => {
       </div>
       <div className="md:grid md:grid-cols-[1fr_1fr_1fr_1fr] gap-6">
         {drivers.map((driver) => {
-
           return (
             <div key={driver.id} className="col-span-1 mb-6 md:mb-0">
               <DriverCard

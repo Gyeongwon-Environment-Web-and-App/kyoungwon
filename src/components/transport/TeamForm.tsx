@@ -13,6 +13,7 @@ import { useDrivers } from '@/hooks/useDrivers';
 import { useVehicles } from '@/hooks/useVehicles';
 import { transportService } from '@/services/transportService';
 import type { TeamFormData } from '@/types/transport';
+import { computeDiffWithMapping } from '@/utils/computeDiff';
 
 import { Button } from '../ui/button';
 
@@ -28,6 +29,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
     selectedVehicles: [],
     selectedDrivers: [],
   });
+  const [originalData, setOriginalData] = useState<TeamFormData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [, setSubmitError] = useState<string | null>(null);
@@ -57,13 +59,16 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
 
         if (response.team && response.team.id) {
           // Map API response to form data
-          setFormData({
+          const loadedData: TeamFormData = {
             category: response.team.category || '',
             teamName: response.team.team_nm || '',
             regions: response.team.official_regions || [],
             selectedVehicles: response.team.trucks || [],
             selectedDrivers: response.team.drivers.map((d) => d.name) || [],
-          });
+          };
+          setFormData(loadedData);
+          // Store original data for diff comparison
+          setOriginalData(loadedData);
         } else {
           alert(response.message || '팀 정보를 불러올 수 없습니다.');
           navigate('/transport/team/info');
@@ -103,10 +108,36 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
 
     try {
       // Step 3: Call the service (create or update based on mode)
-      if (isEditMode && teamId) {
+      if (isEditMode && teamId && originalData) {
+        // Compute diff to only send changed fields
+        const fieldMap = {
+          category: 'category',
+          teamName: 'team_nm',
+          regions: 'official_region_nms',
+          selectedVehicles: 'truck_nos',
+          selectedDrivers: 'driver_nms',
+        } as const;
+
+        const changes = computeDiffWithMapping<
+          TeamFormData,
+          import('@/services/transportService').UpdateTeamApiRequest
+        >(originalData, formData, fieldMap);
+
+        // Only proceed if there are changes
+        if (Object.keys(changes).length === 0) {
+          alert('변경된 내용이 없습니다.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        console.log('🔵 TeamForm - Update Request Payload:', {
+          teamId: Number(teamId),
+          changes,
+        });
+
         const result = await transportService.updateTeam(
           Number(teamId),
-          formData
+          changes
         );
 
         // Step 4: Handle success

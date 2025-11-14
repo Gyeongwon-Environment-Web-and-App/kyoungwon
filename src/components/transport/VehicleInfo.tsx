@@ -46,7 +46,15 @@ const VehicleInfo: React.FC = () => {
   if (fetchError) {
     return (
       <div className="flex justify-center items-center py-12">
-        <p className="text-red-500">오류: {fetchError}</p>
+        <p className="text-red-500">오류가 발생했습니다</p>
+      </div>
+    );
+  }
+
+  if (!isLoading && !fetchError && vehicles.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <p className="text-gray-500">차량 정보가 없습니다</p>
       </div>
     );
   }
