@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { teams as teamList } from '@/data/vehicleData';
+import { useTeams } from '@/hooks/useTeams';
 import { transportService } from '@/services/transportService';
 import type { DriverFormData } from '@/types/transport';
 
@@ -35,9 +35,12 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
     objectKey: string;
     filenameOriginal: string;
   } | null>(null);
+
   const { driverId } = useParams();
   const isEditMode = Boolean(driverId);
   const navigate = useNavigate();
+
+  const { teams: teamList, isLoading: teamIsLoading, fetchError } = useTeams();
 
   // Fetch driver data when in edit mode
   useEffect(() => {
@@ -267,29 +270,30 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full">
-                {teamList.map((t) => (
+                {teamIsLoading ? (
                   <DropdownMenuItem
-                    key={t.teamName}
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      const teamValue = `${t.category} ${t.teamName}`;
-                      setFormData((prev) => ({
-                        ...prev,
-                        selectedTeam: prev.selectedTeam.includes(teamValue)
-                          ? prev.selectedTeam.filter((t) => t !== teamValue)
-                          : [...prev.selectedTeam, teamValue],
-                      }));
-                    }}
-                    className="text-base"
+                    disabled
+                    className="text-base text-gray-500"
                   >
-                    <input
-                      type="checkbox"
-                      className="mr-2 text-base"
-                      checked={formData.selectedTeam.includes(
-                        `${t.category} ${t.teamName}`
-                      )}
-                      onChange={(e) => {
-                        e.stopPropagation(); // Prevent triggering onSelect
+                    팀 정보 불러오는 중...
+                  </DropdownMenuItem>
+                ) : fetchError ? (
+                  <DropdownMenuItem disabled className="text-base text-red-500">
+                    오류가 발생했습니다.
+                  </DropdownMenuItem>
+                ) : teamList.length === 0 ? (
+                  <DropdownMenuItem
+                    disabled
+                    className="text-base text-gray-500"
+                  >
+                    팀 정보가 없습니다.
+                  </DropdownMenuItem>
+                ) : (
+                  teamList.map((t) => (
+                    <DropdownMenuItem
+                      key={t.teamName}
+                      onSelect={(e) => {
+                        e.preventDefault();
                         const teamValue = `${t.category} ${t.teamName}`;
                         setFormData((prev) => ({
                           ...prev,
@@ -298,10 +302,29 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
                             : [...prev.selectedTeam, teamValue],
                         }));
                       }}
-                    />
-                    {`${t.category} ${t.teamName}`}
-                  </DropdownMenuItem>
-                ))}
+                      className="text-base"
+                    >
+                      <input
+                        type="checkbox"
+                        className="mr-2 text-base"
+                        checked={formData.selectedTeam.includes(
+                          `${t.category} ${t.teamName}`
+                        )}
+                        onChange={(e) => {
+                          e.stopPropagation(); // Prevent triggering onSelect
+                          const teamValue = `${t.category} ${t.teamName}`;
+                          setFormData((prev) => ({
+                            ...prev,
+                            selectedTeam: prev.selectedTeam.includes(teamValue)
+                              ? prev.selectedTeam.filter((t) => t !== teamValue)
+                              : [...prev.selectedTeam, teamValue],
+                          }));
+                        }}
+                      />
+                      {`${t.category} ${t.teamName}`}
+                    </DropdownMenuItem>
+                  ))
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

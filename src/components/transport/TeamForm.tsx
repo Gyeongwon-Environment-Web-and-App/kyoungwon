@@ -9,10 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  drivers as driverList,
-  vehicles as vehicleList,
-} from '@/data/vehicleData';
+import { useDrivers } from '@/hooks/useDrivers';
+import { useVehicles } from '@/hooks/useVehicles';
 import { transportService } from '@/services/transportService';
 import type { TeamFormData } from '@/types/transport';
 
@@ -36,6 +34,17 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
   const { teamId } = useParams();
   const isEditMode = Boolean(teamId);
   const navigate = useNavigate();
+
+  const {
+    vehicles: vehicleList,
+    isLoading: vehiclesLoading,
+    fetchError: vehiclesError,
+  } = useVehicles();
+  const {
+    drivers: driverList,
+    isLoading: driversLoading,
+    fetchError: driversError,
+  } = useDrivers();
 
   // Fetch team data when in edit mode
   useEffect(() => {
@@ -314,27 +323,30 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full">
-                {vehicleList.map((v) => (
+                {vehiclesLoading ? (
                   <DropdownMenuItem
-                    key={v.vehicleNum}
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      const id = v.vehicleNum;
-                      const exists = formData.selectedVehicles.includes(id);
-                      updateFormData({
-                        selectedVehicles: exists
-                          ? formData.selectedVehicles.filter((x) => x !== id)
-                          : [...formData.selectedVehicles, id],
-                      });
-                    }}
-                    className="text-base"
+                    disabled
+                    className="text-base text-gray-500"
                   >
-                    <input
-                      type="checkbox"
-                      className="mr-2 text-base"
-                      checked={formData.selectedVehicles.includes(v.vehicleNum)}
-                      onChange={(e) => {
-                        e.stopPropagation();
+                    차량 정보 불러오는 중...
+                  </DropdownMenuItem>
+                ) : vehiclesError ? (
+                  <DropdownMenuItem disabled className="text-base text-red-500">
+                    오류가 발생했습니다.
+                  </DropdownMenuItem>
+                ) : vehicleList.length === 0 ? (
+                  <DropdownMenuItem
+                    disabled
+                    className="text-base text-gray-500"
+                  >
+                    차량 정보가 없습니다.
+                  </DropdownMenuItem>
+                ) : (
+                  vehicleList.map((v) => (
+                    <DropdownMenuItem
+                      key={v.vehicleNum}
+                      onSelect={(e) => {
+                        e.preventDefault();
                         const id = v.vehicleNum;
                         const exists = formData.selectedVehicles.includes(id);
                         updateFormData({
@@ -343,10 +355,31 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
                             : [...formData.selectedVehicles, id],
                         });
                       }}
-                    />
-                    {v.vehicleType} - {v.vehicleNum}
-                  </DropdownMenuItem>
-                ))}
+                      className="text-base"
+                    >
+                      <input
+                        type="checkbox"
+                        className="mr-2 text-base"
+                        checked={formData.selectedVehicles.includes(
+                          v.vehicleNum
+                        )}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          const id = v.vehicleNum;
+                          const exists = formData.selectedVehicles.includes(id);
+                          updateFormData({
+                            selectedVehicles: exists
+                              ? formData.selectedVehicles.filter(
+                                  (x) => x !== id
+                                )
+                              : [...formData.selectedVehicles, id],
+                          });
+                        }}
+                      />
+                      {v.vehicleType} - {v.vehicleNum}
+                    </DropdownMenuItem>
+                  ))
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -397,27 +430,30 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full">
-                {driverList.map((d) => (
+                {driversLoading ? (
                   <DropdownMenuItem
-                    key={d.name}
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      const driverName = d.name;
-                      setFormData((prev) => ({
-                        ...prev,
-                        selectedDrivers: prev.selectedDrivers.includes(d.name)
-                          ? prev.selectedDrivers.filter((d) => d !== driverName)
-                          : [...prev.selectedDrivers, driverName],
-                      }));
-                    }}
-                    className="text-base"
+                    disabled
+                    className="text-base text-gray-500"
                   >
-                    <input
-                      type="checkbox"
-                      className="mr-2 text-base"
-                      checked={formData.selectedDrivers.includes(`${d.name}`)}
-                      onChange={(e) => {
-                        e.stopPropagation();
+                    기사 정보 불러오는 중...
+                  </DropdownMenuItem>
+                ) : driversError ? (
+                  <DropdownMenuItem disabled className="text-base text-red-500">
+                    오류가 발생했습니다.
+                  </DropdownMenuItem>
+                ) : driverList.length === 0 ? (
+                  <DropdownMenuItem
+                    disabled
+                    className="text-base text-gray-500"
+                  >
+                    기사 정보가 없습니다.
+                  </DropdownMenuItem>
+                ) : (
+                  driverList.map((d) => (
+                    <DropdownMenuItem
+                      key={d.name}
+                      onSelect={(e) => {
+                        e.preventDefault();
                         const driverName = d.name;
                         setFormData((prev) => ({
                           ...prev,
@@ -428,10 +464,31 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
                             : [...prev.selectedDrivers, driverName],
                         }));
                       }}
-                    />
-                    {`${d.name}`}
-                  </DropdownMenuItem>
-                ))}
+                      className="text-base"
+                    >
+                      <input
+                        type="checkbox"
+                        className="mr-2 text-base"
+                        checked={formData.selectedDrivers.includes(`${d.name}`)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          const driverName = d.name;
+                          setFormData((prev) => ({
+                            ...prev,
+                            selectedDrivers: prev.selectedDrivers.includes(
+                              d.name
+                            )
+                              ? prev.selectedDrivers.filter(
+                                  (d) => d !== driverName
+                                )
+                              : [...prev.selectedDrivers, driverName],
+                          }));
+                        }}
+                      />
+                      {`${d.name}`}
+                    </DropdownMenuItem>
+                  ))
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
