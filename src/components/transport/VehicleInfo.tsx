@@ -158,7 +158,11 @@ const VehicleInfo: React.FC = () => {
               vehicleNum={vehicle.vehicleNum}
               vehicleYear={vehicle.vehicleYear}
               ton={vehicle.ton}
-              selectedMainDriver={vehicle.driverName || '미지정'}
+              selectedMainDriver={
+                vehicle.drivers && vehicle.drivers.length > 0
+                  ? vehicle.drivers[0].name
+                  : '미지정'
+              }
               status={vehicle.status === 'broken'}
               vehicleId={vehicle.id}
               onDelete={handleDeleteVehicle}

@@ -15,13 +15,37 @@ const transformVehicleData = (apiVehicle: {
     key: string;
     url: string;
   }>;
-  driver_name?: string;
-  driver_phone_no?: string;
+  drivers?: Array<{
+    id: number;
+    name: string;
+    phone_no: string;
+  }>;
+  teams?: Array<{
+    id: number;
+    team_nm: string;
+    category: string;
+  }>;
 }): Vehicle => {
   // Extract URL from presigned_links array
   const imageUrl =
     apiVehicle.presigned_links && apiVehicle.presigned_links.length > 0
       ? apiVehicle.presigned_links[0].url
+      : undefined;
+
+  // Transform drivers array
+  const transformedDrivers =
+    apiVehicle.drivers?.map((driver) => ({
+      name: driver.name,
+      phoneNum: driver.phone_no,
+    })) || [];
+
+  // Transform teams (take first team if exists)
+  const transformedTeam =
+    apiVehicle.teams && apiVehicle.teams.length > 0
+      ? {
+          teamName: apiVehicle.teams[0].team_nm,
+          category: apiVehicle.teams[0].category,
+        }
       : undefined;
 
   return {
@@ -32,8 +56,8 @@ const transformVehicleData = (apiVehicle: {
     vehicleYear: apiVehicle.year,
     status: apiVehicle.status,
     presignedLink: imageUrl,
-    driverName: apiVehicle.driver_name,
-    driverPhoneNum: apiVehicle.driver_phone_no,
+    drivers: transformedDrivers,
+    teams: transformedTeam,
   };
 };
 

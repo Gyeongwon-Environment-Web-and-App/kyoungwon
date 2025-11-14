@@ -346,8 +346,8 @@ export interface VehiclesApiResponse {
       key: string;
       url: string;
     }>;
-    driver_name?: string;
-    driver_phone_no?: string;
+    drivers?: Array<{ id: number; name: string; phone_no: string }>;
+    teams?: Array<{ id: number; team_nm: string; category: string }>;
   }>;
 }
 

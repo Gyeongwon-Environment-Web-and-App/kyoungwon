@@ -56,6 +56,6 @@ export interface Vehicle {
   vehicleYear: string;
   status: string; // 'okay' | 'broken'
   presignedLink?: string;
-  driverName?: string;
-  driverPhoneNum?: string;
+  drivers: Array<{ name: string; phoneNum: string }>;
+  teams?: { teamName: string; category: string };
 }

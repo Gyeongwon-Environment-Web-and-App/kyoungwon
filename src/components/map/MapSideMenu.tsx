@@ -20,6 +20,7 @@ import { AreaDropdown } from '../ui/AreaDropdown';
 import ComplaintDetail from './ComplaintDetail';
 import ComplaintListContainer from './ComplaintListContainer';
 import MapStats from './MapStats';
+import VehicleContainer from './VehicleContainer';
 
 type SidebarType = 'complaint' | 'vehicle' | 'stats' | null;
 
@@ -78,7 +79,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
     setSelectedAreas(areas);
   };
 
-  const SharedSidebarHeader = () => (
+  const SharedSidebarHeader = ({
+    showCategoryButtons = true,
+  }: {
+    showCategoryButtons?: boolean;
+  }) => (
     <>
       {/* Area Selection Section */}
       <div className="flex items-end md:items-center justify-between px-2 pt-0 pb-3 md:pt-5 md:pb-5">
@@ -102,37 +107,39 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       </div>
 
       {/* Category Buttons Section */}
-      <div
-        className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
-      >
-        {['재활용', '생활', '음식물', '기타'].map((label, idx, arr) => {
-          const isSelected = selectedCategory === label;
-          return (
-            <button
-              key={label}
-              type="button"
-              className={`
+      {showCategoryButtons && (
+        <div
+          className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
+        >
+          {['재활용', '생활', '음식물', '기타'].map((label, idx, arr) => {
+            const isSelected = selectedCategory === label;
+            return (
+              <button
+                key={label}
+                type="button"
+                className={`
               flex-1 px-4 font-bold
               ${isSelected ? 'bg-lighter-green' : ''}
               ${idx === 0 ? 'rounded-l' : ''}
               ${idx === arr.length - 1 ? 'rounded-r' : ''}
               focus:outline-none
             `}
-              style={{
-                borderRight:
-                  idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onCategoryChange?.(label);
-              }}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
+                style={{
+                  borderRight:
+                    idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCategoryChange?.(label);
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 
@@ -213,7 +220,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
         selectedAreas={selectedAreas}
       />
     ),
-    vehicle: <div className="">차량 정보 컴포넌트</div>,
+    vehicle: <VehicleContainer />,
     stats: (
       <MapStats
         dateRange={dateRange}
@@ -311,7 +318,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
             />
           </div>
           <div className="flex-1 h-[80vh] px-2">
-            <SharedSidebarHeader />
+            <SharedSidebarHeader showCategoryButtons={!complaintId} />
             {sidebarContents[activeSidebar]}
           </div>
           {activeSidebar === 'complaint' && (
