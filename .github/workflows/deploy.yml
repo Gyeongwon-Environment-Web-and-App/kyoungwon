@@ -1,5 +1,5 @@
 # .github/workflows/deploy.yml
-# IDON-Frontend를 GitHub Pages에 배포하는 워크플로
+# kyoungwon (Vite React) 를 GitHub Pages에 배포하는 워크플로
 
 name: Deploy frontend to GitHub Pages
 
@@ -49,8 +49,14 @@ jobs:
         run: npm ci
 
       # 4) Vite 빌드 (dist 폴더 생성)
+      #    🔥 여기에서 GitHub Secrets 를 환경변수로 주입!
       - name: Build
         run: npm run build
+        env:
+          VITE_KAKAO_JAVASCRIPT_KEY: ${{ secrets.VITE_KAKAO_JAVASCRIPT_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_NAVER_CLOUD_API_KEY_ID: ${{ secrets.VITE_NAVER_CLOUD_API_KEY_ID }}
+          VITE_NAVER_CLOUD_API_KEY: ${{ secrets.VITE_NAVER_CLOUD_API_KEY }}
 
       # 5) GitHub Pages 설정
       - name: Setup Pages
@@ -60,7 +66,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: './dist'
+          path: ./dist
 
       # 7) GitHub Pages로 배포
       - name: Deploy to GitHub Pages
