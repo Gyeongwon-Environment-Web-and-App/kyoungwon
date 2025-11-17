@@ -40,6 +40,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
   const [lastOpenedSidebar, setLastOpenedSidebar] = useState<SidebarType>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { complaintId } = useParams<{ complaintId?: string }>();
   const navigate = useNavigate();
@@ -222,9 +223,10 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
         selectedCategory={selectedCategory}
         onCategoryChange={onCategoryChange}
         selectedAreas={selectedAreas}
+        searchQuery={searchQuery}
       />
     ),
-    vehicle: <VehicleContainer selectedCategory={selectedCategory} />,
+    vehicle: <VehicleContainer selectedCategory={selectedCategory} searchQuery={searchQuery} />,
     stats: (
       <MapStats
         dateRange={dateRange}
@@ -307,20 +309,23 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
           ${activeSidebar ? 'animate-slideIn' : 'animate-slideOut'} flex flex-col py-5 md:py-3 px-3`}
           aria-label="사이드바 메뉴"
         >
-          <div className="relative w-full flex h-9 mb-1 md:mb-3">
-            <Search
-              className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${
-                isSearchFocused ? 'text-light-green' : 'text-[#575757]'
-              }`}
-            />
-            <input
-              type="text"
-              placeholder={`${activeSidebar === 'vehicle' ? '차량 정보/기사님 성함을 입력해보세요' : ''}`}
-              className="pl-10 pr-4 py-1 border border-[#575757] rounded-md focus:outline-none focus:ring-1 focus:ring-light-green focus:border-transparent mx-[2px] flex-1 md:flex-auto text-sm font-[#575757]"
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-            />
-          </div>
+          {activeSidebar !== 'stats' && (
+            <div className="relative w-full flex h-9 mb-1 md:mb-3">
+              <Search
+                className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${
+                  isSearchFocused ? 'text-light-green' : 'text-[#575757]'
+                }`}
+              />
+              <input
+                type="text"
+                placeholder={`${activeSidebar === 'vehicle' ? '차량 정보/기사님 성함을 입력해보세요' : ''}`}
+                className="pl-10 pr-4 py-1 border border-[#575757] rounded-md focus:outline-none focus:ring-1 focus:ring-light-green focus:border-transparent mx-[2px] flex-1 md:flex-auto text-sm font-[#575757]"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
+              />
+            </div>
+          )}
           <div className="flex-1 h-[80vh] px-2">
             <SharedSidebarHeader showCategoryButtons={!complaintId} />
             {sidebarContents[activeSidebar]}

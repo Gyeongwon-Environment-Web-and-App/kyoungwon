@@ -10,29 +10,90 @@ interface ComplaintListContainerProps {
   selectedCategory?: string;
   selectedAreas?: string[];
   onCategoryChange?: (category: string) => void;
+  searchQuery?: string;
 }
 
 const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   dateRange,
   selectedCategory,
   selectedAreas = [],
+  searchQuery,
 }) => {
   const { complaints, isLoading, fetchError } = useComplaints(dateRange);
 
   const filtered = useMemo(() => {
-    if (!selectedCategory || selectedCategory === '전체') return complaints;
-    return complaints.filter((complaint) => {
-      const categoryMatch = complaint.teams.some(
-        (team) => team.category === selectedCategory
-      );
+    let filtered = complaints;
 
-      const regionMatch =
-        selectedAreas.length === 0 ||
-        selectedAreas.includes(complaint.address.region_nm);
+    // 카테고리 필터
+    if (selectedCategory && selectedCategory !== '전체') {
+      filtered = filtered.filter((complaint) => {
+        const categoryMatch = complaint.teams.some(
+          (team) => team.category === selectedCategory
+        );
+        return categoryMatch;
+      });
+    }
 
-      return categoryMatch && regionMatch;
-    });
-  }, [selectedCategory, complaints, selectedAreas]);
+    // 지역 필터
+    if (selectedAreas.length > 0) {
+      filtered = filtered.filter((complaint) => {
+        return selectedAreas.includes(complaint.address.region_nm);
+      });
+    }
+
+    // 검색 필터
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((complaint) => {
+        // 연번 검색
+        const idMatch = complaint.id.toString().includes(query);
+
+        // 내용 검색
+        const contentMatch = complaint.content?.toLowerCase().includes(query);
+
+        // 주소 검색
+        const addressMatch =
+          complaint.address.address?.toLowerCase().includes(query) ||
+          complaint.address.region_nm?.toLowerCase().includes(query);
+
+        // 휴대폰번호 검색
+        const phoneMatch = complaint.source?.phone_no
+          ?.toLowerCase()
+          .includes(query);
+
+        // 수신처 검색
+        const routeMatch = complaint.route?.toLowerCase().includes(query);
+
+        // 종류 검색
+        const typeMatch = complaint.type?.toLowerCase().includes(query);
+
+        // 팀 이름 검색
+        const teamMatch = complaint.teams?.some((team) =>
+          team.team_nm?.toLowerCase().includes(query)
+        );
+
+        // 기사님 성함 검색
+        const driverMatch = complaint.teams?.some((team) =>
+          team.drivers?.some((driver) =>
+            driver.name?.toLowerCase().includes(query)
+          )
+        );
+
+        return (
+          idMatch ||
+          contentMatch ||
+          addressMatch ||
+          phoneMatch ||
+          routeMatch ||
+          typeMatch ||
+          teamMatch ||
+          driverMatch
+        );
+      });
+    }
+
+    return filtered;
+  }, [complaints, selectedCategory, selectedAreas, searchQuery]); // Add searchQuery to dependencies
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -48,7 +109,11 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
       )}
       {!isLoading && !fetchError && filtered.length === 0 && (
         <div className="text-center text-gray-500 py-5">
-          <p className="text-sm">해당 기간에 민원이 없습니다.</p>
+          <p className="text-sm">
+            {searchQuery && searchQuery.trim()
+              ? '검색 결과가 없습니다.'
+              : '해당 기간에 민원이 없습니다.'}
+          </p>
         </div>
       )}
       {!isLoading && !fetchError && filtered.length > 0 && (
