@@ -47,6 +47,6 @@ export function getFileUrlSync(key: string): string {
   }
 
   // Construct URL from base URL and key
-  const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://gyeongwon-proxy.onrender.com/api';
+  const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://kyoungwon-proxy.onrender.com/api';
   return `${baseURL}/cloudflare/file/${encodeURIComponent(key)}`;
 }

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create Axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://gyeongwon-proxy.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://kyoungwon-proxy.onrender.com/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

@@ -268,7 +268,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           }
 
           const response = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL || 'https://gyeongwon-proxy.onrender.com/api'}/areas`
+            `${import.meta.env.VITE_API_BASE_URL || 'https://kyoungwon-proxy.onrender.com/api'}/areas`
           );
           const areas = response.data;
 
@@ -291,7 +291,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           setComplaintsError(null);
 
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'https://gyeongwon-proxy.onrender.com/api'}/complaints`,
+            `${import.meta.env.VITE_API_BASE_URL || 'https://kyoungwon-proxy.onrender.com/api'}/complaints`,
             complaintData
           );
           const newComplaint = response.data;
@@ -320,7 +320,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
 
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL || 'https://gyeongwon-proxy.onrender.com/api'}/complaints/frequency`,
+            `${import.meta.env.VITE_API_BASE_URL || 'https://kyoungwon-proxy.onrender.com/api'}/complaints/frequency`,
             {
               params: { address },
             }
