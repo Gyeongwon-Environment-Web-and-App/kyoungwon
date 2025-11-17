@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
+import { noticeService } from '@/services/noticeService';
 import type { NoticeFormData } from '@/types/notice';
 
 import FileAttach from '../forms/FileAttach';
 import TextForward from '../forms/TextForward';
 
-const NoticeForm: React.FC = () => {
+interface NoticeFormPorps {
+  onSubmit?: () => void;
+}
+
+const NoticeForm: React.FC<NoticeFormPorps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<NoticeFormData>({
     title: '',
     category: '',
@@ -16,8 +21,10 @@ const NoticeForm: React.FC = () => {
     notify: [],
   });
   const [focus, setFocus] = useState({ routeInput: false });
+
   const { noticeId } = useParams();
   const isEditMode = Boolean(noticeId);
+  const navigate = useNavigate();
 
   const updateFormData = (updates: Partial<NoticeFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -27,7 +34,7 @@ const NoticeForm: React.FC = () => {
     return formData.notify || [];
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
@@ -39,8 +46,22 @@ const NoticeForm: React.FC = () => {
       return;
     }
 
-    console.log('공지사항 전송완료:', formData);
-    // Handle form submission logic here
+    try {
+      const response = await noticeService.createNotice(formData);
+
+      if (onSubmit) {
+        onSubmit();
+      } else {
+        alert(
+          `공지사항 등록이 완료되었습니다. 공지사항 내용: ${response.post}`
+        );
+        navigate('/transport/vehicle/info');
+      }
+
+      alert(response.message || '공지사항이 성공적으로 등록되었습니다.');
+    } catch (error) {
+      console.log('공지사항 등록실패:', error);
+    }
   };
 
   return (
@@ -99,21 +120,19 @@ const NoticeForm: React.FC = () => {
           />
 
           {/* 파일 첨부 */}
-          <label className="col-span-1 font-bold">파일 첨부</label>
-          <div className="col-span-3">
-            <FileAttach
-              formData={formData}
-              setFormData={(updates) => {
-                if (typeof updates === 'function') {
-                  updateFormData(updates(formData));
-                } else {
-                  updateFormData(updates);
-                }
-              }}
-              objectCategory="notice"
-            />
-          </div>
-          <div className="col-span-1"></div>
+          <FileAttach
+            formData={formData}
+            setFormData={(updates) => {
+              if (typeof updates === 'function') {
+                updateFormData(updates(formData));
+              } else {
+                updateFormData(updates);
+              }
+            }}
+            objectCategory="notice"
+            className1="col-span-1"
+            className2="col-span-4"
+          />
 
           {/* 내용 */}
           <label className="col-span-1 font-bold md:mb-5">

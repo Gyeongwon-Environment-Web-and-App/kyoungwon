@@ -16,7 +16,7 @@ const NoticeManage: React.FC = () => {
   const { logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isPopupOpen] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'table' | 'detail' | 'form'>(
     'table'
   );
@@ -58,6 +58,20 @@ const NoticeManage: React.FC = () => {
     setActiveTab(nextTab);
   };
 
+  const handleNoticeSubmit = () => {
+    setIsPopupOpen(true);
+  };
+
+  const handlePopupFirstClick = () => {
+    setIsPopupOpen(false);
+    navigate('/notice/table');
+  };
+
+  const handlePopupSecondClick = () => {
+    setIsPopupOpen(false);
+    navigate('/');
+  };
+
   return (
     <div className="w-screen h-screen">
       {isPopupOpen && (
@@ -69,16 +83,11 @@ const NoticeManage: React.FC = () => {
             </>
           }
           yesNo={false}
-          onFirstClick={() => {
-            console.log('1st click');
-          }}
-          onSecondClick={() => {
-            console.log('2nd click');
-          }}
-          toHome={true}
-          onGoHome={() => {
-            console.log('reset form');
-          }}
+          onFirstClick={handlePopupFirstClick}
+          onFirstLabel='공지 목록'
+          onSecondClick={handlePopupSecondClick}
+          onSecondLabel='홈으로 이동'
+          toHome={false}
         />
       )}
       <Header onLogout={logout} />
@@ -116,7 +125,7 @@ const NoticeManage: React.FC = () => {
             )}
             {activeTab === 'form' && (
               <>
-                <NoticeForm />
+                <NoticeForm onSubmit={handleNoticeSubmit} />
               </>
             )}
             {activeTab === 'detail' && (
