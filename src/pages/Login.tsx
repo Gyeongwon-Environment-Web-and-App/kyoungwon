@@ -35,54 +35,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     return result;
   };
 
-  // JWT 토큰 디코딩 유틸리티 함수
-  const decodeJWT = (token: string) => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      return JSON.parse(jsonPayload);
-    } catch (error) {
-      console.error('JWT decode error:', error);
-      return null;
-    }
-  };
-
-  // 수동 로그인 함수 (SSL 인증서 문제 우회용)
-  const handleManualLogin = () => {
-    const token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwicGhvbmVfbm8iOiJzdHJpbmciLCJzZXJpYWxfbm8iOiIxMjM0IiwibmFtZSI6InN0cmluZyIsImlhdCI6MTc2MjMyNDIwOSwiZXhwIjoxNzYyOTI5MDA5fQ.d0SRUMomo5cc_jyYjJevijHGc9qTP7EAngXOZLeDiXQ';
-
-    // JWT 토큰 디코딩
-    const decodedToken = decodeJWT(token);
-    console.log('Decoded JWT token:', decodedToken);
-
-    // JWT 토큰에서 추출한 사용자 데이터
-    const userData = {
-      id: decodedToken?.id || 2,
-      serial_no: decodedToken?.serial_no || '1234',
-      phone_no: decodedToken?.phone_no || '01012345678',
-      name: decodedToken?.name || 'hey',
-      token: token,
-    };
-
-    // 로컬 스토리지에 토큰 및 사용자 정보 저장
-    localStorage.setItem('userToken', token);
-    localStorage.setItem('userData', JSON.stringify(userData));
-    localStorage.setItem('serial_no', userData.serial_no);
-
-    console.log('Manual login successful with token:', token);
-    console.log('User data:', userData);
-
-    // 부모 컴포넌트의 onLogin 함수 호출
-    onLogin(userData);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -177,23 +129,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           >
             {loading ? '로그인 중...' : '로그인'}
           </button>
-
-          {/* SSL 인증서 문제 우회용 수동 로그인 버튼 */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-500 mb-2 text-center">
-              SSL 인증서 문제로 로그인이 안 되나요?
-            </p>
-            <button
-              type="button"
-              onClick={handleManualLogin}
-              className="w-full py-2 text-sm rounded bg-orange-500 text-white hover:bg-orange-600 transition-colors"
-            >
-              🔧 수동 로그인 (개발용)
-            </button>
-            <p className="text-xs text-gray-400 mt-1 text-center">
-              Swagger에서 받은 토큰으로 로그인합니다
-            </p>
-          </div>
         </form>
       </div>
     </div>
