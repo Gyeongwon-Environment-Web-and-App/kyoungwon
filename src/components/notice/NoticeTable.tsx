@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type ColumnDef } from '@tanstack/react-table';
 
@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { notices } from '@/data/noticeData';
+import { useNotices } from '@/hooks/useNotices';
 import {
   ChevronLeft,
   ChevronRight,
@@ -24,16 +24,43 @@ import filter from '../../assets/icons/actions/filter.svg';
 import { Button } from '../ui/button';
 
 const NoticeTable: React.FC = () => {
-  const [filteredNotices, setFilteredNotices] = useState<Notice[]>(notices);
+  const [filteredNotices, setFilteredNotices] = useState<Notice[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [sortOrder, setSortOrder] = useState<'최근순' | '오래된순'>('최근순');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize] = useState(10);
+  const {
+    notices: apiNotices,
+    isLoading,
+    fetchError,
+    pagination,
+    setPage,
+    setSortMode,
+    refetch,
+  } = useNotices();
 
-  const resetPagination = () => {
-    setCurrentPage(1);
-  };
+  const filterNoticesByTerm = useCallback((source: Notice[], term: string) => {
+    const searchLower = term.toLowerCase();
+
+    return source.filter((notice) => {
+      return (
+        notice.id.toString().includes(searchLower) ||
+        notice.type.toLowerCase().includes(searchLower) ||
+        notice.title.toLowerCase().includes(searchLower) ||
+        notice.writer.toLowerCase().includes(searchLower) ||
+        notice.content.toLowerCase().includes(searchLower) ||
+        notice.datetime.toLowerCase().includes(searchLower)
+      );
+    });
+  }, []);
+
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      setFilteredNotices(filterNoticesByTerm(apiNotices, searchTerm));
+    } else {
+      setFilteredNotices(apiNotices);
+    }
+  }, [apiNotices, searchTerm, filterNoticesByTerm]);
+
   const handlePageChange = (page: number) => {
     if (page < 1 || page > paginationInfo.totalPages) {
       console.warn(
@@ -41,26 +68,26 @@ const NoticeTable: React.FC = () => {
       );
       return;
     }
-    setCurrentPage(page);
+    setPage(page);
   };
   const handleFirstPage = () => {
     if (paginationInfo.totalPages > 0) {
-      setCurrentPage(1);
+      setPage(1);
     }
   };
   const handleLastPage = () => {
     if (paginationInfo.totalPages > 0) {
-      setCurrentPage(paginationInfo.totalPages);
+      setPage(paginationInfo.totalPages);
     }
   };
   const handlePrevPage = () => {
     if (paginationInfo.hasPrevPage) {
-      setCurrentPage(currentPage - 1);
+      setPage(paginationInfo.currentPage - 1);
     }
   };
   const handleNextPage = () => {
     if (paginationInfo.hasNextPage) {
-      setCurrentPage(currentPage + 1);
+      setPage(paginationInfo.currentPage + 1);
     }
   };
   const generatePageNumbers = () => {
@@ -93,62 +120,20 @@ const NoticeTable: React.FC = () => {
 
   // 시간 필터링 함수
   const handleSortChange = (order: '최근순' | '오래된순') => {
-    resetPagination();
     setSortOrder(order);
-
-    // ISO 날짜 문자열을 Date 객체로 변환하는 함수 (시간 제외)
-    const parseDate = (dateStr: string) => {
-      const date = new Date(dateStr);
-      // 시간을 00:00:00으로 설정하여 날짜만 비교
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    };
-
-    // 정렬된 데이터 생성
-    const sorted = [...filteredNotices].sort((a, b) => {
-      const dateA = parseDate(a.datetime);
-      const dateB = parseDate(b.datetime);
-
-      // 날짜가 동일한 경우 ID로 정렬
-      if (dateA.getTime() === dateB.getTime()) {
-        if (order === '최근순') {
-          return b.id - a.id; // ID가 작은 것이 위로 (1, 2, 3...)
-        } else {
-          return a.id - b.id; // ID가 큰 것이 위로 (7, 6, 5...)
-        }
-      }
-
-      // 날짜가 다른 경우 날짜로 정렬
-      if (order === '최근순') {
-        return dateB.getTime() - dateA.getTime(); // 최신순 (최신 날짜가 위로)
-      } else {
-        return dateA.getTime() - dateB.getTime(); // 오래된순 (오래된 날짜가 위로)
-      }
-    });
-
-    setFilteredNotices(sorted);
+    const isDescending = order === '최근순';
+    setSortMode(isDescending);
   };
 
   const handleSearch = (searchValue: string) => {
-    resetPagination();
     setSearchTerm(searchValue);
 
     if (!searchValue.trim()) {
-      setFilteredNotices(notices);
+      setFilteredNotices(apiNotices);
       return;
     }
 
-    const filtered = notices.filter((notice) => {
-      const searchLower = searchValue.toLowerCase();
-
-      return (
-        notice.id.toString().includes(searchLower) ||
-        notice.type.toLowerCase().includes(searchLower) ||
-        notice.title.toLowerCase().includes(searchLower) ||
-        notice.writer.toLowerCase().includes(searchLower) ||
-        notice.content.toLowerCase().includes(searchLower) ||
-        notice.datetime.toLowerCase().includes(searchLower)
-      );
-    });
+    const filtered = filterNoticesByTerm(apiNotices, searchValue);
     setFilteredNotices(filtered);
   };
 
@@ -163,26 +148,21 @@ const NoticeTable: React.FC = () => {
   };
 
   const paginationInfo = useMemo(() => {
-    const totalItems = filteredNotices.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    const hasPrevPage = currentPage > 1;
-    const hasNextPage = currentPage < totalPages;
+    const hasItems = pagination.totalItems > 0;
+    const totalPages = hasItems ? Math.max(1, pagination.totalPages) : 0;
+    const currentPage = hasItems
+      ? Math.min(pagination.currentPage, totalPages)
+      : 0;
 
     return {
-      totalItems,
+      totalItems: pagination.totalItems,
       totalPages,
       currentPage,
-      pageSize,
-      hasPrevPage,
-      hasNextPage,
+      pageSize: pagination.pageSize,
+      hasPrevPage: hasItems ? currentPage > 1 : false,
+      hasNextPage: hasItems ? currentPage < totalPages : false,
     };
-  }, [currentPage, pageSize, filteredNotices]);
-
-  const paginatedNotices = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return filteredNotices.slice(startIndex, endIndex);
-  }, [currentPage, pageSize, filteredNotices]);
+  }, [pagination]);
 
   const columns: ColumnDef<Notice>[] = [
     {
@@ -196,7 +176,7 @@ const NoticeTable: React.FC = () => {
       accessorKey: 'type',
       header: '공지 구분',
       cell: ({ row }) => (
-        <div className="text-center truncate">{row.getValue('type')}</div>
+        <div className="text-center truncate flex-1">{row.getValue('type')}</div>
       ),
     },
     {
@@ -225,6 +205,32 @@ const NoticeTable: React.FC = () => {
       ),
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-light-green"></div>
+          <span className="text-sm text-gray-600">
+            공지사항을 불러오는 중...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">{fetchError}</p>
+          <Button variant="outline" size="sm" onClick={refetch}>
+            다시 시도
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -291,7 +297,7 @@ const NoticeTable: React.FC = () => {
       </div>
 
       <div className="border border-gray-200 rounded-lg overflow-x-auto">
-        <DataTable columns={columns} data={paginatedNotices} />
+        <DataTable columns={columns} data={filteredNotices} />
       </div>
 
       {/* Pagination */}
@@ -321,7 +327,9 @@ const NoticeTable: React.FC = () => {
               {generatePageNumbers().map((page) => (
                 <Button
                   key={page}
-                  variant={page === currentPage ? 'default' : 'outline'}
+                  variant={
+                    page === paginationInfo.currentPage ? 'default' : 'outline'
+                  }
                   size="sm"
                   onClick={() => handlePageChange(page)}
                   className="w-8 h-8 border-none outline-none shadow-none text-sm"

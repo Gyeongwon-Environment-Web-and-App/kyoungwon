@@ -9,10 +9,6 @@ import type {
 
 import { uploadFilesToCloudflare } from './fileUploadService';
 
-// ============================================================================
-// Helper Functions for Common Operations
-// ============================================================================
-
 /**
  * Generic error handler for API calls
  * @param error - The error object from axios

@@ -54,3 +54,28 @@ export interface CreateNoticeResponse {
   message: string;
   post: NoticePost;
 }
+
+export interface NoticeApiPost {
+  id: number;
+  username: string;
+  title: string;
+  post_type: string;
+  created_at: string;
+  content?: string;
+}
+
+export interface NoticeApiResponse {
+  message: string;
+  posts: NoticeApiPost[];
+}
+
+export interface NoticePaginationMeta {
+  totalItems?: number;
+  totalPages?: number;
+}
+
+export interface NoticePagedApiResponse extends NoticeApiResponse {
+  pagination?: NoticePaginationMeta;
+  totalItems?: number;
+  totalPages?: number;
+}
