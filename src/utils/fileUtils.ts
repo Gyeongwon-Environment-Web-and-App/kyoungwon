@@ -30,7 +30,7 @@ export async function getFileUrl(key: string): Promise<string> {
 
   // Fallback: construct URL from base URL and key
   // This assumes files are accessible via the API base URL
-  const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224';
+  const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://gyeongwon-proxy.onrender.com/api';
   return `${baseURL}/cloudflare/file/${encodeURIComponent(key)}`;
 }
 

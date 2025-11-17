@@ -231,7 +231,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           setComplaintsError(null);
 
           const response = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224:3000'}/complaints`
+            `${import.meta.env.VITE_API_BASE_URL || 'https://gyeongwon-proxy.onrender.com/api'}/complaints`
           );
           setComplaints(response.data);
         } catch (error) {
