@@ -185,7 +185,7 @@ const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
       {/* 툴팁 */}
       {currentData && (
         <div
-          className={`flex items-center ${mobile ? 'justify-center' : 'justify-start'} px-4 pt-10 md:pt-0`}
+          className={`flex items-center ${mobile ? 'justify-center' : 'justify-start'} px-4 pt-10 md:pt-0 print-color`}
         >
           <div className="bg-white border border-[#757575] rounded-lg p-4 w-48 text-center">
             <div className="font-semibold text-lg text-gray-600 mb-2">

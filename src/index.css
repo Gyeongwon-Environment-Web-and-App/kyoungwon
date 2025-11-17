@@ -67,6 +67,55 @@
   }
 }
 
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  body,
+  #root {
+    width: 1100px;
+    margin: 0 auto;
+    background: #ffffff !important;
+  }
+  body {
+    display: block;
+    min-height: auto;
+    font-size: 12px;
+  }
+  .complaint-stats-print {
+    width: 100%;
+    min-height: auto;
+    padding: 0 16px;
+  }
+  .print-h-auto {
+    height: auto !important;
+    min-height: auto !important;
+  }
+  .print-flex-nowrap {
+    flex-wrap: nowrap !important;
+  }
+  .print-static {
+    position: static !important;
+  }
+  .print-break-avoid {
+    page-break-inside: avoid;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  .print-show {
+    display: block !important;
+  }
+  .print-color {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-gap {
+    padding-top: 6.3vh;
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -251,4 +300,3 @@ button {
   background-color: #00ba13 !important;
   font-weight: bold;
 }
-

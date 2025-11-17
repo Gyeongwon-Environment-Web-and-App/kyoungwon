@@ -91,7 +91,7 @@ export default function Header({ onLogout }: HeaderProps) {
   };
 
   return (
-    <header className="relative w-screen xs:h-[3rem] md:h-[7rem] bg-white py-3 z-50">
+    <header className="relative w-screen xs:h-[3rem] md:h-[7rem] bg-white py-3 z-50 print-hide">
       <div className="relative md:h-full flex items-center justify-between mx-5 mt-2 2xl:mx-[18rem]">
         {/* 로고 */}
         <div

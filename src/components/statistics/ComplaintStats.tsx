@@ -114,11 +114,15 @@ const ComplaintStats = () => {
     return daysBar;
   }, [trashTypeWeekdayData, daysBar, selectedTrashType]);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="w-[100%] h-screen">
+    <div className="complaint-stats-print w-[100%] h-screen print-h-auto">
       <div className="pb-28 md:pb-20 overflow-hidden">
-        <header className="flex flex-wrap-reverse md:flex-nowrap justify-between md:items-end border-b border-under pt-0 pb-3 mb-5 mt-3 md:mt-0">
-          <div className="flex mt-12 md:mt-0">
+        <header className="flex flex-wrap-reverse md:flex-nowrap print-flex-nowrap justify-between md:items-end border-b border-under pt-0 pb-3 mb-5 mt-3 md:mt-0">
+          <div className="flex mt-12 md:mt-0 print-hide">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -300,7 +304,7 @@ const ComplaintStats = () => {
               />
             </div>
           </div>
-          <div className="flex absolute md:static top-[9rem] right-5">
+          <div className="flex absolute md:static top-[9rem] right-5 print-hide">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -313,7 +317,7 @@ const ComplaintStats = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => {}}>PDF</DropdownMenuItem>
+                <DropdownMenuItem onClick={handlePrint}>PDF</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {}}>Excel</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -321,6 +325,7 @@ const ComplaintStats = () => {
               variant="outline"
               size="sm"
               className="flex items-center shadow-none bg-[#646464] text-white border-none outline-none hover:bg-under hover:text-white text-sm px-2 md:px-3"
+              onClick={handlePrint}
             >
               <Printer className="w-4 h-4" />
               <span className="text-sm hidden md:block">인쇄</span>
@@ -353,12 +358,12 @@ const ComplaintStats = () => {
             </p>
             <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${categoryPie.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
-              <div className="md:w-[60%] w-[100%] flex">
+              <div className="md:w-[60%] w-[100%] flex print-color">
                 <div className="text-center w-20 px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
                   {categoryPie.map((item) => (
                     <span
                       key={item.name}
-                      className="px-3 py-1 text-xs font-semibold text-white"
+                      className="px-3 py-1 text-xs font-semibold text-white print-color"
                       style={{ backgroundColor: getTrashColor(item.name) }}
                     >
                       {item.name}
@@ -383,7 +388,7 @@ const ComplaintStats = () => {
                         <div className="flex items-center justify-between gap-2 pt-2 pb-3 border-b border-[#dcdcdc]">
                           <div className="flex items-center gap-2">
                             <span
-                              className="h-3 w-3 rounded-full"
+                              className="h-3 w-3 rounded-full print-color"
                               style={{
                                 backgroundColor: getTrashColor(item.name),
                               }}
@@ -408,7 +413,7 @@ const ComplaintStats = () => {
                         <AccordionTrigger className="">
                           <div className="flex items-center justify-center gap-2">
                             <span
-                              className="h-3 w-3 rounded-full"
+                              className="h-3 w-3 rounded-full print-color"
                               style={{
                                 backgroundColor: getTrashColor(item.name),
                               }}
@@ -465,13 +470,13 @@ const ComplaintStats = () => {
             </p>
             <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${regionPie.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
-              <div className="md:w-[60%] w-[100%] flex">
+              <div className="md:w-[60%] w-[100%] flex print-color">
                 <div className="flex flex-col w-20 text-center gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
                   {(selectedAreas.length > 0 ? regionPie : regionPie).map(
                     (item) => (
                       <span
                         key={item.name}
-                        className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
+                        className="px-2 md:px-3 py-1 text-xs font-semibold text-white print-color"
                         style={{ backgroundColor: getRegionColor(item.name) }}
                       >
                         {item.name}
@@ -493,7 +498,7 @@ const ComplaintStats = () => {
                     >
                       <div className="flex items-center gap-2">
                         <span
-                          className="h-3 w-3 rounded-full"
+                          className="h-3 w-3 rounded-full print-color"
                           style={{ backgroundColor: getRegionColor(item.name) }}
                         />
                         <span className="text-md font-semibold">
@@ -509,7 +514,7 @@ const ComplaintStats = () => {
           </section>
         )}
         {selectedWeekday === '전체 요일' && (
-          <section className="mt-10">
+          <section className="mt-10 print-gap">
             <p className="font-semibold text-8d8d8d">
               최근{' '}
               {dateRange?.from instanceof Date && dateRange?.to instanceof Date
@@ -541,15 +546,15 @@ const ComplaintStats = () => {
               );
 
               return (
-                <>
+                <div className="">
                   <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${posNegData.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
                   <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
-                    <div className="md:w-[60%] w-[100%] flex">
+                    <div className="md:w-[60%] w-[100%] flex print-color">
                       <div className="inline-flex flex-col gap-2 w-20  md:mr-10 text-center mt-4">
                         {posNegData.map((item) => (
                           <span
                             key={item.name}
-                            className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
+                            className="px-2 md:px-3 py-1 text-xs font-semibold text-white print-color"
                             style={{
                               backgroundColor: getComplaintColor(item.name),
                             }}
@@ -568,7 +573,7 @@ const ComplaintStats = () => {
                         >
                           <div className="flex items-center gap-2">
                             <span
-                              className="h-3 w-3 rounded-full"
+                              className="h-3 w-3 rounded-full print-color"
                               style={{
                                 backgroundColor: getComplaintColor(item.name),
                               }}
@@ -584,7 +589,7 @@ const ComplaintStats = () => {
                       ))}
                     </div>
                   </div>
-                </>
+                </div>
               );
             })()}
           </section>
@@ -609,7 +614,7 @@ const ComplaintStats = () => {
               return sum + totalTimeComplaints;
             }, 0)}건`}</h1>
             <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
-              <div className="mb-10 md:mb-5">
+              <div className="mb-10 md:mb-5 print-color">
                 <SimpleTimeSlotChart
                   data={
                     selectedAreas.length > 0
@@ -657,7 +662,7 @@ const ComplaintStats = () => {
             </p>
             <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${displayDaysData.reduce((sum, item) => sum + Number(item.count || 0), 0)}건`}</h1>
             <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
-              <div className="md:mb-0 mb-5">
+              <div className="md:mb-0 mb-5 print-color">
                 <SimpleWeekdayChart
                   data={displayDaysData}
                   colors={
@@ -719,7 +724,7 @@ const ComplaintStats = () => {
                 {selectedWeekday} 민원 분포
               </h1>
               <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
-                <div className="mb-10 md:mb-5">
+                <div className="mb-10 md:mb-5 print-color">
                   <SimpleTimeSlotChart
                     data={weekdayTimeSlotData}
                     colors={
