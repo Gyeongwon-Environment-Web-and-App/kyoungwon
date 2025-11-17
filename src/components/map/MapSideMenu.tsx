@@ -28,7 +28,7 @@ interface MapSideMenuProps {
   onSidebarChange: (isOpen: boolean) => void;
   dateRange?: DateRange;
   selectedCategory?: string;
-  onCategoryChange?: (category: string) => void;
+  onCategoryChange?: (category: string | undefined) => void;
 }
 
 const MapSideMenu: React.FC<MapSideMenuProps> = ({
@@ -131,7 +131,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  onCategoryChange?.(label);
+                  if (isSelected) {
+                    onCategoryChange?.(undefined);
+                  } else {
+                    onCategoryChange?.(label);
+                  }
                 }}
               >
                 {label}
@@ -220,7 +224,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
         selectedAreas={selectedAreas}
       />
     ),
-    vehicle: <VehicleContainer />,
+    vehicle: <VehicleContainer selectedCategory={selectedCategory} />,
     stats: (
       <MapStats
         dateRange={dateRange}

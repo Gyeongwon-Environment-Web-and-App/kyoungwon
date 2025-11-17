@@ -53,9 +53,12 @@ const MapStats: React.FC<MapStatsProps> = ({
   selectedAreas: externalAreas = [],
 }) => {
   const mappedTrashType = useMemo(() => {
+    // 선택해제
+    if (selectedCategory === undefined) {
+      return '전체통계';
+    }
     return mapCategoryToTrashType(selectedCategory || 'all');
   }, [selectedCategory]);
-
   const {
     dateRange,
     selectedAreas,

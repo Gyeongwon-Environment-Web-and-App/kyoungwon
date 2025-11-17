@@ -14,7 +14,7 @@ import {
   complaintToPinDataWithGroup,
   getRepresentativeComplaint,
   groupComplaintsByAddress,
-  isValidCoordinate
+  isValidCoordinate,
 } from '@/utils/pinUtils';
 
 export default function MapOverview() {
@@ -25,7 +25,11 @@ export default function MapOverview() {
 
   // Date range state - lifted up from MapFilters
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const [complaintCategory, setComplaintCategory] = useState<string>('all');
+  const [vehicleCategory, setVehicleCategory] = useState<string | undefined>(
+    undefined
+  );
 
   const {
     activeSidebar,
@@ -51,7 +55,9 @@ export default function MapOverview() {
 
   const DEFAULT_MAP_CENTER = { lat: 37.657463236, lng: 127.035542772 };
 
-  const prevActiveSidebarRef = useRef<'complaint' | 'vehicle' | 'stats' | null>(null);
+  const prevActiveSidebarRef = useRef<'complaint' | 'vehicle' | 'stats' | null>(
+    null
+  );
 
   useEffect(() => {
     const prevSidebar = prevActiveSidebarRef.current;
@@ -66,26 +72,59 @@ export default function MapOverview() {
 
   // Callback to reset category to 'all'
   const handleCategoryReset = useCallback(() => {
-    setSelectedCategory('all');
+    setComplaintCategory('all');
   }, []);
 
   // Fetch complaints data
   const { complaints } = useMapComplaints(
-    selectedCategory,
+    complaintCategory,
     dateRange,
     handleCategoryReset
   );
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
+  const handleCategoryChange = (category: string | undefined) => {
+    if (category === undefined) {
+      setComplaintCategory('all');
+    } else {
+      setComplaintCategory(category);
+    }
   };
 
-  const handleKoreanCategoryChange = (koreanLabel: string) => {
-    const englishId = getEnglishId(koreanLabel);
-    setSelectedCategory(englishId);
+  const handleKoreanCategoryChange = (koreanLabel: string | undefined) => {
+    // 선택 해제 (deselection)
+    if (koreanLabel === undefined) {
+      if (activeSidebar === 'vehicle') {
+        setVehicleCategory(undefined);
+      } else if (activeSidebar === 'complaint' || activeSidebar === 'stats') {
+        setComplaintCategory('all'); // 통계: 'all' = '전체통계'
+      }
+      return;
+    }
+
+    // 카테고리 선택
+    if (activeSidebar === 'complaint' || activeSidebar === 'stats') {
+      const englishId = getEnglishId(koreanLabel);
+      setComplaintCategory(englishId);
+    } else if (activeSidebar === 'vehicle') {
+      setVehicleCategory(koreanLabel);
+    }
   };
 
-  const currentKoreanLabel = getKoreanLabel(selectedCategory);
+  const sidebarCategory = useMemo(() => {
+    if (activeSidebar === 'vehicle') {
+      return vehicleCategory; // undefined = show all vehicles
+    }
+
+    // 민원, 통계: 영어 -> 한국어
+    const koreanLabel = getKoreanLabel(complaintCategory);
+
+    // 통계::  'all' = undefined -> '전체통계'
+    if (activeSidebar === 'stats' && complaintCategory === 'all') {
+      return undefined;
+    }
+
+    return koreanLabel;
+  }, [activeSidebar, complaintCategory, vehicleCategory]);
 
   // 민원 -> 지도 핀
   const pins = useMemo((): PinData[] => {
@@ -124,25 +163,36 @@ export default function MapOverview() {
     if (selectedComplaintId && selectedPinCoordinates) {
       centerMapOnSelectedPinWithRetry();
     }
-  }, [selectedComplaintId, selectedPinCoordinates, centerMapOnSelectedPinWithRetry])
+  }, [
+    selectedComplaintId,
+    selectedPinCoordinates,
+    centerMapOnSelectedPinWithRetry,
+  ]);
 
   useEffect(() => {
     if (selectedComplaintId && !isGeocoding && geocodedPins.length > 0) {
-      // Retry centering when geocoding is complete
       centerMapOnSelectedPinWithRetry();
     }
-  }, [selectedComplaintId, isGeocoding, geocodedPins, centerMapOnSelectedPinWithRetry]);
+  }, [
+    selectedComplaintId,
+    isGeocoding,
+    geocodedPins,
+    centerMapOnSelectedPinWithRetry,
+  ]);
 
-  const findPinCoordinatesByComplaintId = useCallback((complaintId: string) => {
-    const pin = pins.find(p => p.complaintId.toString() === complaintId);
-    return pin ? { lat: pin.lat, lng: pin.lng } : null;
-  }, [pins]);
+  const findPinCoordinatesByComplaintId = useCallback(
+    (complaintId: string) => {
+      const pin = pins.find((p) => p.complaintId.toString() === complaintId);
+      return pin ? { lat: pin.lat, lng: pin.lng } : null;
+    },
+    [pins]
+  );
 
   // Handle URL parameter changes and route-based navigation
   useEffect(() => {
     const pathname = location.pathname;
 
-    if(!pathname.startsWith('/map/overview')) {
+    if (!pathname.startsWith('/map/overview')) {
       setMapCenter(DEFAULT_MAP_CENTER);
       return;
     }
@@ -189,17 +239,24 @@ export default function MapOverview() {
 
   useEffect(() => {
     if (selectedComplaintId && geocodedPins.length > 0) {
-      // Check if we can now center on the selected pin
       const selectedPin = geocodedPins.find(
-        pin => pin.complaintId.toString() === selectedComplaintId
+        (pin) => pin.complaintId.toString() === selectedComplaintId
       );
-      
+
       if (selectedPin && isValidCoordinate(selectedPin.lat, selectedPin.lng)) {
-        setSelectedPinCoordinates({ lat: selectedPin.lat, lng: selectedPin.lng });
+        setSelectedPinCoordinates({
+          lat: selectedPin.lat,
+          lng: selectedPin.lng,
+        });
         centerMapOnSelectedPin();
       }
     }
-  }, [selectedComplaintId, geocodedPins, setSelectedPinCoordinates, centerMapOnSelectedPin]);
+  }, [
+    selectedComplaintId,
+    geocodedPins,
+    setSelectedPinCoordinates,
+    centerMapOnSelectedPin,
+  ]);
 
   // Handle sidebar change and sync with URL
   const handleSidebarChange = (isOpen: boolean) => {
@@ -226,14 +283,14 @@ export default function MapOverview() {
       <MapSideMenu
         onSidebarChange={handleSidebarChange}
         dateRange={dateRange}
-        selectedCategory={currentKoreanLabel}
+        selectedCategory={sidebarCategory}
         onCategoryChange={handleKoreanCategoryChange}
       />
       <MapFilters
         sidebarOpen={sidebarOpen}
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
-        selectedCategory={selectedCategory}
+        selectedCategory={complaintCategory}
         onCategoryChange={handleCategoryChange}
       />
       {/* Render nested routes with dateRange context */}

@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { useVehicles } from '@/hooks/useVehicles';
 
 import VehicleCard from './VehicleCard';
 
-const VehicleContainer: React.FC = () => {
+interface VehicleContainerProps {
+  selectedCategory?: string;
+}
+
+const VehicleContainer: React.FC<VehicleContainerProps> = ({ selectedCategory }) => {
   const { vehicles, isLoading, fetchError } = useVehicles();
+
+  const filterVehicles = useMemo(() => {
+    if (!selectedCategory) {
+      return vehicles;
+    }
+
+    return vehicles.filter(vehicle => {
+      return vehicle.teams?.category === selectedCategory;
+    }); 
+  }, [vehicles, selectedCategory]);
 
   if (isLoading) {
     return (
@@ -23,7 +37,7 @@ const VehicleContainer: React.FC = () => {
     );
   }
 
-  if (!vehicles || vehicles.length === 0) {
+  if (!filterVehicles || filterVehicles.length === 0) {
     return (
       <div className="flex justify-center items-center py-12">
         <p className="text-gray-500">차량 정보가 없습니다</p>
@@ -33,7 +47,7 @@ const VehicleContainer: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      {vehicles.map((vehicle) => (
+      {filterVehicles.map((vehicle) => (
         <VehicleCard
           key={vehicle.id}
           brandName={vehicle.vehicleType}

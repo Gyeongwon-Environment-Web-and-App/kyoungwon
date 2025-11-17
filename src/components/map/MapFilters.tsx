@@ -23,7 +23,7 @@ interface MapFiltersProps {
   // onFilterChange: (filter: FilterOptions) => void;
   // isLoading?: boolean;
   selectedCategory?: string;
-  onCategoryChange?: (category: string) => void;
+  onCategoryChange?: (category: string | undefined) => void;
 }
 
 // interface FilterOptions {
