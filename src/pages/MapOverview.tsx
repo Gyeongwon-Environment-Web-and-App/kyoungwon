@@ -17,6 +17,8 @@ import {
   isValidCoordinate,
 } from '@/utils/pinUtils';
 
+const DEFAULT_MAP_CENTER = { lat: 37.657463236, lng: 127.035542772 };
+
 export default function MapOverview() {
   const { complaintId } = useParams<{ complaintId?: string }>();
   const navigate = useNavigate();
@@ -53,7 +55,21 @@ export default function MapOverview() {
     geocodedPins,
   } = useMapOverviewStore();
 
-  const DEFAULT_MAP_CENTER = { lat: 37.657463236, lng: 127.035542772 };
+  const sidebarQueryParam = useMemo<
+    'complaint' | 'vehicle' | 'stats' | null
+  >(() => {
+    const params = new URLSearchParams(location.search);
+    const sidebar = params.get('sidebar');
+    if (
+      sidebar === 'complaint' ||
+      sidebar === 'vehicle' ||
+      sidebar === 'stats'
+    ) {
+      return sidebar;
+    }
+
+    return null;
+  }, [location.search]);
 
   const prevActiveSidebarRef = useRef<'complaint' | 'vehicle' | 'stats' | null>(
     null
@@ -209,13 +225,34 @@ export default function MapOverview() {
       if (pinCoordinates) {
         setSelectedPinCoordinates(pinCoordinates);
       }
-    } else if (pathname.includes('/complaints') && !complaintId) {
+      return;
+    }
+
+    if (pathname.includes('/complaints') && !complaintId) {
       // Navigate to complaint list view
       setCurrentView('list');
       openComplaintList();
       setSidebarOpen(true);
       setActiveSidebar('complaint');
-    } else if (pathname === '/map/overview') {
+      return;
+    }
+
+    if (pathname === '/map/overview' && sidebarQueryParam) {
+      setSidebarOpen(true);
+      setActiveSidebar(sidebarQueryParam);
+
+      if (sidebarQueryParam === 'complaint') {
+        setCurrentView('list');
+        openComplaintList();
+      } else {
+        setCurrentView(null);
+        clearSelectedComplaint();
+      }
+
+      return;
+    }
+
+    if (pathname === '/map/overview') {
       // Base map overview - no specific view
       setCurrentView(null);
       clearSelectedComplaint();
@@ -226,6 +263,7 @@ export default function MapOverview() {
   }, [
     location.pathname,
     complaintId,
+    sidebarQueryParam,
     setSelectedComplaintId,
     setCurrentView,
     openComplaintDetail,
@@ -235,6 +273,7 @@ export default function MapOverview() {
     setActiveSidebar,
     setSelectedPinCoordinates,
     findPinCoordinatesByComplaintId,
+    setMapCenter,
   ]);
 
   useEffect(() => {

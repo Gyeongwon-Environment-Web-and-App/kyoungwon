@@ -21,13 +21,24 @@ interface HeaderProps {
   onLogout: () => void;
 }
 
-const menuItems = [
+type SidebarShortcut = 'complaint' | 'vehicle' | 'stats';
+
+interface MenuItem {
+  name: string;
+  route: string;
+  sidebar?: SidebarShortcut;
+}
+
+const menuItems: {
+  label: string;
+  submenu: MenuItem[];
+}[] = [
   {
     label: '지도',
     submenu: [
-      { name: '민원 목록', route: '/map/overview' },
-      { name: '차량 조회', route: '/map/overview' },
-      { name: '구역별 통계', route: '/map/overview' },
+      { name: '민원 목록', route: '/map/overview', sidebar: 'complaint' },
+      { name: '차량 조회', route: '/map/overview', sidebar: 'vehicle' },
+      { name: '구역별 통계', route: '/map/overview', sidebar: 'stats' },
       { name: '관할 구역 수정', route: '/' },
     ],
   },
@@ -62,6 +73,9 @@ export default function Header({ onLogout }: HeaderProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<number[]>([]);
+
+  const buildTargetRoute = (route: string, sidebar?: SidebarShortcut) =>
+    sidebar ? `${route}?sidebar=${sidebar}` : route;
 
   const toggleMenu = (index: number) => {
     setExpandedMenus((prev) =>
@@ -122,7 +136,10 @@ export default function Header({ onLogout }: HeaderProps) {
                     <div
                       key={subIdx}
                       className="py-2 hover:text-gray-400 cursor-pointer font-semibold lg:text-lg text-md"
-                      onClick={() => navigate(sub.route)}
+                      onClick={() => {
+                        navigate(buildTargetRoute(sub.route, sub.sidebar));
+                        setShowDropdown(false);
+                      }}
                     >
                       {sub.name}
                     </div>
@@ -216,7 +233,9 @@ export default function Header({ onLogout }: HeaderProps) {
                             className="text-left py-1 text-[#656565] hover:text-gray-600 transition-colors"
                             onClick={() => {
                               setMobileMenuOpen(false);
-                              navigate(sub.route);
+                              navigate(
+                                buildTargetRoute(sub.route, sub.sidebar)
+                              );
                             }}
                           >
                             {sub.name}
