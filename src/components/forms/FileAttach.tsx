@@ -1,5 +1,9 @@
 import React, { useRef } from 'react';
 
+import { X } from 'lucide-react';
+
+import { Button } from '../ui/button';
+
 // Generic type for any form data with uploadedFiles
 export type FileData = {
   name: string;
@@ -36,6 +40,13 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
     fileInputRef.current?.click();
   };
 
+  const handleRemoveFile = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      uploadedFiles: prev.uploadedFiles.filter((_, i) => i !== index),
+    }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length === 0) return;
@@ -51,11 +62,11 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
       // Store file locally without uploading
       const newFile: FileData = {
         name: selectedFile.name,
-        url: '', 
+        url: '',
         type: selectedFile.type || 'application/octet-stream',
         size: selectedFile.size,
         previewUrl: previewUrl || undefined,
-        file: selectedFile, 
+        file: selectedFile,
       };
 
       console.log('파일 선택됨 (업로드 대기):', newFile.name);
@@ -103,11 +114,20 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
 
         <div className="ml-5 text-sm md:text-base">
           {formData.uploadedFiles.length > 0 ? (
-            <div className="flex flex-row gap-3">
+            <div className="flex flex-row flex-wrap items-center gap-3">
               {formData.uploadedFiles.map((file, index) => (
-                <span key={index} className="text-xs md:text-sm">
-                  {file.name}
-                </span>
+                <div key={index} className="flex items-center gap-x-2">
+                  <span className="text-xs md:text-sm">{file.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    className="cursor-pointer p-0 hover:bg-white"
+                    onClick={() => handleRemoveFile(index)}
+                  >
+                    <X className="h-4 w-4 text-red" />
+                  </Button>
+                </div>
               ))}
             </div>
           ) : (

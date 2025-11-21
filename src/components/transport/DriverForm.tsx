@@ -305,7 +305,7 @@ const DriverForm: React.FC<DriverFormProps> = ({ onSubmit }) => {
           <FileAttach
             showLabel={true}
             className1="col-span-1"
-            className2="col-span-2"
+            className2="col-span-2 flex items-center"
             formData={formData}
             setFormData={(updates) => {
               if (typeof updates === 'function') {
