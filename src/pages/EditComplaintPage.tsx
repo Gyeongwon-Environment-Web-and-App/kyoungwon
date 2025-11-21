@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/hooks/useAuth';
 import { complaintService } from '@/services/complaintService';
+import { uploadFilesToCloudflare } from '@/services/fileUploadService';
 import { useComplaintFormStore } from '@/stores/complaintFormStore';
 import type { Complaint } from '@/types/complaint';
 
@@ -68,16 +69,59 @@ const EditComplaintPage: React.FC = () => {
     }
 
     try {
-      const objectInfos =
-        formData.uploadedFiles && formData.uploadedFiles.length > 0
-          ? formData.uploadedFiles
-              .filter((file) => file.url && file.url.trim() !== '')
-              .map((file) => ({
-                objectKey: file.url as string,
-                filenameOriginal:
-                  file.name || file.url.split('/').pop() || 'file',
-              }))
-          : undefined;
+      let objectInfos:
+        | Array<{ objectKey: string; filenameOriginal: string }>
+        | undefined;
+
+      // Process files: Get new keys for all files (both existing and new)
+      if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
+        // Convert all files to File objects
+        const filesToUpload: File[] = [];
+
+        for (const fileData of formData.uploadedFiles) {
+          if (fileData.file) {
+            // New file that was selected
+            filesToUpload.push(fileData.file);
+          } else if (fileData.url && fileData.previewUrl) {
+            // Existing file - download from presigned URL and convert to File
+            try {
+              const response = await fetch(fileData.previewUrl);
+              if (!response.ok) {
+                throw new Error(
+                  `Failed to download file: ${response.statusText}`
+                );
+              }
+              const blob = await response.blob();
+              const file = new File(
+                [blob],
+                fileData.name || fileData.url.split('/').pop() || 'file',
+                { type: blob.type || 'application/octet-stream' }
+              );
+              filesToUpload.push(file);
+            } catch (error) {
+              console.error('Failed to download existing file:', error);
+              throw new Error('기존 파일을 불러오는데 실패했습니다.');
+            }
+          }
+        }
+
+        // Get new keys and upload all files
+        if (filesToUpload.length > 0) {
+          console.log('Uploading files with new keys:', filesToUpload.length);
+          const uploadedFiles = await uploadFilesToCloudflare(
+            filesToUpload,
+            'complaint'
+          );
+
+          // Create objectInfos from uploaded files with new keys
+          objectInfos = uploadedFiles.map((uploaded) => ({
+            objectKey: uploaded.key, // New key from Cloudflare
+            filenameOriginal: uploaded.originalName,
+          }));
+
+          console.log('Files uploaded with new keys:', objectInfos);
+        }
+      }
 
       // Prepare update data according to API requirements
       const updateData = {
@@ -110,11 +154,16 @@ const EditComplaintPage: React.FC = () => {
 
       console.log('Complaint updated successfully');
 
-      // Navigate back to the complaint detail view
-      navigate(`/map/overview/complaints/${originalComplaint.id}`);
+      // Navigate back to the complaint detail view with timestamp to force refresh
+      // This ensures the ComplaintDetail component refetches the updated data
+      navigate(
+        `/map/overview/complaints/${originalComplaint.id}?refresh=${Date.now()}`
+      );
     } catch (err) {
       console.error('Failed to update complaint:', err);
-      alert('민원 수정에 실패했습니다. 다시 시도해주세요.');
+      const errorMessage =
+        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      alert(`민원 수정에 실패했습니다: ${errorMessage}`);
     }
   };
 

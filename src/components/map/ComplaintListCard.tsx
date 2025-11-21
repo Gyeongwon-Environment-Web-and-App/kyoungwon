@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -28,7 +28,7 @@ const getCategoryIcon = (category: string): string => {
     case '기타':
       return other;
     default:
-      return recycle; // Default fallback
+      return recycle;
   }
 };
 
@@ -38,7 +38,6 @@ interface ComplaintListCardProps {
 
 const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
   const navigate = useNavigate();
-  const [imageError, setImageError] = useState(false);
 
   const handleCardClick = () => {
     // 페이지 이동 전 현재 경로 저장
@@ -48,19 +47,10 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
     navigate(`/map/overview/complaints/${complaint.id}`);
   };
 
-  // Get the first image from presigned_links array, fallback to sample
-  const getImageUrl = () => {
-    if (
-      complaint.presigned_links &&
-      complaint.presigned_links.length > 0 &&
-      !imageError
-    ) {
-      return complaint.presigned_links[0].url;
-    }
-    return sample;
-  };
-
-  const imageUrl = getImageUrl();
+  const imageUrl =
+    complaint.presigned_links && complaint.presigned_links.length > 0
+      ? complaint.presigned_links[0].url
+      : sample;
 
   return (
     <div className="cursor-pointer" onClick={handleCardClick}>
@@ -73,9 +63,14 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               : '임시 이미지'
           }
           className="rounded-lg w-28 xsm:w-32 md:w-40 max-h-28"
-          onError={() => {
-            // If image fails to load, fallback to sample
-            setImageError(true);
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            const presignedUrl = complaint.presigned_links?.[0]?.url;
+            const currentSrc = target.src;
+
+            if (presignedUrl && currentSrc === presignedUrl) {
+              target.src = sample;
+            }
           }}
         />
         <div className="py-1">

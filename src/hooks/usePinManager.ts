@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import foodIcon from '@/assets/icons/categories/tags/food.svg';
+import generalIcon from '@/assets/icons/categories/tags/general.svg';
+import otherIcon from '@/assets/icons/categories/tags/other.svg';
+import recycleIcon from '@/assets/icons/categories/tags/recycle.svg';
+import repeatIcon from '@/assets/icons/categories/tags/repeat.svg';
+import greenCircleIcon from '@/assets/icons/map_card/green_circle.svg';
+import locationPinIcon from '@/assets/icons/map_card/location_pin.svg';
+import yellowCircleIcon from '@/assets/icons/map_card/yellow_circle.svg';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { PinClickEvent, PinData } from '@/types/map';
 import { formatDateTimeToKorean } from '@/utils/formatDate';
@@ -8,19 +16,18 @@ import { getPinImageSrc, PIN_CONFIGS } from '@/utils/pinUtils';
 
 import type { KakaoMap } from './useKakaoMaps';
 
-// Icon paths - moved outside component to avoid re-renders
 const ICON_PATHS = {
   category: {
-    재활용: '/src/assets/icons/categories/tags/recycle.svg',
-    음식물: '/src/assets/icons/categories/tags/food.svg',
-    생활: '/src/assets/icons/categories/tags/general.svg',
-    기타: '/src/assets/icons/categories/tags/other.svg',
+    재활용: recycleIcon,
+    음식물: foodIcon,
+    생활: generalIcon,
+    기타: otherIcon,
   },
-  repeat: '/src/assets/icons/categories/tags/repeat.svg',
-  pin: '/src/assets/icons/map_card/location_pin.svg',
+  repeat: repeatIcon,
+  pin: locationPinIcon,
   status: {
-    completed: '/src/assets/icons/map_card/green_circle.svg',
-    pending: '/src/assets/icons/map_card/yellow_circle.svg',
+    completed: greenCircleIcon,
+    pending: yellowCircleIcon,
   },
 } as const;
 

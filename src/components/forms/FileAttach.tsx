@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 // Generic type for any form data with uploadedFiles
 export type FileData = {
@@ -23,15 +23,13 @@ interface FileAttachProps<T extends { uploadedFiles: FileData[] }> {
 function FileAttach<T extends { uploadedFiles: FileData[] }>({
   formData,
   setFormData,
-  objectCategory, // Reserved for future use (upload happens in confirm stage)
+  objectCategory,
   showLabel = true,
   labelText = '파일 첨부',
   className1 = '',
   className2 = '',
 }: FileAttachProps<T>) {
-  // objectCategory is reserved for future use - files are uploaded in ComplaintConfirm stage
   void objectCategory;
-  const [, setUploadedFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileClick = () => {
@@ -39,38 +37,43 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length === 0) return;
 
-    setUploadedFileName(null);
+    // Process all selected files
+    const newFiles: FileData[] = selectedFiles.map((selectedFile) => {
+      // Create a local preview URL for images (for display purposes)
+      let previewUrl: string = '';
+      if (selectedFile.type.startsWith('image/')) {
+        previewUrl = URL.createObjectURL(selectedFile);
+      }
 
-    // Create a local preview URL for images (for display purposes)
-    let previewUrl: string = '';
-    if (selectedFile.type.startsWith('image/')) {
-      previewUrl = URL.createObjectURL(selectedFile);
-    }
+      // Store file locally without uploading
+      const newFile: FileData = {
+        name: selectedFile.name,
+        url: '', 
+        type: selectedFile.type || 'application/octet-stream',
+        size: selectedFile.size,
+        previewUrl: previewUrl || undefined,
+        file: selectedFile, 
+      };
 
-    // Store file locally without uploading
-    // Upload will happen in ComplaintConfirm stage
-    const newFile: FileData = {
-      name: selectedFile.name,
-      url: '', // Will be filled with Cloudflare key after upload
-      type: selectedFile.type || 'application/octet-stream',
-      size: selectedFile.size,
-      previewUrl: previewUrl || undefined,
-      file: selectedFile, // Store original File object for later upload
-    };
+      console.log('파일 선택됨 (업로드 대기):', newFile.name);
+      console.log('파일 크기:', selectedFile.size, '바이트');
 
-    console.log('파일 선택됨 (업로드 대기):', newFile.name);
-    console.log('파일 크기:', selectedFile.size, '바이트');
+      return newFile;
+    });
 
     // Update form data - handle both function and object updates
     setFormData((prev) => ({
       ...prev,
-      uploadedFiles: [...prev.uploadedFiles, newFile],
+      uploadedFiles: [...prev.uploadedFiles, ...newFiles],
     }));
 
-    setUploadedFileName(selectedFile.name);
+    // Reset input to allow selecting the same files again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -87,6 +90,7 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
           onChange={handleChange}
           style={{ display: 'none' }}
           accept="image/*"
+          multiple
         />
 
         <button
@@ -97,11 +101,19 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
           파일 선택
         </button>
 
-        <span className="ml-5 text-sm md:text-base">
-          {formData.uploadedFiles.length > 0
-            ? formData.uploadedFiles[formData.uploadedFiles.length - 1].name
-            : '선택된 파일 없음'}
-        </span>
+        <div className="ml-5 text-sm md:text-base">
+          {formData.uploadedFiles.length > 0 ? (
+            <div className="flex flex-row gap-3">
+              {formData.uploadedFiles.map((file, index) => (
+                <span key={index} className="text-xs md:text-sm">
+                  {file.name}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span>선택된 파일 없음</span>
+          )}
+        </div>
       </div>
     </>
   );

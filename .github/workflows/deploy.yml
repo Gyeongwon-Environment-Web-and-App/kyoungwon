@@ -46,11 +46,13 @@ jobs:
 
       # 3) 의존성 설치
       - name: Install dependencies
+        working-directory: ./frontend
         run: npm ci
 
       # 4) Vite 빌드 (dist 폴더 생성)
       #    🔥 여기에서 GitHub Secrets 를 환경변수로 주입!
       - name: Build
+        working-directory: ./frontend
         run: npm run build
         env:
           VITE_KAKAO_JAVASCRIPT_KEY: ${{ secrets.VITE_KAKAO_JAVASCRIPT_KEY }}
@@ -66,7 +68,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./dist
+          path: ./frontend/dist
 
       # 7) GitHub Pages로 배포
       - name: Deploy to GitHub Pages

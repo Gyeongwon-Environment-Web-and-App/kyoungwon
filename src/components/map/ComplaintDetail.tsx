@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { useComplaints } from '@/hooks/useComplaints';
 import apiClient from '@/lib/api';
@@ -54,6 +54,7 @@ const getCategoryIcon = (category: string): string => {
 
 const ComplaintDetail: React.FC = () => {
   const { complaintId } = useParams<{ complaintId: string }>();
+  const [searchParams] = useSearchParams();
   const [addressFrequency, setAddressFrequency] = useState<number | null>(null);
   const [phoneFrequency, setPhoneFrequency] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -154,8 +155,10 @@ const ComplaintDetail: React.FC = () => {
 
   // Get the complaint ID from URL params
   const currentComplaintId = complaintId;
+  // Get refresh parameter to force refetch after edit
+  const refreshParam = searchParams.get('refresh');
 
-  // Fetch complaint data when ID changes
+  // Fetch complaint data when ID changes or refresh parameter changes
   useEffect(() => {
     if (!currentComplaintId) {
       setSelectedComplaint(null);
@@ -169,6 +172,13 @@ const ComplaintDetail: React.FC = () => {
         const complaint = await getComplaintById(currentComplaintId);
         console.log('ComplaintDetail - Fetched complaint data:', complaint);
         setSelectedComplaint(complaint);
+
+        // Remove refresh parameter from URL after successful fetch
+        if (refreshParam) {
+          navigate(`/map/overview/complaints/${currentComplaintId}`, {
+            replace: true,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch complaint:', error);
       }
@@ -176,7 +186,13 @@ const ComplaintDetail: React.FC = () => {
 
     // Always fetch fresh data, don't rely on cached data
     fetchComplaint();
-  }, [currentComplaintId]);
+  }, [
+    currentComplaintId,
+    refreshParam,
+    getComplaintById,
+    navigate,
+    setSelectedComplaint,
+  ]);
 
   useEffect(() => {
     if (!isPopupOpen && currentComplaintId) {
@@ -191,7 +207,7 @@ const ComplaintDetail: React.FC = () => {
       };
       refreshComplaint();
     }
-  }, [isPopupOpen, currentComplaintId]);
+  }, [isPopupOpen, currentComplaintId, getComplaintById, setSelectedComplaint]);
 
   useEffect(() => {
     if (selectedComplaint) {
@@ -304,6 +320,16 @@ const ComplaintDetail: React.FC = () => {
             }
             alt="민원 이미지"
             className="rounded-sm w-full"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              const presignedUrl =
+                selectedComplaint?.presigned_links?.[currentImageIndex]?.url;
+              const currentSrc = target.src;
+
+              if (presignedUrl && currentSrc === presignedUrl) {
+                target.src = sample;
+              }
+            }}
           />
           {selectedComplaint?.presigned_links &&
             selectedComplaint.presigned_links.length > 1 && (

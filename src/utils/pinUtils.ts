@@ -1,3 +1,12 @@
+// Import all pin images as modules
+import foodPin from '@/assets/icons/pins/food_pin.svg';
+import foodRepeat from '@/assets/icons/pins/food_repeat.svg';
+import generalPin from '@/assets/icons/pins/general_pin.svg';
+import generalRepeat from '@/assets/icons/pins/general_repeat.svg';
+import othersPin from '@/assets/icons/pins/others_pin.svg';
+import othersRepeat from '@/assets/icons/pins/others_repeat.svg';
+import recyclePin from '@/assets/icons/pins/recycle_pin.svg';
+import recycleRepeat from '@/assets/icons/pins/recycle_repeat.svg';
 import type { Complaint } from '@/types/complaint';
 import type { MapPinConfig, PinData } from '@/types/map';
 
@@ -43,12 +52,18 @@ export const PIN_CONFIGS: Record<string, MapPinConfig> = {
   },
 };
 
+// Pin image mapping for all categories and variants
+const PIN_IMAGES: Record<string, { pin: string; repeat: string }> = {
+  food: { pin: foodPin, repeat: foodRepeat },
+  general: { pin: generalPin, repeat: generalRepeat },
+  recycle: { pin: recyclePin, repeat: recycleRepeat },
+  others: { pin: othersPin, repeat: othersRepeat },
+};
+
 export const getPinImageSrc = (
   categories: string[],
   isRepeat: boolean
 ): string => {
-  const basePath = '/src/assets/icons/pins/';
-
   const validCategories = categories.filter((cat) => cat !== 'manager');
   const primaryCategory = validCategories[0] || '기타';
 
@@ -60,9 +75,9 @@ export const getPinImageSrc = (
   };
 
   const categoryKey = categoryMap[primaryCategory] || 'general';
-  const suffix = isRepeat ? '_repeat' : '_pin';
+  const pinType = isRepeat ? 'repeat' : 'pin';
 
-  return `${basePath}${categoryKey}${suffix}.svg`;
+  return PIN_IMAGES[categoryKey]?.[pinType] || PIN_IMAGES.general.pin;
 };
 
 // Complaint -> Pin
