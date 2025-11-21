@@ -15,7 +15,6 @@ import {
   type OriginalComplaintData,
 } from '@/utils/computeDiff';
 
-// Map API response structure
 interface MapComplaint {
   id: number;
   address: Address;
@@ -32,10 +31,8 @@ interface MapComplaint {
 }
 
 const formatDate = (date: Date): string => {
-  // Ensure we have a valid Date object
   const dateObj = date instanceof Date ? date : new Date(date);
 
-  // Check if the date is valid
   if (isNaN(dateObj.getTime())) {
     throw new Error('Invalid date provided');
   }
@@ -47,7 +44,6 @@ const getDateRangeFromPicker = (dateRange: DateRange | undefined) => {
   const today = new Date();
 
   if (!dateRange?.from || !dateRange?.to) {
-    // Default: one month before to today
     const oneMonthAgo = new Date(today);
     oneMonthAgo.setMonth(today.getMonth() - 1);
 
@@ -63,7 +59,6 @@ const getDateRangeFromPicker = (dateRange: DateRange | undefined) => {
   };
 };
 
-// Helper function to convert ComplaintExtended to Complaint
 const convertComplaintExtendedToComplaint = (
   complaintExtended: ComplaintExtended
 ): Complaint => {
@@ -138,7 +133,6 @@ const convertComplaintForCategoryToComplaint = (
   };
 };
 
-// Helper function to convert MapComplaint to Complaint
 const convertMapComplaintToComplaint = (
   mapComplaint: MapComplaint
 ): Complaint => {
@@ -197,36 +191,18 @@ export const complaintService = {
         endDate: dateRangeRequest.endDate,
       };
 
-      // Only include category if it's provided and not 'all'
       if (category && category !== 'all') {
         requestBody.category = category;
       }
-
-      console.log('🌐 API Call: /complaint/getByCategoryAndOrDates', {
-        requestBody,
-        timestamp: new Date().toISOString(),
-      });
 
       const response = await apiClient.post<ComplaintApiResponse>(
         '/complaint/getByCategoryAndOrDates',
         requestBody
       );
 
-      console.log('📡 API Response for getByCategoryAndOrDates:', {
-        rawResponse: response.data,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Convert the API response to the expected format
       const complaints = response.data.complaints_extended.map(
         convertComplaintExtendedToComplaint
       );
-
-      console.log('🔄 Converted complaints:', {
-        complaints,
-        count: complaints.length,
-        timestamp: new Date().toISOString(),
-      });
 
       return complaints;
     } catch (error) {
@@ -240,18 +216,9 @@ export const complaintService = {
 
   async getComplaintById(id: string): Promise<Complaint> {
     try {
-      console.log('🌐 API Call: /complaint/getById/' + id, {
-        timestamp: new Date().toISOString(),
-      });
-
       const response = await apiClient.get<ComplaintByIdApiResponse>(
         `/complaint/getById/${id}`
       );
-
-      console.log('📡 API Response for getById:', {
-        rawResponse: response.data,
-        timestamp: new Date().toISOString(),
-      });
 
       if (!response.data) {
         throw new Error('API response data is null or undefined');
@@ -264,12 +231,6 @@ export const complaintService = {
       const convertedComplaint = convertComplaintExtendedToComplaint(
         response.data.complaint_extended
       );
-
-      console.log('🔄 Converted complaint for getById:', {
-        convertedComplaint,
-        category: convertedComplaint.category,
-        timestamp: new Date().toISOString(),
-      });
 
       return convertedComplaint;
     } catch (error) {
@@ -288,16 +249,12 @@ export const complaintService = {
         throw new Error('Original complaint data is required for comparison');
       }
 
-      // Use computeComplaintDiff to get only changed fields
       const payload = computeComplaintDiff(originalComplaint, updates);
 
-      // Only send the request if there are changes
       if (Object.keys(payload).length === 0) {
-        console.log(`No changes detected for complaint ${id}, skipping update`);
         return;
       }
 
-      console.log(`Updating complaint ${id} with payload:`, payload);
       await apiClient.patch(`/complaint/edit/${id}`, payload);
     } catch (error) {
       console.error(`Error updating complaint ${id}:`, error);
@@ -318,18 +275,8 @@ export const complaintService = {
 
   async getAllCategories(): Promise<string[]> {
     try {
-      console.log('🌐 API Call: /complaint/getAllCategories', {
-        timestamp: new Date().toISOString(),
-      });
-
       const response = await apiClient.get('/complaint/getAllCategories');
 
-      console.log('📡 API Response for all categories:', {
-        rawResponse: response.data,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Filter to only include allowed categories
       const allowedCategories = ['음식물', '재활용', '생활', '기타'];
       const categories = response.data.categories || response.data || [];
 
@@ -337,27 +284,15 @@ export const complaintService = {
         allowedCategories.includes(category)
       );
 
-      console.log('🔄 Filtered categories:', {
-        allCategories: categories,
-        filteredCategories,
-        timestamp: new Date().toISOString(),
-      });
-
       return filteredCategories;
     } catch (error) {
       console.error('Error fetching all categories:', error);
-      // Return fallback categories if API fails
       return ['음식물', '재활용', '생활', '기타'];
     }
   },
 
   async getComplaintsForMap(categories: string[]): Promise<Complaint[]> {
     try {
-      console.log('🌐 API Call: /map/getRecentComplaintsByCategories', {
-        categories,
-        timestamp: new Date().toISOString(),
-      });
-
       const response = await apiClient.post(
         '/map/getRecentComplaintsByCategories',
         {
@@ -365,16 +300,9 @@ export const complaintService = {
         }
       );
 
-      console.log('📡 API Response for map categories:', {
-        rawResponse: response.data,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Handle different possible response structures
       let complaints: Complaint[] = [];
 
       if (response.data.data && Array.isArray(response.data.data)) {
-        // If response has data array (map API structure: {message: 'OK', data: [...]})
         complaints = response.data.data.map((item: unknown) => {
           return convertMapComplaintToComplaint(item as MapComplaint);
         });
@@ -401,12 +329,6 @@ export const complaintService = {
         throw new Error('Unexpected API response structure');
       }
 
-      console.log('🔄 Converted complaints for map:', {
-        complaints,
-        count: complaints.length,
-        timestamp: new Date().toISOString(),
-      });
-
       return complaints;
     } catch (error) {
       console.error('Error fetching complaints for map by categories:', error);
@@ -423,26 +345,14 @@ export const complaintService = {
         endDate: dateRangeRequest.endDate,
       };
 
-      console.log('🌐 API Call: /map/getComplaintsByNegs', {
-        requestBody,
-        timestamp: new Date().toISOString(),
-      });
-
       const response = await apiClient.post(
         '/map/getComplaintsByNegs',
         requestBody
       );
 
-      console.log('📡 API Response for getComplaintsByNegs:', {
-        rawResponse: response.data,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Handle different possible response structures
       let complaints: Complaint[] = [];
 
       if (response.data.data && Array.isArray(response.data.data)) {
-        // If response has data array (map API structure: {message: 'OK', data: [...]})
         complaints = response.data.data.map((item: unknown) => {
           return convertMapComplaintToComplaint(item as MapComplaint);
         });
@@ -458,15 +368,9 @@ export const complaintService = {
         throw new Error('Unexpected API response structure');
       }
 
-      console.log('🔄 Converted complaints for getComplaintsByNegs:', {
-        complaints,
-        count: complaints.length,
-        timestamp: new Date().toISOString(),
-      });
-
       return complaints;
     } catch (error) {
-      console.log('complaint service-getComplaintsByNegs:', error);
+      console.error('complaint service-getComplaintsByNegs:', error);
       throw error;
     }
   },

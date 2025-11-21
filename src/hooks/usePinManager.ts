@@ -70,7 +70,6 @@ export const usePinManager = ({
     setStoreGeocodedPins(geocodedPins);
   }, [geocodedPins, setStoreGeocodedPins]);
 
-  // Create stable hash of pins to prevent unnecessary effect re-runs
   const pinsHash = useMemo(() => {
     return JSON.stringify({
       pins: pins.map((p) => ({
@@ -89,7 +88,6 @@ export const usePinManager = ({
     });
   }, [pins, selectedComplaintId]);
 
-  // Type guards for Kakao Maps objects
   const isKakaoMarker = (
     obj: unknown
   ): obj is { setMap: (map: unknown) => void } => {
@@ -101,7 +99,6 @@ export const usePinManager = ({
     );
   };
 
-  // Combine both fuclickedInfoWindownctions into one to handle category arrays and get the correct key
   const getCategoryKey = (category: string[]): string => {
     const validCategories = category.filter((cat) => cat !== 'manager');
     const primaryCategory = validCategories[0] || '기타';
@@ -115,7 +112,6 @@ export const usePinManager = ({
     return categoryMap[primaryCategory] || 'general';
   };
 
-  // Helper function to reduce Kakao Maps type casting repetition
   const getKakaoMaps = () => {
     if (!window.kakao?.maps) return null;
     return window.kakao.maps as unknown as {
@@ -144,7 +140,6 @@ export const usePinManager = ({
     };
   };
 
-  // Clear existing markers
   const clearMarkers = useCallback(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     markersRef.current.forEach((markerData: any) => {
@@ -155,7 +150,6 @@ export const usePinManager = ({
     markersRef.current = [];
   }, []);
 
-  // Create marker for a pin
   const createMarker = useCallback(
     (pin: PinData): unknown => {
       if (!mapInstance || !window.kakao) {
@@ -196,7 +190,6 @@ export const usePinManager = ({
         image: markerImage,
       });
 
-      // Get all valid categories (excluding 'manager')
       const validCategories =
         pin.teams
           ?.map((team) => team.category)
@@ -254,29 +247,24 @@ export const usePinManager = ({
         iwContent,
       };
 
-      // Add event listeners
       const addEventListener = (event: string, handler: () => void) => {
         kakaoMaps.event.addListener(marker, event, handler);
       };
 
-      // Click event for navigation and close info window
       addEventListener('click', () => {
         if (onPinClick) {
           onPinClick({ pin, marker, map: mapInstance });
         }
-        // Close info window after navigation
         if (infoWindowRef.current) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (infoWindowRef.current as any).close();
         }
       });
 
-      // Mouseover event - use shared InfoWindow
       addEventListener('mouseover', () => {
         if (mapInstance && infoWindowRef.current) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const infoWindow = infoWindowRef.current as any;
-          // Only update content if it's different to avoid unnecessary re-renders
           if (infoWindow.getContent?.() !== iwContent) {
             infoWindow.setContent(iwContent);
           }
@@ -284,7 +272,6 @@ export const usePinManager = ({
         }
       });
 
-      // Mouseout event
       addEventListener('mouseout', () => {
         if (infoWindowRef.current) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -301,25 +288,19 @@ export const usePinManager = ({
     [onPinClick, mapInstance, selectedComplaintId]
   );
 
-  // updatePins function removed - functionality moved to consolidated useEffect
-
-  // Consolidated effect that handles both geocoding and marker creation
   useEffect(() => {
     if (!mapInstance || !isLoaded) {
       return;
     }
 
-    // Prevent unnecessary re-runs by checking if pins actually changed
     if (lastPinsHashRef.current === pinsHash) {
       return;
     }
     lastPinsHashRef.current = pinsHash;
 
     const processPinsAndCreateMarkers = async () => {
-      // Always clear existing markers first
       clearMarkers();
 
-      // Create shared InfoWindow if it doesn't exist
       if (!infoWindowRef.current && window.kakao?.maps) {
         const kakaoMaps = getKakaoMaps();
         if (kakaoMaps) {
@@ -327,22 +308,18 @@ export const usePinManager = ({
         }
       }
 
-      // If no pins to process, just clear and return
       if (pins.length === 0) {
         setIsGeocoding(false);
         setGeocodedPins([]);
         return;
       }
 
-      // Set geocoding state for processing pins
       setIsGeocoding(true);
 
-      // Separate pins with valid coordinates from those that need geocoding
       const pinsWithCoords: PinData[] = [];
       const pinsNeedingGeocoding: PinData[] = [];
 
       pins.forEach((pin) => {
-        // Check if pin already has valid coordinates
         if (
           pin.lat !== 0 &&
           pin.lng !== 0 &&
@@ -357,10 +334,8 @@ export const usePinManager = ({
 
       const validPins: PinData[] = [...pinsWithCoords];
 
-      // Only geocode pins that don't have coordinates
       if (pinsNeedingGeocoding.length > 0) {
         try {
-          // Get unique addresses from pins that need geocoding
           const uniqueAddresses = [
             ...new Set(
               pinsNeedingGeocoding
@@ -369,10 +344,8 @@ export const usePinManager = ({
             ),
           ];
 
-          // Batch geocoding for all unique addresses
           const coordinatesMap = await batchGeocoding(uniqueAddresses);
 
-          // Process geocoded pins
           pinsNeedingGeocoding.forEach((pin) => {
             const addressString = pin.address?.address;
             if (addressString) {
@@ -393,7 +366,6 @@ export const usePinManager = ({
         }
       }
 
-      // Only update state if values actually changed
       setGeocodedPins((prevPins) => {
         const prevHash = JSON.stringify(
           prevPins.map((p) => ({
@@ -421,7 +393,6 @@ export const usePinManager = ({
       setGeocodedPins(validPins);
       setIsGeocoding(false);
 
-      // Create markers from the processed pins
       if (validPins.length > 0) {
         validPins.forEach((pin) => {
           const marker = createMarker(pin);

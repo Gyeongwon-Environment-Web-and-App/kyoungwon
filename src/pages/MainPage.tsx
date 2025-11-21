@@ -293,7 +293,7 @@ const MainPage: React.FC = () => {
             {notices.map((notice) => (
               <div className='flex items-center justify-between border-b border-light-border py-1.5 px-2 cursor-pointer'
               onClick={() => handleNoticeClick(notice.id)}>
-                <span>{notice.title}</span>
+                <span className='truncate'>{notice.title}</span>
                 <span>{notice.datetime.slice(0,10)}</span>
               </div>
             ))}

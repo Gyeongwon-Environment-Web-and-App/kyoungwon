@@ -1,4 +1,3 @@
-// Import all pin images as modules
 import foodPin from '@/assets/icons/pins/food_pin.svg';
 import foodRepeat from '@/assets/icons/pins/food_repeat.svg';
 import generalPin from '@/assets/icons/pins/general_pin.svg';
@@ -10,7 +9,6 @@ import recycleRepeat from '@/assets/icons/pins/recycle_repeat.svg';
 import type { Complaint } from '@/types/complaint';
 import type { MapPinConfig, PinData } from '@/types/map';
 
-// Helper function to validate coordinates
 export const isValidCoordinate = (lat: number, lng: number): boolean => {
   return (
     lat !== 0 &&
@@ -24,35 +22,33 @@ export const isValidCoordinate = (lat: number, lng: number): boolean => {
   );
 };
 
-// Pin configuration for different categories
 export const PIN_CONFIGS: Record<string, MapPinConfig> = {
   recycle: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
-    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedSize: { width: 54, height: 67.5 },
     selectedOffset: { x: 27, y: 67.5 },
   },
   food: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
-    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedSize: { width: 54, height: 67.5 },
     selectedOffset: { x: 27, y: 67.5 },
   },
   general: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
-    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedSize: { width: 54, height: 67.5 },
     selectedOffset: { x: 27, y: 67.5 },
   },
   others: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
-    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedSize: { width: 54, height: 67.5 },
     selectedOffset: { x: 27, y: 67.5 },
   },
 };
 
-// Pin image mapping for all categories and variants
 const PIN_IMAGES: Record<string, { pin: string; repeat: string }> = {
   food: { pin: foodPin, repeat: foodRepeat },
   general: { pin: generalPin, repeat: generalRepeat },
@@ -80,12 +76,10 @@ export const getPinImageSrc = (
   return PIN_IMAGES[categoryKey]?.[pinType] || PIN_IMAGES.general.pin;
 };
 
-// Complaint -> Pin
 export const complaintToPinData = (complaint: Complaint): PinData => {
   const lat = complaint.coordinates?.latitude || 0;
   const lng = complaint.coordinates?.longitude || 0;
 
-  // Validate coordinates - if invalid, they will be geocoded later in SimpleKakaoMap
   const hasValidCoordinates = isValidCoordinate(lat, lng);
 
   return {
@@ -103,7 +97,6 @@ export const complaintToPinData = (complaint: Complaint): PinData => {
   };
 };
 
-// 중복 핀 방지용 민원 그룹화
 export const groupComplaintsByAddress = (
   complaints: Complaint[]
 ): Map<string, Complaint[]> => {
@@ -120,11 +113,9 @@ export const groupComplaintsByAddress = (
   return grouped;
 };
 
-// 민원 한 개로 묶기
 export const getRepresentativeComplaint = (
   complaints: Complaint[]
 ): Complaint => {
-  // Sort by: repeat status (desc), then by datetime (desc)
   const sorted = [...complaints].sort((a, b) => {
     if (a.source.bad !== b.source.bad) {
       return b.source.bad ? 1 : -1;
