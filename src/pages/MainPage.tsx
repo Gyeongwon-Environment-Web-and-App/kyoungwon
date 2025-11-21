@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -21,10 +21,19 @@ import folder from '../assets/icons/navigation/home_menu/folder.svg';
 import mapping from '../assets/icons/navigation/home_menu/mapping.svg';
 import truck from '../assets/icons/navigation/home_menu/vehicle.svg';
 import write from '../assets/icons/navigation/home_menu/write.svg';
+import type { Notice } from '@/types/notice';
+import { noticeService } from '@/services/noticeService';
 
 const MainPage: React.FC = () => {
   // Get logout function from Zustand store
   const { logout } = useAuthStore();
+  const [notices, setNotices] = useState<Notice[]>([]);
+
+  useEffect(() => {
+    noticeService.getAllNotices(1, true).then((res) => {
+      setNotices(res.items.slice(0, 3));
+    });
+  }, []);
 
   // Get main page state from Zustand store
   const {
@@ -127,6 +136,10 @@ const MainPage: React.FC = () => {
   const handleCardClick = (route: string) => {
     navigate(route);
   };
+
+  const handleNoticeClick = (noticeId: number) => {
+        navigate(`/post/getPostById/${noticeId}/true`);
+    };
 
   //! 네비게이팅 수정!
   const menuButtons = [
@@ -276,8 +289,14 @@ const MainPage: React.FC = () => {
               className="cursor-pointer"
             />
           </div>
-          <div className="h-72 w-full mt-2 flex justify-center items-center font-semibold">
-            개발 중입니다!
+          <div className="h-72 w-full mt-2 border-t border-light-border overflow-y-auto">
+            {notices.map((notice) => (
+              <div className='flex items-center justify-between border-b border-light-border py-1.5 px-2 cursor-pointer'
+              onClick={() => handleNoticeClick(notice.id)}>
+                <span>{notice.title}</span>
+                <span>{notice.datetime.slice(0,10)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
