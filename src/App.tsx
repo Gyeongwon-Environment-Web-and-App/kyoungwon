@@ -94,6 +94,11 @@ const AppContent: React.FC = () => {
             <Route path="/notice" element={<NoticeManage />} />
             <Route path="/notice/table" element={<NoticeManage />} />
             <Route path="/notice/form" element={<NoticeManage />} />
+            <Route path="/notice/form/:noticeId" element={<NoticeManage />} />
+            <Route
+              path="/notice/detail/:id?/:mode?"
+              element={<NoticeManage />}
+            />
             <Route
               path="/post/getPostById/:id/:mode"
               element={<NoticeManage />}

@@ -7,7 +7,13 @@ import {
   type NoticeByIdApiResponse,
   type NoticeFormData,
   type NoticePagedApiResponse,
+  type UpdateNoticeResponse,
 } from '@/types/notice';
+import {
+  computeNoticeDiff,
+  type CurrentNoticeData,
+  type OriginalNoticeData,
+} from '@/utils/computeDiff';
 
 import { uploadFilesToCloudflare } from './fileUploadService';
 
@@ -53,6 +59,43 @@ function transformFilesToObjectInfos(
       objectKey: file.url,
       filenameOriginal: file.name,
     }));
+}
+
+async function reuploadFileToPresignedUrl(
+  sourceUrl: string,
+  uploadUrl: string,
+  contentType?: string
+) {
+  const downloadResponse = await fetch(sourceUrl);
+
+  if (!downloadResponse.ok) {
+    throw new Error(
+      `기존 파일 다운로드 실패 (status: ${downloadResponse.status})`
+    );
+  }
+
+  const fileBlob = await downloadResponse.blob();
+  const finalContentType =
+    contentType || fileBlob.type || 'application/octet-stream';
+
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: fileBlob,
+    headers: {
+      'Content-Type': finalContentType,
+    },
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error(
+      `새 URL로 파일 업로드 실패 (status: ${uploadResponse.status})`
+    );
+  }
+
+  return {
+    size: fileBlob.size,
+    contentType: finalContentType,
+  };
 }
 
 function transformApiPostToNotice(apiPost: NoticeApiPost): Notice {
@@ -209,6 +252,226 @@ export const noticeService = {
       }
     } catch (error) {
       console.error('공지사항 상세 조회 중 오류:', error);
+      throw error;
+    }
+  },
+
+  async updateNotice(
+    id: number,
+    formData: NoticeFormData
+  ): Promise<UpdateNoticeResponse> {
+    try {
+      // Step 1: 원본 공지사항 데이터 가져오기
+      const originalResponse = await apiClient.get<NoticeByIdApiResponse>(
+        `/post/getPostById/${id}/true`
+      );
+      const originalPost = originalResponse.data.post;
+
+      if (!originalPost) {
+        throw new Error('원본 공지사항 데이터를 불러올 수 없습니다.');
+      }
+
+      const originalFileUrlMap = new Map<string, string>();
+      originalPost.presigned_links?.forEach((link) => {
+        if (link.key && link.url) {
+          originalFileUrlMap.set(link.key, link.url);
+        }
+      });
+
+      // Step 2: 수정 시 모든 파일에 대해 새로운 키를 받아야 함
+      const allFiles = formData.uploadedFiles;
+      const filesToUpload = allFiles.filter((file) => file.file && !file.url);
+      const existingFiles = allFiles.filter((file) => !file.file && file.url);
+
+      let updatedFiles = formData.uploadedFiles;
+
+      // 새로 추가된 파일이 있으면 업로드
+      if (filesToUpload.length > 0) {
+        console.log(
+          '공지사항 수정을 위해 새 파일 업로드 중:',
+          filesToUpload.length
+        );
+        const fileObjects = filesToUpload
+          .map((f) => f.file)
+          .filter((f): f is File => f !== undefined);
+
+        const uploadedFiles = await uploadFilesToCloudflare(
+          fileObjects,
+          'notice'
+        );
+
+        updatedFiles = formData.uploadedFiles.map((file) => {
+          if (file.file && !file.url) {
+            const uploaded = uploadedFiles.find(
+              (uf) => uf.originalName === file.name
+            );
+            if (uploaded) {
+              return {
+                ...file,
+                url: uploaded.key,
+              };
+            }
+          }
+          return file;
+        });
+
+        console.log('✅ 새 파일 업로드 성공 - 공지사항 수정');
+      }
+
+      // 기존 파일들에 대해서도 새로운 키 받기
+      if (existingFiles.length > 0) {
+        console.log(
+          '공지사항 수정을 위해 기존 파일에 대한 새 키 요청 중:',
+          existingFiles.length
+        );
+
+        // 기존 파일 정보로 새로운 키 요청
+        const filesInfo = existingFiles.map((file) => ({
+          filename: file.name,
+          contentType: file.type || 'application/octet-stream',
+        }));
+
+        const requestBody = {
+          filesInfo,
+          object_category: 'notice',
+        };
+
+        const response = await apiClient.post<{
+          data: Array<{ key: string; url: string }>;
+        }>('/cloudflare/getKeysAndUrlsToUpload', requestBody);
+
+        if (response.data.data && response.data.data.length > 0) {
+          const uploadResults = await Promise.all(
+            existingFiles.map(async (file, index) => {
+              const newKeyInfo = response.data.data[index];
+              if (!newKeyInfo) return null;
+
+              const downloadUrl =
+                originalFileUrlMap.get(file.url) ?? file.url ?? '';
+
+              if (!downloadUrl.startsWith('http')) {
+                throw new Error(
+                  `기존 파일 다운로드 URL을 찾을 수 없습니다: ${file.name}`
+                );
+              }
+
+              await reuploadFileToPresignedUrl(
+                downloadUrl,
+                newKeyInfo.url,
+                file.type
+              );
+
+              return {
+                originalKey: file.url,
+                newKey: newKeyInfo.key,
+              };
+            })
+          );
+
+          const keyUpdateMap = new Map(
+            uploadResults
+              .filter(
+                (result): result is { originalKey: string; newKey: string } =>
+                  result !== null
+              )
+              .map((result) => [result.originalKey, result.newKey])
+          );
+
+          updatedFiles = updatedFiles.map((file) => {
+            if (!file.file && file.url && keyUpdateMap.has(file.url)) {
+              return {
+                ...file,
+                url: keyUpdateMap.get(file.url) ?? file.url,
+              };
+            }
+            return file;
+          });
+
+          console.log(
+            '✅ 기존 파일 재업로드 및 새 키 수신 성공 - 공지사항 수정'
+          );
+        }
+      }
+
+      // Step 3: 현재 데이터를 API 형식으로 변환
+      const objectInfos = transformFilesToObjectInfos(updatedFiles);
+      const teamCategories = mapNotifyToTeamCategories(formData.notify || []);
+
+      const currentData: CurrentNoticeData = {
+        title: formData.title,
+        post_type: mapCategoryToPostType(formData.category),
+        content: formData.content,
+        team_categories: teamCategories,
+        ...(objectInfos.length > 0 && { objectInfos }),
+      };
+
+      // Step 4: 원본 데이터를 API 형식으로 변환
+      const originalData: OriginalNoticeData = {
+        title: originalPost.title,
+        post_type: originalPost.post_type,
+        content: originalPost.content,
+        presigned_links: originalPost.presigned_links,
+        team_categories: [], // API 응답에 team_categories가 없으므로 빈 배열
+      };
+
+      // Step 5: 변경된 필드만 추출
+      const diffPayload = computeNoticeDiff(originalData, currentData);
+
+      // 변경사항이 없으면 에러 처리
+      if (Object.keys(diffPayload).length === 0) {
+        throw new Error('변경된 내용이 없습니다.');
+      }
+
+      // undefined 값 제거 (API가 요구하는 형식에 맞추기)
+      const cleanPayload: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(diffPayload)) {
+        if (value !== undefined) {
+          cleanPayload[key] = value;
+        }
+      }
+
+      const endpoint = `/post/edit/${id}`;
+
+      // 상세한 요청 정보 로깅
+      const token = localStorage.getItem('userToken');
+      console.log('🔍 === API 요청 상세 정보 ===');
+      console.log('URL:', endpoint);
+      console.log('Method: PATCH');
+      console.log('ID (in URL):', id);
+      console.log(
+        'Bearer Token:',
+        token ? `${token.substring(0, 20)}...` : '없음'
+      );
+      console.log(
+        'Request Body (cleanPayload):',
+        JSON.stringify(cleanPayload, null, 2)
+      );
+      console.log('Request Body Keys:', Object.keys(cleanPayload));
+      console.log('원본 데이터:', JSON.stringify(originalData, null, 2));
+      console.log('현재 데이터:', JSON.stringify(currentData, null, 2));
+      console.log(
+        'Diff Payload (before cleanup):',
+        JSON.stringify(diffPayload, null, 2)
+      );
+      console.log('===========================');
+
+      const response = await apiClient.patch<UpdateNoticeResponse>(
+        endpoint,
+        cleanPayload
+      );
+
+      console.log('📡 API 응답 - 공지사항 수정:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
+
+      if (!response.data || !response.data.post) {
+        throw new Error('Invalid response structure: missing post data');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('공지사항 수정 중 오류:', error);
       throw error;
     }
   },

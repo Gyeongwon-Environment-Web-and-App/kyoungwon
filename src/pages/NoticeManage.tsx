@@ -43,7 +43,7 @@ const NoticeManage: React.FC = () => {
     setActiveTab(newTab);
   }, [location.pathname, id, setActiveTab]);
 
-  const handleTabClick = (nextTab: 'table' | 'detail' | 'form') => {
+  const handleTabClick = (nextTab: 'table' | 'form') => {
     if (activeTab === 'form' && nextTab !== 'form') {
       const confirmLeave = window.confirm(
         '작성 중인 공지사항이 있습니다. 정말 나가시겠습니까?'
@@ -56,8 +56,6 @@ const NoticeManage: React.FC = () => {
       navigate('/notice/form');
     } else if (nextTab === 'table') {
       navigate('/notice/table');
-    } else if (nextTab === 'detail') {
-      navigate('/notice/detail');
     }
 
     setActiveTab(nextTab);
@@ -102,12 +100,11 @@ const NoticeManage: React.FC = () => {
           icon=""
           tabs={[
             { label: '공지 목록', value: 'table' },
-            { label: '공지 상세', value: 'detail' },
             { label: '공지 작성 / 수정', value: 'form' },
           ]}
           activeTab={activeTab}
           onTabClick={(value) => {
-            if (value === 'form' || value === 'table' || value === 'detail') {
+            if (value === 'form' || value === 'table') {
               handleTabClick(value);
             }
           }}
@@ -116,9 +113,7 @@ const NoticeManage: React.FC = () => {
               ? '공지 목록'
               : activeTab === 'form'
                 ? '공지 작성 / 수정'
-                : activeTab === 'detail'
-                  ? '공지 상세'
-                  : ''
+                : ''
           }
         >
           {/* 민원 등록 콘텐츠 */}

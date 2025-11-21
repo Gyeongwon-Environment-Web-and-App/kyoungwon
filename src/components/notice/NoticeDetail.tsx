@@ -54,7 +54,6 @@ const NoticeDetail: React.FC = () => {
   // Fetch notice data when id changes
   useEffect(() => {
     if (!id) {
-      console.warn('Notice ID is missing from URL');
       return;
     }
 
@@ -64,9 +63,6 @@ const NoticeDetail: React.FC = () => {
         const noticeData = await getNoticeById(Number(id), modeValue);
         setNotice(noticeData);
 
-        // Fetch additional detail data (prev/next/presigned_links) from API
-        // This would need to be added to the service if not already included
-        // For now, we'll need to check the API response structure
       } catch (error) {
         console.error('Failed to fetch notice:', error);
       }
@@ -187,6 +183,11 @@ const NoticeDetail: React.FC = () => {
             variant="outline"
             size="sm"
             className="flex md:px-3 px-2 items-center shadow-none outline-none border border-a2a2a2 md:border-[#575757] focus:border-[#575757] focus:outline-none"
+            onClick={() => {
+              if (id) {
+                navigate(`/notice/form/${id}`);
+              }
+            }}
           >
             <img src={fix} alt="수정 아이콘" className="w-5 h-5" />
             <span className="hidden md:block text-sm">수정</span>
@@ -262,16 +263,10 @@ const NoticeDetail: React.FC = () => {
                       {/* Image previews grid */}
                       {imageFiles.length > 0 && (
                         <div className="mb-4">
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          <div className="">
                             {imageFiles.map((link, index) => (
-                              <a
-                                key={index}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="relative group cursor-pointer"
-                              >
-                                <div className="relative w-full aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-light-green transition-colors">
+                              <div key={index} className="mb-4">
+                                <div className="relative w-full rounded-lg overflow-hidden border border-gray-200">
                                   <img
                                     src={link.url}
                                     alt={`첨부 이미지 ${index + 1}`}
@@ -284,13 +279,8 @@ const NoticeDetail: React.FC = () => {
                                         'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMDAgMTIwQzExMC40NjEgMTIwIDExOSAxMTEuNDYxIDExOSAxMDFDMTE5IDkwLjUzODggMTEwLjQ2MSA4MiAxMDAgODJDODkuNTM4OCA4MiA4MSA5MC41Mzg4IDgxIDEwMUM4MSAxMTEuNDYxIDg5LjUzODggMTIwIDEwMCAxMjBaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik0xNjAgMTYwSDEyMEMxMTcuNzkxIDE2MCAxMTYgMTU4LjIwOSAxMTYgMTU2VjEyMEMxMTYgMTE3Ljc5MSAxMTcuNzkxIDExNiAxMjAgMTE2SDE2MEMxNjIuMjA5IDExNiAxNjQgMTE3Ljc5MSAxNjQgMTIwVjE1NkMxNjQgMTU4LjIwOSAxNjIuMjA5IDE2MCAxNjAgMTYwWiIgc3Ryb2tlPSIjQ0NDQ0NDIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+';
                                     }}
                                   />
-                                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity flex items-center justify-center">
-                                    <span className="text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                                      클릭하여 크게 보기
-                                    </span>
-                                  </div>
                                 </div>
-                              </a>
+                              </div>
                             ))}
                           </div>
                         </div>

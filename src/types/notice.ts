@@ -36,7 +36,7 @@ export interface NoticeFile {
   id: number;
   objectKey: string;
   contentType: string;
-  contentLength: string;
+  contentLength: number;
   filenameOriginal: string;
   createdAt: string;
 }
@@ -51,6 +51,22 @@ export interface NoticePost {
 }
 
 export interface CreateNoticeResponse {
+  message: string;
+  post: NoticePost;
+}
+
+export interface UpdateNoticeRequest {
+  title: string;
+  post_type: string;
+  content: string;
+  team_categories: string[];
+  objectInfos?: Array<{
+    objectKey: string;
+    filenameOriginal: string;
+  }>;
+}
+
+export interface UpdateNoticeResponse {
   message: string;
   post: NoticePost;
 }
@@ -100,6 +116,6 @@ export interface NoticeByIdApiResponse {
     presigned_links: Array<{
       url: string;
       key: string;
-    }>
+    }>;
   };
 }

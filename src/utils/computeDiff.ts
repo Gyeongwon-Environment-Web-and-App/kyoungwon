@@ -226,3 +226,125 @@ export function computeComplaintDiff(
 
   return payload;
 }
+
+/**
+ * Notice presigned link structure (from API)
+ */
+export interface NoticePresignedLink {
+  url: string;
+  key: string;
+}
+
+/**
+ * Original notice data structure (from API)
+ */
+export interface OriginalNoticeData {
+  title?: string;
+  post_type?: string;
+  content?: string;
+  presigned_links?: NoticePresignedLink[];
+  team_categories?: string[];
+}
+
+/**
+ * Current notice data structure (from form, converted to API format)
+ */
+export interface CurrentNoticeData {
+  title?: string;
+  post_type?: string;
+  content?: string;
+  team_categories?: string[];
+  objectInfos?: ObjectInfo[];
+}
+
+/**
+ * Notice patch payload (what gets sent to API)
+ */
+export interface NoticePatchPayload {
+  title?: string;
+  post_type?: string;
+  content?: string;
+  team_categories?: string[];
+  objectInfos?: ObjectInfo[];
+}
+
+/**
+ * Converts notice presigned_links to objectInfos format for comparison
+ */
+function convertNoticePresignedLinksToObjectInfos(
+  presignedLinks?: NoticePresignedLink[]
+): ObjectInfo[] {
+  if (!presignedLinks || presignedLinks.length === 0) {
+    return [];
+  }
+
+  return presignedLinks.map((link) => ({
+    objectKey: link.key,
+    filenameOriginal: link.key.split('/').pop() || 'file',
+  }));
+}
+
+/**
+ * Computes the difference between original and current notice data
+ * Returns only changed fields in the format required for PATCH /post/edit/{id}
+ *
+ * @param original - Original notice data (from API, with presigned_links)
+ * @param current - Current notice data (from form, with objectInfos)
+ * @returns Partial object with only changed fields in API patch format
+ */
+export function computeNoticeDiff(
+  original: OriginalNoticeData,
+  current: CurrentNoticeData
+): NoticePatchPayload {
+  const payload: NoticePatchPayload = {};
+
+  // Compare simple fields (title, post_type, content)
+  if (current.title !== undefined && current.title !== original.title) {
+    payload.title = current.title;
+  }
+
+  if (
+    current.post_type !== undefined &&
+    current.post_type !== original.post_type
+  ) {
+    payload.post_type = current.post_type;
+  }
+
+  if (current.content !== undefined && current.content !== original.content) {
+    payload.content = current.content;
+  }
+
+  // Handle team_categories separately (array comparison)
+  if (current.team_categories !== undefined) {
+    const originalCategories = original.team_categories || [];
+    const currentCategories = current.team_categories || [];
+
+    // Check if arrays are different (order-independent comparison)
+    const originalSorted = [...originalCategories].sort().join(',');
+    const currentSorted = [...currentCategories].sort().join(',');
+
+    if (originalSorted !== currentSorted) {
+      // Only include if array is not empty
+      if (currentCategories.length > 0) {
+        payload.team_categories = currentCategories;
+      }
+    }
+  }
+
+  // Handle objectInfos with special comparison logic
+  if (current.objectInfos !== undefined) {
+    const currentObjectInfos = current.objectInfos;
+    const originalObjectInfos = convertNoticePresignedLinksToObjectInfos(
+      original.presigned_links
+    );
+
+    if (!areObjectInfosEqual(originalObjectInfos, currentObjectInfos)) {
+      // Only include if array is not empty
+      if (currentObjectInfos.length > 0) {
+        payload.objectInfos = currentObjectInfos;
+      }
+    }
+  }
+
+  return payload;
+}

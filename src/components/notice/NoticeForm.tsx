@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import apiClient from '@/lib/api';
 import { noticeService } from '@/services/noticeService';
-import type { NoticeFormData } from '@/types/notice';
+import type { NoticeByIdApiResponse, NoticeFormData } from '@/types/notice';
 
 import FileAttach from '../forms/FileAttach';
 import TextForward from '../forms/TextForward';
@@ -21,10 +22,66 @@ const NoticeForm: React.FC<NoticeFormPorps> = ({ onSubmit }) => {
     notify: [],
   });
   const [focus, setFocus] = useState({ routeInput: false });
+  const [isLoading, setIsLoading] = useState(false);
 
   const { noticeId } = useParams();
   const isEditMode = Boolean(noticeId);
   const navigate = useNavigate();
+
+  // Helper function to map post_type to category
+  const mapPostTypeToCategory = useCallback((postType: string): string => {
+    const postTypeMap: Record<string, string> = {
+      announcement: '안내사항',
+      information: '정보',
+      district_office: '구청',
+      community_center: '주민센터',
+    };
+    return postTypeMap[postType] || postType;
+  }, []);
+
+  // Load notice data when in edit mode
+  useEffect(() => {
+    const loadNoticeData = async () => {
+      if (!noticeId) return;
+
+      try {
+        setIsLoading(true);
+        const endpoint = `/post/getPostById/${noticeId}/true`;
+        const response = await apiClient.get<NoticeByIdApiResponse>(endpoint);
+
+        if (response.data.post) {
+          const post = response.data.post;
+
+          // Map API response to form data
+          const loadedData: NoticeFormData = {
+            title: post.title || '',
+            category: mapPostTypeToCategory(post.post_type) || '',
+            content: post.content || '',
+            uploadedFiles:
+              post.presigned_links && post.presigned_links.length > 0
+                ? post.presigned_links.map((link) => ({
+                    name: link.key.split('/').pop() || 'file',
+                    url: link.key,
+                    type: '',
+                    size: 0,
+                  }))
+                : [],
+            notify: [], // team_categories는 API 응답에 없으므로 빈 배열로 시작
+          };
+
+          setFormData(loadedData);
+        }
+      } catch (error) {
+        console.error('공지사항 데이터 불러오기 실패:', error);
+        alert('공지사항 데이터를 불러오는 중 오류가 발생했습니다.');
+        navigate('/notice/table');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadNoticeData();
+  }, [noticeId, navigate, mapPostTypeToCategory]);
 
   const updateFormData = (updates: Partial<NoticeFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -47,20 +104,54 @@ const NoticeForm: React.FC<NoticeFormPorps> = ({ onSubmit }) => {
     }
 
     try {
-      const response = await noticeService.createNotice(formData);
+      if (isEditMode && noticeId) {
+        // Update existing notice
+        await noticeService.updateNotice(Number(noticeId), formData);
 
-      if (onSubmit) {
-        onSubmit();
+        if (onSubmit) {
+          onSubmit();
+        } else {
+          alert('공지사항이 성공적으로 수정되었습니다.');
+          navigate(`/post/getPostById/${noticeId}/true`);
+        }
       } else {
-        alert(
-          `공지사항 등록이 완료되었습니다. 공지사항 내용: ${response.post}`
-        );
-        navigate('/transport/vehicle/info');
+        // Create new notice
+        const response = await noticeService.createNotice(formData);
+
+        if (onSubmit) {
+          onSubmit();
+        } else {
+          alert(
+            `공지사항 등록이 완료되었습니다. 공지사항 내용: ${response.post}`
+          );
+          navigate('/notice/table');
+        }
       }
     } catch (error) {
-      console.log('공지사항 등록실패:', error);
+      console.error(
+        isEditMode ? '공지사항 수정 실패:' : '공지사항 등록 실패:',
+        error
+      );
+      alert(
+        isEditMode
+          ? '공지사항 수정 중 오류가 발생했습니다.'
+          : '공지사항 등록 중 오류가 발생했습니다.'
+      );
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-light-green"></div>
+          <span className="text-sm text-gray-600">
+            공지사항을 불러오는 중...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>
