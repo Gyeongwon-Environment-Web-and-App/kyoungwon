@@ -80,11 +80,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
     setSelectedAreas(areas);
   };
 
-  const SharedSidebarHeader = ({
-    showCategoryButtons = true,
-  }: {
-    showCategoryButtons?: boolean;
-  }) => (
+  const SharedSidebarHeader = () => (
     <>
       {/* Area Selection Section */}
       <div className="flex items-end md:items-center justify-between px-2 pt-0 pb-3 md:pt-5 md:pb-5">
@@ -106,45 +102,41 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
           triangleIcon={triangle}
         />
       </div>
-
-      {/* Category Buttons Section */}
-      {showCategoryButtons && (
-        <div
-          className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
-        >
-          {['재활용', '생활', '음식물', '기타'].map((label, idx, arr) => {
-            const isSelected = selectedCategory === label;
-            return (
-              <button
-                key={label}
-                type="button"
-                className={`
+      <div
+        className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
+      >
+        {['재활용', '생활', '음식물', '기타'].map((label, idx, arr) => {
+          const isSelected = selectedCategory === label;
+          return (
+            <button
+              key={label}
+              type="button"
+              className={`
               flex-1 px-4 font-bold
               ${isSelected ? 'bg-lighter-green' : ''}
               ${idx === 0 ? 'rounded-l' : ''}
               ${idx === arr.length - 1 ? 'rounded-r' : ''}
               focus:outline-none
             `}
-                style={{
-                  borderRight:
-                    idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (isSelected) {
-                    onCategoryChange?.(undefined);
-                  } else {
-                    onCategoryChange?.(label);
-                  }
-                }}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      )}
+              style={{
+                borderRight:
+                  idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isSelected) {
+                  onCategoryChange?.(undefined);
+                } else {
+                  onCategoryChange?.(label);
+                }
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
     </>
   );
 
@@ -226,7 +218,12 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
         searchQuery={searchQuery}
       />
     ),
-    vehicle: <VehicleContainer selectedCategory={selectedCategory} searchQuery={searchQuery} />,
+    vehicle: (
+      <VehicleContainer
+        selectedCategory={selectedCategory}
+        searchQuery={searchQuery}
+      />
+    ),
     stats: (
       <MapStats
         dateRange={dateRange}
@@ -327,7 +324,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
             </div>
           )}
           <div className="flex-1 h-[80vh] px-2">
-            <SharedSidebarHeader showCategoryButtons={!complaintId} />
+            {!complaintId && <SharedSidebarHeader />}
             {sidebarContents[activeSidebar]}
           </div>
           {activeSidebar === 'complaint' && (
