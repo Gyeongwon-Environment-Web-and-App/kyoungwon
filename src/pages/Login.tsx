@@ -19,6 +19,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
 
   // 로그인 API 호출 함수
   const loginWithSerial = async (serial_no: number): Promise<LoginResult> => {
@@ -38,24 +39,39 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setLoading(true); // 로딩 상태 추가
+    setLoading(true);
+    setLoadingMessage('로그인 중...');
+    setError(false);
 
     try {
       const serialNo = parseInt(serial);
+
+      // Show different messages during the wait
+      const messageTimeout = setTimeout(() => {
+        setLoadingMessage('서버가 시작 중입니다. 잠시만 기다려주세요...');
+      }, 10000); // After 10 seconds, show server wake-up message
+
       const result = await loginWithSerial(serialNo);
+
+      clearTimeout(messageTimeout);
 
       if (result && result.success && result.data) {
         // 로그인 성공 시 부모 컴포넌트의 onLogin 함수 사용
         onLogin(result.data);
       } else {
         // 로그인 실패 시 에러 메시지 표시
-        alert(result?.message || '로그인에 실패했습니다.');
+        setError(true);
+        setLoadingMessage('로그인 중...');
+        // Don't show alert, let the error message display in the UI
+        console.error('Login failed:', result?.message);
       }
     } catch (error) {
       console.error('로그인 처리 중 오류:', error);
-      alert('로그인 처리 중 오류가 발생했습니다.');
+      setError(true);
+      setLoadingMessage('로그인 중...');
     } finally {
       setLoading(false);
+      setLoadingMessage('로그인 중...');
     }
   };
 
@@ -99,7 +115,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             />
             {error && (
               <p className="text-[#FF3D3D] text-sm mt-2">
-                시리얼 넘버가 올바르지 않습니다. 다시 한 번 확인해 주세요.
+                로그인에 실패했습니다. 서버가 시작 중일 수 있습니다. 잠시 후
+                다시 시도해주세요.
               </p>
             )}
           </div>
@@ -127,7 +144,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             }`}
             disabled={loading}
           >
-            {loading ? '로그인 중...' : '로그인'}
+            {loading ? loadingMessage : '로그인'}
           </button>
         </form>
       </div>

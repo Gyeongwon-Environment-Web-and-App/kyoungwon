@@ -115,13 +115,23 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
   // Edit mode actions
   populateFormForEdit: (complaintData) =>
     set(() => {
-      // Handle both Complaint and ComplaintExtended types
       const address =
         'address' in complaintData
           ? typeof complaintData.address === 'string'
             ? complaintData.address
             : complaintData.address?.address || ''
           : '';
+
+      const uploadedFiles =
+        'presigned_links' in complaintData && complaintData.presigned_links
+          ? complaintData.presigned_links.map((link) => ({
+              name: link.key.split('/').pop() || 'file',
+              url: link.key,
+              type: '',
+              size: 0, 
+              previewUrl: link.url,
+            }))
+          : [];
 
       const formData = {
         address: address,
@@ -137,7 +147,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
         notify: {
           usernames: [],
         },
-        uploadedFiles: [],
+        uploadedFiles: uploadedFiles,
         coordinates: undefined,
       };
 

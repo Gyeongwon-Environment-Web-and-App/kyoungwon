@@ -61,7 +61,6 @@ const EditComplaintPage: React.FC = () => {
     loadComplaintData();
   }, [complaintId, populateFormForEdit]);
 
-  // Handle form submission for edit mode
   const handleEditSubmit = async () => {
     if (!originalComplaint) {
       console.error('No original complaint data');
@@ -69,6 +68,17 @@ const EditComplaintPage: React.FC = () => {
     }
 
     try {
+      const objectInfos =
+        formData.uploadedFiles && formData.uploadedFiles.length > 0
+          ? formData.uploadedFiles
+              .filter((file) => file.url && file.url.trim() !== '')
+              .map((file) => ({
+                objectKey: file.url as string,
+                filenameOriginal:
+                  file.name || file.url.split('/').pop() || 'file',
+              }))
+          : undefined;
+
       // Prepare update data according to API requirements
       const updateData = {
         phone_no: formData.source?.phone_no || '',
@@ -76,12 +86,27 @@ const EditComplaintPage: React.FC = () => {
         type: formData.type || '',
         route: formData.route || '',
         // Note: status is not updated in edit mode, only in status change
+        ...(objectInfos && { objectInfos }),
+      };
+
+      // Prepare original complaint data for comparison
+      const originalData = {
+        phone_no: originalComplaint.source?.phone_no || '',
+        content: originalComplaint.content || '',
+        type: originalComplaint.type || '',
+        route: originalComplaint.route || '',
+        status: originalComplaint.status,
+        presigned_links: originalComplaint.presigned_links || [],
       };
 
       console.log('Updating complaint:', originalComplaint.id, updateData);
 
-      // Call the update API
-      await complaintService.updateComplaint(originalComplaint.id, updateData);
+      // Call the update API with original data for comparison
+      await complaintService.updateComplaint(
+        originalComplaint.id,
+        updateData,
+        originalData
+      );
 
       console.log('Complaint updated successfully');
 

@@ -118,13 +118,27 @@ const ComplaintDetail: React.FC = () => {
     async (id: number, status: boolean) => {
       if (selectedComplaint) {
         try {
-          await complaintService.updateComplaint(id, {
+          // Prepare original complaint data for comparison
+          const originalData = {
             phone_no: selectedComplaint.source?.phone_no || '',
-            content: selectedComplaint.content,
-            type: selectedComplaint.type,
-            route: selectedComplaint.route,
-            status: status,
-          });
+            content: selectedComplaint.content || '',
+            type: selectedComplaint.type || '',
+            route: selectedComplaint.route || '',
+            status: selectedComplaint.status,
+            presigned_links: selectedComplaint.presigned_links || [],
+          };
+
+          await complaintService.updateComplaint(
+            id,
+            {
+              phone_no: selectedComplaint.source?.phone_no || '',
+              content: selectedComplaint.content,
+              type: selectedComplaint.type,
+              route: selectedComplaint.route,
+              status: status,
+            },
+            originalData
+          );
 
           // Force refresh the complaint data immediately after successful update
           const updatedComplaint = await getComplaintById(id.toString());

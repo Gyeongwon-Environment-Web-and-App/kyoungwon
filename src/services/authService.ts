@@ -91,6 +91,15 @@ export const authService = {
         }
       }
 
+      // Handle timeout errors with user-friendly message
+      if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+        return {
+          success: false,
+          message:
+            '서버가 시작 중입니다. 잠시 후 다시 시도해주세요. (최대 2분 소요)',
+        };
+      }
+
       return {
         success: false,
         message: '로그인 중 오류가 발생했습니다.',

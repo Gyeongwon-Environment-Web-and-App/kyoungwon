@@ -1,9 +1,40 @@
-import axios from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+
+// Retry configuration for Render free instance cold starts
+const MAX_RETRIES = 2; // Retry up to 2 times (3 total attempts)
+const RETRY_DELAY = 5000; // Wait 5 seconds between retries
+const RETRYABLE_ERROR_CODES = ['ECONNABORTED', 'ETIMEDOUT', 'ERR_NETWORK'];
+
+// Helper function to check if error should be retried
+const shouldRetry = (error: AxiosError, retryCount: number): boolean => {
+  if (retryCount >= MAX_RETRIES) {
+    return false;
+  }
+
+  // Retry on timeout or network errors (especially for Render cold starts)
+  if (error.code && RETRYABLE_ERROR_CODES.includes(error.code)) {
+    // Only retry if it's a Render instance (cold start scenario)
+    if (error.config?.baseURL?.includes('onrender.com')) {
+      return true;
+    }
+    // Also retry network errors in general
+    return error.code === 'ERR_NETWORK';
+  }
+
+  return false;
+};
+
+// Helper function to delay execution
+const delay = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
 
 // Create Axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://kyoungwon-proxy.onrender.com/api',
-  timeout: 10000,
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    'https://kyoungwon-proxy.onrender.com/api',
+  timeout: 90000, // 90 seconds - increased to handle Render free instance cold starts (can take 50+ seconds)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -13,13 +44,23 @@ const apiClient = axios.create({
   adapter: 'xhr',
 });
 
-// Request interceptor - Add auth token to requests
+// Request interceptor - Add auth token and track retry count
 apiClient.interceptors.request.use(
   (config) => {
+    // Add auth token
     const token = localStorage.getItem('userToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Initialize retry count if not present
+    const configWithRetry = config as InternalAxiosRequestConfig & {
+      retryCount?: number;
+    };
+    if (!configWithRetry.retryCount) {
+      configWithRetry.retryCount = 0;
+    }
+
     return config;
   },
   (error) => {
@@ -28,12 +69,22 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle common errors
+// Response interceptor - Handle common errors and retry logic
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error: AxiosError) => {
+    const config = error.config as InternalAxiosRequestConfig & {
+      retryCount?: number;
+      __retryDelay?: number;
+    };
+
+    // Initialize retry count if not present
+    if (!config.retryCount) {
+      config.retryCount = 0;
+    }
+
     console.error('Response interceptor error:', error);
     console.log('Error details:', {
       status: error.response?.status,
@@ -41,7 +92,27 @@ apiClient.interceptors.response.use(
       method: error.config?.method,
       token: localStorage.getItem('userToken') ? 'exists' : 'missing',
       baseURL: error.config?.baseURL,
+      retryCount: config.retryCount,
     });
+
+    // Check if we should retry this request
+    if (shouldRetry(error, config.retryCount)) {
+      config.retryCount += 1;
+      const retryDelay = config.__retryDelay || RETRY_DELAY;
+
+      console.log(
+        `Retrying request (attempt ${config.retryCount + 1}/${MAX_RETRIES + 1}) after ${retryDelay}ms...`
+      );
+
+      // Wait before retrying
+      await delay(retryDelay);
+
+      // Exponential backoff for subsequent retries
+      config.__retryDelay = retryDelay * 1.5;
+
+      // Retry the request
+      return apiClient.request(config);
+    }
 
     // Handle 401 Unauthorized - redirect to login
     // Only clear tokens and redirect if we actually have a token and get a real 401
@@ -55,6 +126,19 @@ apiClient.interceptors.response.use(
       // Only redirect if not already on login page
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
+      }
+    }
+
+    // Handle timeout errors (especially for Render free instances that spin down)
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      console.error(
+        'Request timeout - the server may be spinning up from inactivity. Render free instances can take 50+ seconds to wake up.'
+      );
+      // Provide user-friendly error message
+      if (error.config?.baseURL?.includes('onrender.com')) {
+        console.warn(
+          'Render free instance detected - this timeout may be due to cold start delay'
+        );
       }
     }
 

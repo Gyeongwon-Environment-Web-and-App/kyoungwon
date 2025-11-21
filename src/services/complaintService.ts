@@ -9,6 +9,11 @@ import {
   type ComplaintExtended,
   type ComplaintForCategory,
 } from '@/types/complaint';
+import {
+  computeComplaintDiff,
+  type CurrentComplaintData,
+  type OriginalComplaintData,
+} from '@/utils/computeDiff';
 
 // Map API response structure
 interface MapComplaint {
@@ -275,16 +280,25 @@ export const complaintService = {
 
   async updateComplaint(
     id: number,
-    updates: {
-      phone_no?: string;
-      content?: string;
-      type?: string;
-      route?: string;
-      status?: boolean | null;
-    }
+    updates: CurrentComplaintData,
+    originalComplaint?: OriginalComplaintData
   ): Promise<void> {
     try {
-      await apiClient.patch(`/complaint/edit/${id}`, updates);
+      if (!originalComplaint) {
+        throw new Error('Original complaint data is required for comparison');
+      }
+
+      // Use computeComplaintDiff to get only changed fields
+      const payload = computeComplaintDiff(originalComplaint, updates);
+
+      // Only send the request if there are changes
+      if (Object.keys(payload).length === 0) {
+        console.log(`No changes detected for complaint ${id}, skipping update`);
+        return;
+      }
+
+      console.log(`Updating complaint ${id} with payload:`, payload);
+      await apiClient.patch(`/complaint/edit/${id}`, payload);
     } catch (error) {
       console.error(`Error updating complaint ${id}:`, error);
       throw error;
