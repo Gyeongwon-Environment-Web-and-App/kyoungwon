@@ -49,6 +49,28 @@ export const useNotices = () => {
     []
   );
 
+  const getNoticeById = useCallback(
+    async (id: number, mode: boolean = true) => {
+      setIsLoading(true);
+      setFetchError(null);
+      try {
+        const data = await noticeService.getNoticeById(id, mode);
+        return data;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : '공지사항 상세 불러오기 실패';
+        setFetchError(errorMessage);
+        console.error('useNotices - getNoticeById error:', error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     loadNotices(currentPage, modeDesc);
   }, [currentPage, modeDesc, loadNotices]);
@@ -86,6 +108,23 @@ export const useNotices = () => {
     loadNotices(currentPage, modeDesc);
   };
 
+  const deleteNotice = useCallback(async (id: number) => {
+    setIsLoading(true);
+    setFetchError(null);
+    try {
+      const data = await noticeService.deleteNotice(id);
+      return data;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : '공지사항 삭제 실패';
+      setFetchError(errorMessage);
+      console.error('useNotices - deleteNotice error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     notices,
     isLoading,
@@ -94,5 +133,7 @@ export const useNotices = () => {
     setPage: changePage,
     setSortMode: changeSortMode,
     refetch,
+    getNoticeById,
+    deleteNotice,
   };
 };

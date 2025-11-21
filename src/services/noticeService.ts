@@ -4,6 +4,7 @@ import {
   type CreateNoticeResponse,
   type Notice,
   type NoticeApiPost,
+  type NoticeByIdApiResponse,
   type NoticeFormData,
   type NoticePagedApiResponse,
 } from '@/types/notice';
@@ -180,6 +181,57 @@ export const noticeService = {
       };
     } catch (error) {
       console.error('공지사항 수신 중 오류:', error);
+      throw error;
+    }
+  },
+
+  async getNoticeById(id: number, mode: boolean = true): Promise<Notice> {
+    try {
+      const endpoint = `/post/getPostById/${id}/${mode}`;
+      console.log('🌐 API 호출: getNoticeById', {
+        endpoint,
+        id,
+        mode,
+        timestamp: new Date().toISOString(),
+      });
+
+      const response = await apiClient.get<NoticeByIdApiResponse>(endpoint);
+
+      console.log('📡 API 응답 - 공지사항 상세:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
+
+      if (response.data.post) {
+        return transformApiPostToNotice(response.data.post);
+      } else {
+        throw new Error('API response missing post data');
+      }
+    } catch (error) {
+      console.error('공지사항 상세 조회 중 오류:', error);
+      throw error;
+    }
+  },
+
+  async deleteNotice(id: number): Promise<{ message: string }> {
+    try {
+      const endpoint = `/post/delete/${id}`;
+      console.log('🌐 API 호출: deleteNotice', {
+        endpoint,
+        id,
+        timestamp: new Date().toISOString(),
+      });
+
+      const response = await apiClient.delete<{ message: string }>(endpoint);
+
+      console.log('📡 API 응답 - 공지사항 삭제:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('공지사항 삭제 중 오류:', error);
       throw error;
     }
   },

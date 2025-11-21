@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type ColumnDef } from '@tanstack/react-table';
+import { useNavigate } from 'react-router-dom';
 
 import { DataTable } from '@/components/ui/data-table';
 import {
@@ -37,6 +38,8 @@ const NoticeTable: React.FC = () => {
     setSortMode,
     refetch,
   } = useNotices();
+
+  const navigate = useNavigate();
 
   const filterNoticesByTerm = useCallback((source: Notice[], term: string) => {
     const searchLower = term.toLowerCase();
@@ -147,6 +150,10 @@ const NoticeTable: React.FC = () => {
     setSearchTerm(e.target.value);
   };
 
+  const handleRowClick = (notice: Notice) => {
+    navigate(`/post/getPostById/${notice.id}/true`);
+  };
+
   const paginationInfo = useMemo(() => {
     const hasItems = pagination.totalItems > 0;
     const totalPages = hasItems ? Math.max(1, pagination.totalPages) : 0;
@@ -176,7 +183,9 @@ const NoticeTable: React.FC = () => {
       accessorKey: 'type',
       header: '공지 구분',
       cell: ({ row }) => (
-        <div className="text-center truncate flex-1">{row.getValue('type')}</div>
+        <div className="text-center truncate flex-1">
+          {row.getValue('type')}
+        </div>
       ),
     },
     {
@@ -297,7 +306,11 @@ const NoticeTable: React.FC = () => {
       </div>
 
       <div className="border border-gray-200 rounded-lg overflow-x-auto">
-        <DataTable columns={columns} data={filteredNotices} />
+        <DataTable
+          columns={columns}
+          data={filteredNotices}
+          onRowClick={handleRowClick}
+        />
       </div>
 
       {/* Pagination */}

@@ -79,3 +79,27 @@ export interface NoticePagedApiResponse extends NoticeApiResponse {
   totalItems?: number;
   totalPages?: number;
 }
+
+export interface NoticeByIdApiResponse {
+  message: string;
+  post: {
+    id: number;
+    username: string;
+    title: string;
+    post_type: string;
+    created_at: string;
+    content: string;
+    prev: {
+      id: number;
+      title: string;
+    };
+    next: {
+      id: number;
+      title: string;
+    };
+    presigned_links: Array<{
+      url: string;
+      key: string;
+    }>
+  };
+}

@@ -57,8 +57,6 @@ const NoticeForm: React.FC<NoticeFormPorps> = ({ onSubmit }) => {
         );
         navigate('/transport/vehicle/info');
       }
-
-      alert(response.message || '공지사항이 성공적으로 등록되었습니다.');
     } catch (error) {
       console.log('공지사항 등록실패:', error);
     }
@@ -131,7 +129,7 @@ const NoticeForm: React.FC<NoticeFormPorps> = ({ onSubmit }) => {
             }}
             objectCategory="notice"
             className1="col-span-1"
-            className2="col-span-4"
+            className2="col-span-4 flex items-center"
           />
 
           {/* 내용 */}

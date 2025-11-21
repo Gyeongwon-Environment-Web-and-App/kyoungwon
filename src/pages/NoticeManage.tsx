@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import NoticeDetail from '@/components/notice/NoticeDetail';
@@ -16,6 +16,8 @@ const NoticeManage: React.FC = () => {
   const { logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const { id } = useParams<{ id?: string; mode?: string }>();
+
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'table' | 'detail' | 'form'>(
     'table'
@@ -28,7 +30,10 @@ const NoticeManage: React.FC = () => {
         return 'form';
       } else if (location.pathname.includes('/table')) {
         return 'table';
-      } else if (location.pathname.includes('/detail')) {
+      } else if (
+        location.pathname.includes('/getPostById') ||
+        (location.pathname.includes('/detail') && id)
+      ) {
         return 'detail';
       }
       return 'table';
@@ -36,7 +41,7 @@ const NoticeManage: React.FC = () => {
 
     const newTab = getDefaultTab();
     setActiveTab(newTab);
-  }, [location.pathname, setActiveTab]);
+  }, [location.pathname, id, setActiveTab]);
 
   const handleTabClick = (nextTab: 'table' | 'detail' | 'form') => {
     if (activeTab === 'form' && nextTab !== 'form') {
@@ -84,9 +89,9 @@ const NoticeManage: React.FC = () => {
           }
           yesNo={false}
           onFirstClick={handlePopupFirstClick}
-          onFirstLabel='공지 목록'
+          onFirstLabel="공지 목록"
           onSecondClick={handlePopupSecondClick}
-          onSecondLabel='홈으로 이동'
+          onSecondLabel="홈으로 이동"
           toHome={false}
         />
       )}
