@@ -173,7 +173,7 @@ const NoticeDetail: React.FC = () => {
       <div className="flex justify-between mb-4">
         <button
           onClick={handleBackClick}
-          className="flex items-center gap-2 text-xl font-semibold p-0"
+          className="flex items-center gap-2 text-xl font-semibold p-0 print-hide"
         >
           <ChevronLeft className="w-6 h-6" />
           목록
@@ -182,7 +182,7 @@ const NoticeDetail: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            className="flex md:px-3 px-2 items-center shadow-none outline-none border border-a2a2a2 md:border-[#575757] focus:border-[#575757] focus:outline-none"
+            className="flex md:px-3 px-2 items-center shadow-none outline-none border border-a2a2a2 md:border-[#575757] focus:border-[#575757] focus:outline-none print-hide"
             onClick={() => {
               if (id) {
                 navigate(`/notice/form/${id}`);
@@ -197,18 +197,15 @@ const NoticeDetail: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="flex md:px-3 px-2 items-center shadow-none outline-none border border-a2a2a2 md:border-[#575757] focus:border-[#575757] focus:outline-none"
+                className="flex md:px-3 px-2 items-center shadow-none outline-none border border-a2a2a2 md:border-[#575757] focus:border-[#575757] focus:outline-none print-hide"
               >
                 <Download className="w-4 h-4 md:text-black text-[#575757]" />
                 <span className="hidden md:block text-sm">다운로드</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => window.alert('개발 중입니다!')}>
+              <DropdownMenuItem onClick={() => window.print()}>
                 PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.alert('개발 중입니다!')}>
-                Excel
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -323,28 +320,11 @@ const NoticeDetail: React.FC = () => {
             )}
         </div>
       </div>
-      <div className="mt-6 border border-a5a5a5 rounded grid grid-cols-[auto_1fr] grid-rows-[1fr_1fr]">
+      <div className="mt-6 border border-a5a5a5 rounded grid grid-cols-[auto_1fr] grid-rows-[1fr_1fr] print-hide">
         <button
           onClick={handlePrevClick}
-          disabled={!detailData?.prev}
-          className={`col-start-2 row-start-1 flex items-center gap-2 border-b border-a5a5a5 ${
-            detailData?.prev
-              ? 'cursor-pointer hover:bg-gray-50'
-              : 'cursor-not-allowed opacity-50'
-          }`}
-        >
-          <div className="flex items-center h-full border-r border-a5a5a5 gap-2 pr-2">
-            <div className="text-base text-gray-500">이전글</div>
-            <ChevronDownIcon className="w-5 h-5 -rotate-180" />
-          </div>
-          <p className="font-medium col-span-1">
-            {detailData?.prev?.title || '이전 글이 없습니다'}
-          </p>
-        </button>
-        <button
-          onClick={handleNextClick}
           disabled={!detailData?.next}
-          className={`col-start-2 row-start-2 flex items-center transition-colors gap-2 ${
+          className={`col-start-2 row-start-1 flex items-center gap-2 border-b border-a5a5a5 ${
             detailData?.next
               ? 'cursor-pointer hover:bg-gray-50'
               : 'cursor-not-allowed opacity-50'
@@ -352,10 +332,27 @@ const NoticeDetail: React.FC = () => {
         >
           <div className="flex items-center h-full border-r border-a5a5a5 gap-2 pr-2">
             <div className="text-base text-gray-500">다음글</div>
+            <ChevronDownIcon className="w-5 h-5 -rotate-180" />
+          </div>
+          <p className="font-medium col-span-1">
+            {detailData?.prev?.title || '다음 글이 없습니다'}
+          </p>
+        </button>
+        <button
+          onClick={handleNextClick}
+          disabled={!detailData?.prev}
+          className={`col-start-2 row-start-2 flex items-center transition-colors gap-2 ${
+            detailData?.prev
+              ? 'cursor-pointer hover:bg-gray-50'
+              : 'cursor-not-allowed opacity-50'
+          }`}
+        >
+          <div className="flex items-center h-full border-r border-a5a5a5 gap-2 pr-2">
+            <div className="text-base text-gray-500">이전글</div>
             <ChevronDownIcon className="w-5 h-5" />
           </div>
           <p className="font-medium">
-            {detailData?.next?.title || '다음 글이 없습니다'}
+            {detailData?.next?.title || '이전 글이 없습니다'}
           </p>
         </button>
       </div>

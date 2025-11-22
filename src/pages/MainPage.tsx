@@ -300,6 +300,10 @@ const MainPage: React.FC = () => {
           </div>
         </div>
       </div>
+{/* 
+      <footer className='w-full absolute bottom-0 flex items-center justify-center font-normal text-light-border mb-2'>
+        프론트엔드 안소현, 백엔드 고다연, 기획/디자인 김수빈, 이주하, 김지윤, 김민혜
+      </footer> */}
 
       {isMobile && <MobileBottomNav />}
     </div>
