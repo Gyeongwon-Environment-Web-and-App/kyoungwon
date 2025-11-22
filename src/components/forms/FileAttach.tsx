@@ -22,6 +22,7 @@ interface FileAttachProps<T extends { uploadedFiles: FileData[] }> {
   labelText?: string;
   className1?: string;
   className2?: string;
+  accept?: string;
 }
 
 function FileAttach<T extends { uploadedFiles: FileData[] }>({
@@ -32,6 +33,7 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
   labelText = '파일 첨부',
   className1 = '',
   className2 = '',
+  accept = '',
 }: FileAttachProps<T>) {
   void objectCategory;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -100,7 +102,7 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
           ref={fileInputRef}
           onChange={handleChange}
           style={{ display: 'none' }}
-          accept="image/*"
+          accept={accept || "image/*" }
           multiple
         />
 

@@ -221,6 +221,7 @@ const NoticeForm: React.FC<NoticeFormPorps> = ({ onSubmit }) => {
             objectCategory="notice"
             className1="col-span-1"
             className2="col-span-4 flex items-center"
+            accept="image/*,application/pdf,.doc,.docx,application/msword,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           />
 
           {/* 내용 */}
