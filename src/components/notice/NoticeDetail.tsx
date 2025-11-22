@@ -39,6 +39,11 @@ const isImageFile = (key: string): boolean => {
   return imageExtensions.some((ext) => lowerKey.endsWith(ext));
 };
 
+// Helper function to check if a file is a PDF
+const isPdfFile = (key: string): boolean => {
+  return key.toLowerCase().endsWith('.pdf');
+};
+
 const NoticeDetail: React.FC = () => {
   const { id, mode } = useParams<{ id: string; mode: string }>();
   const navigate = useNavigate();
@@ -62,7 +67,6 @@ const NoticeDetail: React.FC = () => {
         const modeValue = mode === 'true' || mode === undefined || mode === '';
         const noticeData = await getNoticeById(Number(id), modeValue);
         setNotice(noticeData);
-
       } catch (error) {
         console.error('Failed to fetch notice:', error);
       }
@@ -246,13 +250,16 @@ const NoticeDetail: React.FC = () => {
               <div className="mt-6 border-t border-a5a5a5 pt-4">
                 <h3 className="font-semibold mb-3">첨부 파일</h3>
 
-                {/* Separate images and non-image files */}
+                {/* Separate images, PDFs, and other files */}
                 {(() => {
                   const imageFiles = detailData.presigned_links.filter((link) =>
                     isImageFile(link.key)
                   );
-                  const nonImageFiles = detailData.presigned_links.filter(
-                    (link) => !isImageFile(link.key)
+                  const pdfFiles = detailData.presigned_links.filter((link) =>
+                    isPdfFile(link.key)
+                  );
+                  const otherFiles = detailData.presigned_links.filter(
+                    (link) => !isImageFile(link.key) && !isPdfFile(link.key)
                   );
 
                   return (
@@ -283,14 +290,39 @@ const NoticeDetail: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Non-image files as download links */}
-                      {nonImageFiles.length > 0 && (
+                      {/* PDF previews */}
+                      {pdfFiles.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium mb-2 text-gray-600">
+                            PDF 파일
+                          </h4>
+                          {pdfFiles.map((link, index) => {
+                            const filename =
+                              link.key.split('/').pop() || `PDF ${index + 1}`;
+                            return (
+                              <div key={index} className="mb-4">
+                                <div className="mb-2 text-sm font-medium text-gray-700">
+                                  {filename}
+                                </div>
+                                <iframe
+                                  src={link.url}
+                                  className="w-full h-[600px] border border-gray-200 rounded-lg"
+                                  title={filename}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Other non-image files as download links */}
+                      {otherFiles.length > 0 && (
                         <div className="mt-4">
                           <h4 className="text-sm font-medium mb-2 text-gray-600">
                             기타 파일
                           </h4>
                           <div className="flex flex-wrap gap-3">
-                            {nonImageFiles.map((link, index) => {
+                            {otherFiles.map((link, index) => {
                               // Extract filename from key
                               const filename =
                                 link.key.split('/').pop() ||
