@@ -19,6 +19,7 @@ import { useComplaintFilters } from '@/hooks/useComplaintFilters';
 import { useInitialStats } from '@/hooks/useInitialStats';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
+import { exportStatisticsToExcel } from '@/utils/excelExport';
 
 import triangle from '../../assets/icons/actions/triangle.svg';
 import DateRangePicker from '../common/DateRangePicker';
@@ -37,6 +38,42 @@ const formatDate = (date: Date): string => {
 // 날짜 범위 포매팅 함수
 const formatDateRange = (from: Date, to: Date): string => {
   return `${formatDate(from)} - ${formatDate(to)}`;
+};
+
+type WeekdayCountItem = BarChartItem & { count: number };
+
+const normalizeWeekdayData = (
+  data: BarChartItem[],
+  preferredKey?: string
+): WeekdayCountItem[] => {
+  return data.map((item) => {
+    const fromCount = Number(item.count);
+    const fromPreferred =
+      preferredKey && item[preferredKey] !== undefined
+        ? Number(item[preferredKey])
+        : NaN;
+
+    const aggregated =
+      Object.entries(item).reduce((sum, [key, value]) => {
+        if (key === 'time' || key === 'hour' || key === 'count') {
+          return sum;
+        }
+        const numeric = Number(value);
+        return sum + (Number.isNaN(numeric) ? 0 : numeric);
+      }, 0) || 0;
+
+    const resolved = (() => {
+      if (!Number.isNaN(fromCount)) return fromCount;
+      if (!Number.isNaN(fromPreferred)) return fromPreferred;
+      return aggregated;
+    })();
+
+    return {
+      ...item,
+      time: String(item.time ?? ''),
+      count: Number.isNaN(resolved) ? 0 : resolved,
+    };
+  });
 };
 
 const ComplaintStats = () => {
@@ -103,19 +140,48 @@ const ComplaintStats = () => {
       selectedAreas,
     });
 
+  const normalizedDaysBar = useMemo(
+    () => normalizeWeekdayData(daysBar),
+    [daysBar]
+  );
+
+  const normalizedTrashTypeWeekdayData = useMemo(
+    () => normalizeWeekdayData(trashTypeWeekdayData, selectedTrashType),
+    [trashTypeWeekdayData, selectedTrashType]
+  );
+
   const displayDaysData = useMemo(() => {
     if (
-      trashTypeWeekdayData.length > 0 &&
+      normalizedTrashTypeWeekdayData.length > 0 &&
       selectedTrashType !== '쓰레기 종류' &&
       selectedTrashType !== '전체통계'
     ) {
-      return trashTypeWeekdayData;
+      return normalizedTrashTypeWeekdayData;
     }
-    return daysBar;
-  }, [trashTypeWeekdayData, daysBar, selectedTrashType]);
+    return normalizedDaysBar;
+  }, [normalizedTrashTypeWeekdayData, normalizedDaysBar, selectedTrashType]);
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleExcelExport = () => {
+    try {
+      exportStatisticsToExcel({
+        rawCategories,
+        regionPie,
+        daysBar: normalizedDaysBar,
+        posNegPie,
+        timeSlotData:
+          selectedAreas.length > 0
+            ? regionTimePeriodsData
+            : chartData.timeSlotData,
+        dateRange,
+      });
+    } catch (error) {
+      console.error('Excel export failed:', error);
+      alert('Excel 다운로드 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -318,7 +384,9 @@ const ComplaintStats = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={handlePrint}>PDF</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>Excel</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExcelExport}>
+                  Excel
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
