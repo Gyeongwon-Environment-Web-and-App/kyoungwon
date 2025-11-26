@@ -21,7 +21,7 @@ import TransportManage from './pages/TransportManage';
 
 const App: React.FC = () => {
   return (
-    <HashRouter basename={import.meta.env.BASE_URL}>
+    <HashRouter>
       <AppContent />
     </HashRouter>
   );
