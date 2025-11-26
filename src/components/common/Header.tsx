@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sheet';
 import { Menu, X } from '@/lib/icons';
 
-import logo from '../../assets/icons/brand/logo.svg';
+import logoPng from '../../assets/icons/brand/logo.png';
 import long_logo from '../../assets/icons/brand/long_logo.svg';
 import bottomArrow from '../../assets/icons/navigation/arrows/bottom_arrow.svg';
 import topArrow from '../../assets/icons/navigation/arrows/top_arrow.svg';
@@ -62,7 +62,7 @@ const menuItems: {
     label: '공지사항',
     submenu: [
       { name: '공지 목록', route: '/notice/table' },
-      // { name: '공지 상세', route: '/notice/detail' }, 
+      // { name: '공지 상세', route: '/notice/detail' },
       { name: '공지 작성 / 수정', route: '/notice/form' },
     ],
   },
@@ -90,6 +90,10 @@ export default function Header({ onLogout }: HeaderProps) {
     alert('로그아웃 되었습니다.');
   };
 
+  const handleRegister = () => {
+    navigate('/register');
+  };
+
   return (
     <header className="relative w-screen xs:h-[3rem] md:h-[7rem] bg-white py-3 z-50 print-hide">
       <div className="relative md:h-full flex items-center justify-between mx-5 mt-2 2xl:mx-[18rem]">
@@ -98,11 +102,14 @@ export default function Header({ onLogout }: HeaderProps) {
           className="cursor-pointer mb-2 md:ml-6"
           onClick={() => navigate('/')}
         >
-          {/* 작은 화면용 로고 */}
+          {/* 작은 화면용 로고 - PNG for better mobile quality */}
           <img
-            src={logo}
+            src={logoPng}
             alt="경원환경개발 로고"
             className="object-center h-[5vh] lg:hidden"
+            width="106"
+            height="74"
+            style={{ imageRendering: 'crisp-edges' }}
           />
           {/* 큰 화면용 로고 */}
           <img
@@ -196,7 +203,7 @@ export default function Header({ onLogout }: HeaderProps) {
               <div className="text-sm bg-[#77BF7E] text-right pt-[4rem]">
                 <button
                   className="text-right text-white hover:text-gray-600 transition-colors"
-                  onClick={() => handleLogout}
+                  onClick={() => handleRegister}
                 >
                   직원 등록
                 </button>
@@ -252,7 +259,10 @@ export default function Header({ onLogout }: HeaderProps) {
 
         {/* 오른쪽 메뉴 - 데스크톱에서만 표시 */}
         <div className="hidden md:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
-          <button className="hover:text-gray-400" onClick={() => onLogout()}>
+          <button
+            className="hover:text-gray-400"
+            onClick={() => handleRegister()}
+          >
             직원 등록
           </button>
           <button className="hover:text-gray-400" onClick={() => onLogout()}>

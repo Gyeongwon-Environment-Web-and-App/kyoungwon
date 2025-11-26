@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import mdLogo from '../assets/icons/brand/mid_logo.svg';
+import pngMdLogo from '../assets/icons/brand/mid_logo.png';
 import { authService, type LoginResult } from '../services/authService';
 
 interface LoginProps {
@@ -84,8 +85,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen w-screen">
       <div className="h-full flex items-center justify-center w-2/3 md:w-1/2">
         <img
-          className="text-2xl font-bold mb-6 text-center"
+          className="text-2xl font-bold mb-6 text-center hidden md:visible"
           src={mdLogo}
+          alt="중간 크기 경원환경개발 초록색 로고"
+        />
+        <img
+          className="text-2xl font-bold mb-6 text-center md:hidden visible"
+          src={pngMdLogo}
           alt="중간 크기 경원환경개발 초록색 로고"
         />
       </div>
