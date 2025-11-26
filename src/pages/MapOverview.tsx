@@ -204,6 +204,31 @@ export default function MapOverview() {
     [pins]
   );
 
+  // Handle sidebar query parameter changes from Header navigation
+  // This runs separately to ensure it processes URL changes reliably
+  useEffect(() => {
+    if (location.pathname === '/map/overview' && sidebarQueryParam) {
+      setSidebarOpen(true);
+      setActiveSidebar(sidebarQueryParam);
+
+      if (sidebarQueryParam === 'complaint') {
+        setCurrentView('list');
+        openComplaintList();
+      } else {
+        setCurrentView(null);
+        clearSelectedComplaint();
+      }
+    }
+  }, [
+    sidebarQueryParam,
+    location.pathname,
+    setSidebarOpen,
+    setActiveSidebar,
+    setCurrentView,
+    openComplaintList,
+    clearSelectedComplaint,
+  ]);
+
   // Handle URL parameter changes and route-based navigation
   useEffect(() => {
     const pathname = location.pathname;
@@ -237,22 +262,10 @@ export default function MapOverview() {
       return;
     }
 
-    if (pathname === '/map/overview' && sidebarQueryParam) {
-      setSidebarOpen(true);
-      setActiveSidebar(sidebarQueryParam);
+    // Note: sidebarQueryParam handling is now in a separate useEffect above
+    // to ensure reliable processing when navigating from Header
 
-      if (sidebarQueryParam === 'complaint') {
-        setCurrentView('list');
-        openComplaintList();
-      } else {
-        setCurrentView(null);
-        clearSelectedComplaint();
-      }
-
-      return;
-    }
-
-    if (pathname === '/map/overview') {
+    if (pathname === '/map/overview' && !sidebarQueryParam) {
       // Base map overview - no specific view
       setCurrentView(null);
       clearSelectedComplaint();

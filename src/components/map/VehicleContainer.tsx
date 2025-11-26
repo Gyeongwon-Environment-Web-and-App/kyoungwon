@@ -90,7 +90,7 @@ const VehicleContainer: React.FC<VehicleContainerProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 xxxs:h-[70vh] xs:h-[76vh] xsm:h-[78vh] overflow-y-auto scrollbar-hide">
       {filterVehicles.map((vehicle) => (
         <VehicleCard
           key={vehicle.id}
