@@ -91,6 +91,7 @@ export default function Header({ onLogout }: HeaderProps) {
   };
 
   const handleRegister = () => {
+    console.log('직원 등록 클릭됨')
     navigate('/register');
   };
 
@@ -107,8 +108,6 @@ export default function Header({ onLogout }: HeaderProps) {
             src={logoPng}
             alt="경원환경개발 로고"
             className="object-center h-[5vh] lg:hidden"
-            width="106"
-            height="74"
             style={{ imageRendering: 'crisp-edges' }}
           />
           {/* 큰 화면용 로고 */}
@@ -203,7 +202,7 @@ export default function Header({ onLogout }: HeaderProps) {
               <div className="text-sm bg-[#77BF7E] text-right pt-[4rem]">
                 <button
                   className="text-right text-white hover:text-gray-600 transition-colors"
-                  onClick={() => handleRegister}
+                  onClick={handleRegister}
                 >
                   직원 등록
                 </button>
@@ -261,7 +260,7 @@ export default function Header({ onLogout }: HeaderProps) {
         <div className="hidden md:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
           <button
             className="hover:text-gray-400"
-            onClick={() => handleRegister()}
+            onClick={handleRegister}
           >
             직원 등록
           </button>

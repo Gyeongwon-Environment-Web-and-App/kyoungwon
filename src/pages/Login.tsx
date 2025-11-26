@@ -85,7 +85,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen w-screen">
       <div className="h-full flex items-center justify-center w-2/3 md:w-1/2">
         <img
-          className="text-2xl font-bold mb-6 text-center hidden md:visible"
+          className="text-2xl font-bold mb-6 text-center hidden md:block"
           src={mdLogo}
           alt="중간 크기 경원환경개발 초록색 로고"
         />
