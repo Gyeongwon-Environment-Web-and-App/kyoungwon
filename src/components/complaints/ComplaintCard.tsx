@@ -105,7 +105,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
           )}
         </div>
         <div className="flex items-center gap-1">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 max-w-[6.5rem] xs:max-w-48 flex-wrap h-full flex-shrink-0">
             {complaint.teams.map((team, index) => {
               const getCategoryIcon = (category: string) => {
                 switch (category) {
@@ -132,7 +132,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
           </div>
           <div className="flex font-bold text-lg ml-1">
             {complaint.content
-              ? truncateString(complaint.content, 14)
+              ? truncateString(complaint.content, 12)
               : truncateString(complaint.address?.address?.slice(7), 14)}
           </div>
         </div>

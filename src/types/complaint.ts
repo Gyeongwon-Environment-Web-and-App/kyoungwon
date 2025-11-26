@@ -56,15 +56,47 @@ export interface ComplaintExtended {
   presigned_links: PresignedLink[];
 }
 
+export interface ComplaintExtendedWithDrivers {
+  id: number;
+  datetime: string;
+  content: string;
+  status: boolean;
+  category: string;
+  type: string;
+  route: string;
+  bad: boolean;
+  user: User;
+  address: Address;
+  source: Source;
+  teams: Array<{
+    id: number;
+    category: string;
+    team_nm: string;
+    isActive: boolean;
+  }>;
+  drivers: Array<{
+    id: number;
+    name: string;
+    phone_no: string;
+    isActive: boolean;
+  }>;
+  presigned_links: PresignedLink[];
+}
+
 export interface ComplaintApiResponse {
   data?: ComplaintExtended[];
   message: string;
   complaints_extended: ComplaintExtended[];
 }
 
+export interface ComplaintApiResponseWithDrivers {
+  message: string;
+  complaints_extended: ComplaintExtendedWithDrivers[];
+}
+
 export interface ComplaintByIdApiResponse {
   message: string;
-  complaint_extended: ComplaintExtended;
+  complaint_extended: ComplaintExtendedWithDrivers;
 }
 
 // Complaint interface for category API response (different structure)

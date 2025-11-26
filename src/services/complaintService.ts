@@ -4,9 +4,10 @@ import apiClient from '@/lib/api';
 import {
   type Address,
   type Complaint,
-  type ComplaintApiResponse,
+  type ComplaintApiResponseWithDrivers,
   type ComplaintByIdApiResponse,
   type ComplaintExtended,
+  type ComplaintExtendedWithDrivers,
   type ComplaintForCategory,
 } from '@/types/complaint';
 import {
@@ -90,6 +91,77 @@ const convertComplaintExtendedToComplaint = (
     bad: complaintExtended.bad,
     user: complaintExtended.user,
     teams: complaintExtended.teams,
+    presigned_links: complaintExtended.presigned_links || [],
+  };
+};
+
+// Converter for complaints with drivers at the complaint level
+const convertComplaintExtendedWithDriversToComplaint = (
+  complaintExtended: ComplaintExtendedWithDrivers
+): Complaint => {
+  if (!complaintExtended) {
+    throw new Error('complaintExtended is null or undefined');
+  }
+
+  if (!complaintExtended.address) {
+    throw new Error('complaintExtended.address is null or undefined');
+  }
+
+  // Convert drivers to the Driver format (without isActive)
+  const activeDrivers = (complaintExtended.drivers || [])
+    .filter((driver) => driver && driver.isActive)
+    .map((driver) => ({
+      id: driver.id,
+      name: driver.name,
+      phone_no: driver.phone_no,
+    }));
+
+  // Map drivers to teams - assign all drivers to the first team
+  // (since most code accesses teams[0]?.drivers[0])
+  const teamsWithDrivers = (complaintExtended.teams || []).map(
+    (team, index) => {
+      return {
+        id: team.id,
+        category: team.category,
+        team_nm: team.team_nm,
+        // Assign drivers only to the first team to avoid duplication
+        drivers: index === 0 ? activeDrivers : [],
+      };
+    }
+  );
+
+  // If no teams exist, create a default team with all drivers
+  const finalTeams =
+    teamsWithDrivers.length > 0
+      ? teamsWithDrivers
+      : [
+          {
+            id: 0,
+            category: complaintExtended.category || '기타',
+            team_nm: '',
+            drivers: activeDrivers,
+          },
+        ];
+
+  return {
+    id: complaintExtended.id,
+    address: complaintExtended.address,
+    datetime: complaintExtended.datetime,
+    category:
+      finalTeams.map((team) => team.category).filter(Boolean)[0] || '기타',
+    type: complaintExtended.type,
+    content: complaintExtended.content,
+    route: complaintExtended.route,
+    source: complaintExtended.source,
+    notify: {
+      usernames: finalTeams.flatMap((team) =>
+        team.drivers.map((driver) => driver.name)
+      ),
+    },
+    status: complaintExtended.status,
+    bad: complaintExtended.bad,
+    user: complaintExtended.user,
+    teams: finalTeams,
     presigned_links: complaintExtended.presigned_links || [],
   };
 };
@@ -195,13 +267,13 @@ export const complaintService = {
         requestBody.category = category;
       }
 
-      const response = await apiClient.post<ComplaintApiResponse>(
+      const response = await apiClient.post<ComplaintApiResponseWithDrivers>(
         '/complaint/getByCategoryAndOrDates',
         requestBody
       );
 
       const complaints = response.data.complaints_extended.map(
-        convertComplaintExtendedToComplaint
+        convertComplaintExtendedWithDriversToComplaint
       );
 
       return complaints;
@@ -228,7 +300,7 @@ export const complaintService = {
         throw new Error('API response missing complaint_extended property');
       }
 
-      const convertedComplaint = convertComplaintExtendedToComplaint(
+      const convertedComplaint = convertComplaintExtendedWithDriversToComplaint(
         response.data.complaint_extended
       );
 

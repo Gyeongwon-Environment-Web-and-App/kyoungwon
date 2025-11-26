@@ -76,7 +76,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className={`text-center text-white font-bold text-base ${
+                      className={`text-center text-white font-bold text-[0.9rem] ${
                         !isLastHeader ? 'border-r border-white' : ''
                       }`}
                     >
