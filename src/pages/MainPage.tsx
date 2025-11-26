@@ -289,7 +289,7 @@ const MainPage: React.FC = () => {
               className="cursor-pointer"
             />
           </div>
-          <div className="h-72 w-full mt-2 overflow-y-auto flex items-center justify-center">
+          <div className="h-72 w-full mt-2 overflow-y-auto flex-col items-center justify-center">
             {notices.length > 0 &&
               notices.map((notice) => (
                 <div

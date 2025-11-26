@@ -56,7 +56,6 @@ async function uploadFileToUrl(file: File, uploadUrl: string): Promise<void> {
     const response = await fetch(uploadUrl, {
       method: 'PUT',
       body: file,
-      // Explicitly don't set Content-Type to avoid preflight
       mode: 'cors', // Explicitly allow CORS
     });
 

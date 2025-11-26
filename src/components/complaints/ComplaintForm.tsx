@@ -464,19 +464,19 @@ export default function ComplaintForm({
 
           {addressFrequencyInfo !== null && addressFrequencyInfo > 0 && (
             <>
-              <div className="col-span-1"></div>
-              <div className="text-red col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
+              <div className="hidden md:block md:col-span-1"></div>
+              <div className="text-red col-span-3 md:col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
                 최근 한 달간 이 주소에서 민원이 {addressFrequencyInfo}번
                 들어왔습니다.
               </div>
-              <div className="col-span-2"></div>
+              <div className="md:col-span-2"></div>
             </>
           )}
 
           {!loading && error && (
             <>
               <div className="hidden md:block md:col-span-1"></div>
-              <div className="text-red col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
+              <div className="text-red col-span-3 md:col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
                 <img
                   src={attentionRed}
                   alt="경고 아이콘"
@@ -490,7 +490,7 @@ export default function ComplaintForm({
 
           {/* 민원 접수 경로 */}
           <label
-            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
+            className={`md:col-span-1 col-span-3 font-bold text-[1rem] md:pt-5 ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
           >
             민원 접수 경로
             <span className="text-red pr-0"> *</span>
