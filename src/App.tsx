@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-  BrowserRouter,
+  HashRouter,
   Navigate,
   Route,
   Routes,
@@ -21,9 +21,9 @@ import TransportManage from './pages/TransportManage';
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <HashRouter basename={import.meta.env.BASE_URL}>
       <AppContent />
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 
