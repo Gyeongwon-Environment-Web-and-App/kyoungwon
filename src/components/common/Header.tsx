@@ -208,7 +208,7 @@ export default function Header({ onLogout }: HeaderProps) {
                 </button>
                 <button
                   className="text-right text-white hover:text-gray-600 transition-colors"
-                  onClick={() => handleLogout}
+                  onClick={handleLogout}
                 >
                   로그아웃
                 </button>
@@ -264,7 +264,7 @@ export default function Header({ onLogout }: HeaderProps) {
           >
             직원 등록
           </button>
-          <button className="hover:text-gray-400" onClick={() => onLogout()}>
+          <button className="hover:text-gray-400" onClick={handleLogout}>
             로그아웃
           </button>
         </div>
