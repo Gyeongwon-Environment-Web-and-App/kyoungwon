@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
 
-import { File, Image as ImageIcon, X } from 'lucide-react';
+import { File, X } from 'lucide-react';
 
 import {
   convertDeviceFileToFileData,
   getPhotoFromLibrary,
+  isNativePlatform,
 } from '@/utils/deviceService';
 
 import { Button } from '../ui/button';
@@ -47,7 +48,35 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
     fileInputRef.current?.click();
   };
 
+  // Check if accept prop includes non-image file types
+  const hasNonImageTypes = (): boolean => {
+    if (!accept) return false;
+    const acceptLower = accept.toLowerCase();
+    return (
+      acceptLower.includes('pdf') ||
+      acceptLower.includes('.doc') ||
+      acceptLower.includes('.xls') ||
+      acceptLower.includes('application/') ||
+      acceptLower.includes('msword') ||
+      acceptLower.includes('spreadsheet')
+    );
+  };
+
   const handlePhotoLibraryClick = async () => {
+    // If accept includes non-image types, use file input directly
+    // (Capacitor Camera doesn't support non-image files well)
+    if (hasNonImageTypes()) {
+      handleFileClick();
+      return;
+    }
+
+    // On web/desktop, always use file input
+    if (!isNativePlatform()) {
+      handleFileClick();
+      return;
+    }
+
+    // On native platforms, use photo library for images
     try {
       const deviceFile = await getPhotoFromLibrary();
       if (deviceFile) {
@@ -125,25 +154,17 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
           accept={accept || 'image/*'}
           multiple
         />
-
-        <button
-          type="button"
-          onClick={handlePhotoLibraryClick}
-          className="flex items-center justify-center gap-1 border border-light-border px-2 md:px-3 py-1.5 md:py-2 rounded text-center outline-none text-xs md:text-sm font-bold hover:bg-gray-50 transition-colors mr-2"
-        >
-          <ImageIcon className="h-4 w-4" />
-          사진 선택
-        </button>
-        {accept && (
+        
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={handleFileClick}
+            onClick={handlePhotoLibraryClick}
             className="flex items-center justify-center gap-1 border border-light-border px-2 md:px-3 py-1.5 md:py-2 rounded text-center outline-none text-xs md:text-sm font-bold hover:bg-gray-50 transition-colors"
           >
             <File className="h-4 w-4" />
             파일 선택
           </button>
-        )}
+        </div>
 
         <div className="ml-5 text-sm md:text-base">
           {formData.uploadedFiles.length > 0 ? (
