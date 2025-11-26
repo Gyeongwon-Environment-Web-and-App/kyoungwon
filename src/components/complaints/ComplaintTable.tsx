@@ -19,6 +19,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useComplaints } from '@/hooks/useComplaints';
+import apiClient from '@/lib/api';
 import {
   ChevronLeft,
   ChevronRight,
@@ -49,6 +50,7 @@ const ComplaintTable: React.FC = () => {
   const navigate = useNavigate();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isCategoryLoading, setIsCategoryLoading] = useState(false);
+  const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
   const {
     dateRange,
@@ -540,6 +542,123 @@ const ComplaintTable: React.FC = () => {
     return pages;
   };
 
+  const getDateRangeOrDefault = () => {
+    if (dateRange?.from) {
+      const start = new Date(dateRange.from);
+      const end = new Date(dateRange.to ?? dateRange.from);
+      return {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+      };
+    }
+
+    const end = new Date();
+    const start = new Date(end);
+    start.setMonth(start.getMonth() - 1);
+    return {
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    };
+  };
+
+  const handleExcelDownload = async () => {
+    if (isDownloadLoading) {
+      return;
+    }
+
+    setIsDownloadLoading(true);
+    try {
+      const datePayload = getDateRangeOrDefault();
+      const response = await apiClient.post<Blob>(
+        '/complaint/downloadExcel',
+        datePayload,
+        {
+          responseType: 'blob',
+        }
+      );
+
+      const contentType =
+        response.headers['content-type'] || response.data.type || '';
+
+      if (contentType.includes('application/json')) {
+        const text = await response.data.text();
+        const parsed = JSON.parse(text);
+        window.alert(parsed.message ?? '다운로드 가능한 데이터가 없습니다.');
+        return;
+      }
+
+      const blob =
+        response.data instanceof Blob
+          ? response.data
+          : new Blob([response.data], {
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const fileSuffix = `${datePayload.startDate.slice(0, 10)}_${datePayload.endDate.slice(0, 10)}`;
+      link.href = url;
+      link.download = `complaints_${fileSuffix}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Excel download failed:', error);
+      window.alert('엑셀 다운로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsDownloadLoading(false);
+    }
+  };
+
+  const handlePdfDownload = async () => {
+    if (isDownloadLoading) {
+      return;
+    }
+
+    setIsDownloadLoading(true);
+    try {
+      const datePayload = getDateRangeOrDefault();
+      const response = await apiClient.post<Blob>(
+        '/complaint/downloadPdf',
+        datePayload,
+        {
+          responseType: 'blob',
+        }
+      );
+
+      const contentType =
+        response.headers['content-type'] || response.data.type || '';
+
+      if (contentType.includes('application/json')) {
+        const text = await response.data.text();
+        const parsed = JSON.parse(text);
+        window.alert(parsed.message ?? '다운로드 가능한 데이터가 없습니다.');
+        return;
+      }
+
+      const blob =
+        response.data instanceof Blob
+          ? response.data
+          : new Blob([response.data], {
+              type: 'application/pdf',
+            });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const fileSuffix = `${datePayload.startDate.slice(0, 10)}_${datePayload.endDate.slice(0, 10)}`;
+      link.href = url;
+      link.download = `complaints_${fileSuffix}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('PDF download failed:', error);
+      window.alert('PDF 다운로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsDownloadLoading(false);
+    }
+  };
+
   return (
     <div className="w-full 2xl:w-[110%] overflow-x-auto">
       {/* 팝업 */}
@@ -697,17 +816,21 @@ const ComplaintTable: React.FC = () => {
                     className="flex md:px-3 px-2 items-center shadow-none outline-none border border-a2a2a2 md:border-[#575757] focus:border-[#575757] focus:outline-none"
                   >
                     <Download className="w-4 h-4 md:text-black text-[#575757]" />
-                    <span className="hidden md:block text-sm">다운로드</span>
+                    <span className="hidden md:block text-sm">
+                      {isDownloadLoading ? '다운로드 중...' : '다운로드'}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
-                    onClick={() => window.alert('개발 중입니다!')}
+                    onClick={handlePdfDownload}
+                    disabled={isDownloadLoading}
                   >
                     PDF
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => window.alert('개발 중입니다!')}
+                    onClick={handleExcelDownload}
+                    disabled={isDownloadLoading}
                   >
                     Excel
                   </DropdownMenuItem>
