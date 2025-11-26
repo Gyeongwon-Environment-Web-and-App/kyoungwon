@@ -6,7 +6,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Search } from '@/lib/icons';
 
 import triangle from '../../assets/icons/actions/triangle.svg';
-import logo from '../../assets/icons/brand/logo.svg';
+// import logo from '../../assets/icons/brand/logo.svg';
+import logo from '../../assets/icons/brand/logo.png';
 import chartIcon from '../../assets/icons/common/chart.svg';
 import chartWhite from '../../assets/icons/common/chart_white.svg';
 import editIcon from '../../assets/icons/common/edit.svg';
@@ -241,10 +242,10 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
         <div className="flex flex-col items-center">
           {/* 로고 버튼 */}
           <button
-            className="p-0 py-2 w-14 md:w-20 flex items-center justify-center border-b border-d9d9d9"
+            className="p-0 py-2 w-14 md:w-20 h-12 md:h-20 flex items-center justify-center border-b border-d9d9d9"
             onClick={() => navigate('/')}
           >
-            <img src={logo} alt="로고" className="w-10 h-10 md:w-16 md:h-16" />
+            <img src={logo} alt="로고" className="w-10 h-8 md:w-16 md:h-12" />
           </button>
           {/* 민원 목록 */}
           <button
