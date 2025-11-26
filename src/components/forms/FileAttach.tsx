@@ -1,8 +1,13 @@
 import React, { useRef } from 'react';
 
-import { X } from 'lucide-react';
+import { Camera, File, Image as ImageIcon, X } from 'lucide-react';
 
 import { Button } from '../ui/button';
+import {
+  convertDeviceFileToFileData,
+  getPhotoFromCamera,
+  getPhotoFromLibrary,
+} from '@/utils/deviceService';
 
 // Generic type for any form data with uploadedFiles
 export type FileData = {
@@ -40,6 +45,36 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleCameraClick = async () => {
+    try {
+      const deviceFile = await getPhotoFromCamera();
+      if (deviceFile) {
+        const fileData = await convertDeviceFileToFileData(deviceFile);
+        setFormData((prev) => ({
+          ...prev,
+          uploadedFiles: [...prev.uploadedFiles, fileData],
+        }));
+      }
+    } catch (error) {
+      console.error('카메라 오류:', error);
+    }
+  };
+
+  const handlePhotoLibraryClick = async () => {
+    try {
+      const deviceFile = await getPhotoFromLibrary();
+      if (deviceFile) {
+        const fileData = await convertDeviceFileToFileData(deviceFile);
+        setFormData((prev) => ({
+          ...prev,
+          uploadedFiles: [...prev.uploadedFiles, fileData],
+        }));
+      }
+    } catch (error) {
+      console.error('사진 라이브러리 오류:', error);
+    }
   };
 
   const handleRemoveFile = (index: number) => {
@@ -106,13 +141,32 @@ function FileAttach<T extends { uploadedFiles: FileData[] }>({
           multiple
         />
 
-        <button
-          type="button"
-          onClick={handleFileClick}
-          className="w-36 md:w-[200px] border border-light-border px-2 md:px-3 py-1.5 md:py-2 rounded text-center outline-none text-xs md:text-sm font-bold"
-        >
-          파일 선택
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleCameraClick}
+            className="flex items-center justify-center gap-1 border border-light-border px-2 md:px-3 py-1.5 md:py-2 rounded text-center outline-none text-xs md:text-sm font-bold hover:bg-gray-50 transition-colors"
+          >
+            <Camera className="h-4 w-4" />
+            카메라
+          </button>
+          <button
+            type="button"
+            onClick={handlePhotoLibraryClick}
+            className="flex items-center justify-center gap-1 border border-light-border px-2 md:px-3 py-1.5 md:py-2 rounded text-center outline-none text-xs md:text-sm font-bold hover:bg-gray-50 transition-colors"
+          >
+            <ImageIcon className="h-4 w-4" />
+            사진 선택
+          </button>
+          <button
+            type="button"
+            onClick={handleFileClick}
+            className="flex items-center justify-center gap-1 border border-light-border px-2 md:px-3 py-1.5 md:py-2 rounded text-center outline-none text-xs md:text-sm font-bold hover:bg-gray-50 transition-colors"
+          >
+            <File className="h-4 w-4" />
+            파일 선택
+          </button>
+        </div>
 
         <div className="ml-5 text-sm md:text-base">
           {formData.uploadedFiles.length > 0 ? (

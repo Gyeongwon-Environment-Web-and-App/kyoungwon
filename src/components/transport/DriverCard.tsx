@@ -70,8 +70,8 @@ const DriverCard: React.FC<DriverCardProps> = ({
           <img src={phone} alt="전화번호" className="mr-1 h-5 w-5" />
           <span className="">{phoneNum}</span>
         </div>
-        <div className="flex items-center text-base md:text-lg">
-          <img src={team} alt="소속팀" className="mr-1 h-6 w-6" />
+        <div className="flex items-start text-base md:text-lg">
+          <img src={team} alt="소속팀" className="mr-1 mt-0.5 h-6 w-6" />
           <span className="break-keep break-normal">
             {teamNms.length > 0 ? teamNms.join(', ') : '소속 팀 없음'}
           </span>
