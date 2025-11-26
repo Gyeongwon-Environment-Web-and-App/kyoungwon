@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/common/Header';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { noticeService } from '@/services/noticeService';
 import { useAuthStore } from '@/stores/authStore';
 import { useMainPageStore } from '@/stores/mainPageStore';
+import type { Notice } from '@/types/notice';
 
 import bg1 from '../assets/background/bg1.webp';
 import bg2 from '../assets/background/bg2.webp';
@@ -21,8 +23,6 @@ import folder from '../assets/icons/navigation/home_menu/folder.svg';
 import mapping from '../assets/icons/navigation/home_menu/mapping.svg';
 import truck from '../assets/icons/navigation/home_menu/vehicle.svg';
 import write from '../assets/icons/navigation/home_menu/write.svg';
-import type { Notice } from '@/types/notice';
-import { noticeService } from '@/services/noticeService';
 
 const MainPage: React.FC = () => {
   // Get logout function from Zustand store
@@ -138,8 +138,8 @@ const MainPage: React.FC = () => {
   };
 
   const handleNoticeClick = (noticeId: number) => {
-        navigate(`/post/getPostById/${noticeId}/true`);
-    };
+    navigate(`/post/getPostById/${noticeId}/true`);
+  };
 
   //! 네비게이팅 수정!
   const menuButtons = [
@@ -289,18 +289,22 @@ const MainPage: React.FC = () => {
               className="cursor-pointer"
             />
           </div>
-          <div className="h-72 w-full mt-2 border-t border-light-border overflow-y-auto">
-            {notices.map((notice) => (
-              <div className='flex items-center justify-between border-b border-light-border py-1.5 px-2 cursor-pointer'
-              onClick={() => handleNoticeClick(notice.id)}>
-                <span className='truncate'>{notice.title}</span>
-                <span>{notice.datetime.slice(0,10)}</span>
-              </div>
-            ))}
+          <div className="h-72 w-full mt-2 overflow-y-auto flex items-center justify-center">
+            {notices.length > 0 &&
+              notices.map((notice) => (
+                <div
+                  className="flex items-center justify-between border-b border-light-border py-1.5 px-2 cursor-pointer"
+                  onClick={() => handleNoticeClick(notice.id)}
+                >
+                  <span className="truncate">{notice.title}</span>
+                  <span>{notice.datetime.slice(0, 10)}</span>
+                </div>
+              ))}
+            {notices.length === 0 && <p className=''>공지사항이 없습니다</p>}
           </div>
         </div>
       </div>
-{/* 
+      {/* 
       <footer className='w-full absolute bottom-0 flex items-center justify-center font-normal text-light-border mb-2'>
         프론트엔드 안소현, 백엔드 고다연, 기획/디자인 김수빈, 이주하, 김지윤, 김민혜
       </footer> */}
