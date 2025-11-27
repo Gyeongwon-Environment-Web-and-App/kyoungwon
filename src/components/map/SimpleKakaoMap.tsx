@@ -1,24 +1,8 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from 'react';
+import React, { forwardRef, useEffect, useId, useRef } from 'react';
 
 import { usePinManager } from '@/hooks/usePinManager';
-import {
-  fetchPolygonsByCategory,
-  getAvailableCategories,
-} from '@/services/polygonService';
-import type {
-  PinClickEvent,
-  PinData,
-  PolygonClickEvent,
-  PolygonFeature,
-  RegionData,
-} from '@/types/map';
+import { usePolygonManager } from '@/hooks/usePolygonManager';
+import type { PinClickEvent, PinData, PolygonClickEvent } from '@/types/map';
 
 import { type KakaoMap, useKakaoMaps } from '../../hooks/useKakaoMaps';
 
@@ -52,215 +36,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     const mapId = useId();
     const mapInstanceRef = useRef<KakaoMap | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const polygonsRef = useRef<unknown[]>([]);
     const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
-
-    // Polygon state
-    const [selectedCategory, setSelectedCategory] = useState<string>('음식물');
-    const [polygonData, setPolygonData] = useState<RegionData | null>(null);
-    const [isLoadingPolygons, setIsLoadingPolygons] = useState(false);
-    const [polygonError, setPolygonError] = useState<string | null>(null);
-    const [showPolygons, setShowPolygons] = useState(false);
-
-    const isKakaoPolygon = (
-      obj: unknown
-    ): obj is {
-      setMap: (map: unknown) => void;
-      setOptions: (options: Record<string, unknown>) => void;
-    } => {
-      return (
-        obj !== null &&
-        typeof obj === 'object' &&
-        'setMap' in obj &&
-        'setOptions' in obj &&
-        typeof (obj as { setMap: unknown }).setMap === 'function' &&
-        typeof (obj as { setOptions: unknown }).setOptions === 'function'
-      );
-    };
-
-    // Clear existing polygons
-    const clearPolygons = useCallback(() => {
-      polygonsRef.current.forEach((polygon) => {
-        if (isKakaoPolygon(polygon)) {
-          polygon.setMap(null);
-        }
-      });
-      polygonsRef.current = [];
-    }, []);
-
-    // Create polygon from feature data
-    const createPolygon = useCallback(
-      (feature: PolygonFeature): unknown => {
-        if (!mapInstanceRef.current || !window.kakao) return null;
-
-        try {
-          const coordinates = feature.geometry.coordinates[0][0];
-
-          if (!coordinates || coordinates.length < 3) {
-            console.error('Invalid polygon coordinates:', coordinates);
-            return null;
-          }
-
-          const path = coordinates
-            .map((coord) => {
-              if (!Array.isArray(coord) || coord.length < 2) {
-                console.error('Invalid coordinate:', coord);
-                return null;
-              }
-              return new window.kakao.maps.LatLng(coord[1], coord[0]);
-            })
-            .filter(Boolean); // Remove any null coordinates
-
-          if (path.length < 3) {
-            console.error(
-              'Not enough valid coordinates for polygon:',
-              path.length
-            );
-            return null;
-          }
-
-          const polygon = new (
-            window.kakao.maps as unknown as {
-              Polygon: new (options: Record<string, unknown>) => unknown;
-            }
-          ).Polygon({
-            map: mapInstanceRef.current,
-            path: path,
-            strokeWeight: 2,
-            strokeColor: '#004c80',
-            strokeOpacity: 0.8,
-            fillColor: '#fff',
-            fillOpacity: 0.7,
-          });
-
-          // Add click event listener
-          if (onPolygonClick) {
-            (
-              window.kakao.maps as unknown as {
-                event: {
-                  addListener: (
-                    target: unknown,
-                    event: string,
-                    handler: () => void
-                  ) => void;
-                };
-              }
-            ).event.addListener(polygon, 'click', () => {
-              onPolygonClick({
-                polygon: feature,
-                map: mapInstanceRef.current,
-              });
-            });
-          }
-
-          // Add hover effects
-          (
-            window.kakao.maps as unknown as {
-              event: {
-                addListener: (
-                  target: unknown,
-                  event: string,
-                  handler: () => void
-                ) => void;
-              };
-            }
-          ).event.addListener(polygon, 'mouseover', function () {
-            if (isKakaoPolygon(polygon)) {
-              polygon.setOptions({ fillColor: '#09f' });
-            }
-          });
-
-          (
-            window.kakao.maps as unknown as {
-              event: {
-                addListener: (
-                  target: unknown,
-                  event: string,
-                  handler: () => void
-                ) => void;
-              };
-            }
-          ).event.addListener(polygon, 'mouseout', function () {
-            if (isKakaoPolygon(polygon)) {
-              polygon.setOptions({ fillColor: '#fff' });
-            }
-          });
-
-          return polygon;
-        } catch (error) {
-          console.error('Failed to create polygon:', error);
-          console.error('Feature data:', feature);
-          return null;
-        }
-      },
-      [onPolygonClick]
-    );
-
-    // Fetch polygons from API
-    const fetchPolygons = useCallback(async (category: string) => {
-      if (!category) return;
-
-      setIsLoadingPolygons(true);
-      setPolygonError(null);
-
-      try {
-        const data = await fetchPolygonsByCategory(category);
-
-        if (!data || !data.region_areas || !data.region_areas.features) {
-          throw new Error('Invalid polygon data received from API');
-        }
-
-        if (data.region_areas.features.length === 0) {
-          setPolygonError(`No polygons found for ${category}`);
-        } else {
-          setPolygonData(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch polygons:', error);
-        setPolygonError(
-          error instanceof Error ? error.message : 'Failed to load polygons'
-        );
-        setPolygonData(null);
-      } finally {
-        setIsLoadingPolygons(false);
-      }
-    }, []);
-
-    // Render polygons on map
-    const renderPolygons = useCallback(() => {
-      if (
-        !mapInstanceRef.current ||
-        !isLoaded ||
-        !polygonData ||
-        !showPolygons
-      ) {
-        return;
-      }
-
-      clearPolygons();
-
-      let successCount = 0;
-      polygonData.region_areas.features.forEach((feature, index) => {
-        console.log(
-          `Creating polygon ${index + 1}/${polygonData.region_areas.features.length}`
-        );
-        const polygon = createPolygon(feature);
-        if (polygon) {
-          polygonsRef.current.push(polygon);
-          successCount++;
-        }
-      });
-
-      console.log(
-        `Successfully created ${successCount}/${polygonData.region_areas.features.length} polygons`
-      );
-
-      if (successCount === 0) {
-        setPolygonError(
-          'Failed to render any polygons. Check console for details.'
-        );
-      }
-    }, [polygonData, showPolygons, isLoaded, clearPolygons, createPolygon]);
 
     // Initialize map when SDK is ready
     useEffect(() => {
@@ -307,6 +83,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       } catch (error) {
         console.error('Failed to initialize map:', error);
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoaded, center.lat, center.lng, zoom]);
 
     // Update map center and zoom when props change
@@ -329,34 +106,20 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       isLoaded,
     });
 
-    // Handle polygon toggle
-    const handlePolygonToggle = useCallback(() => {
-      if (!showPolygons) {
-        // Show polygons - fetch data first
-        setShowPolygons(true);
-        if (selectedCategory) {
-          fetchPolygons(selectedCategory);
-        }
-      } else {
-        // Hide polygons
-        setShowPolygons(false);
-        clearPolygons();
-        setPolygonData(null);
-        setPolygonError(null);
-      }
-    }, [showPolygons, selectedCategory, fetchPolygons, clearPolygons]);
-
-    // Fetch polygons when category changes (only if polygons are shown)
-    useEffect(() => {
-      if (showPolygons && selectedCategory) {
-        fetchPolygons(selectedCategory);
-      }
-    }, [selectedCategory, showPolygons]);
-
-    // Render polygons when data changes
-    useEffect(() => {
-      renderPolygons();
-    }, [polygonData, showPolygons, isLoaded]);
+    const {
+      selectedCategory,
+      setSelectedCategory,
+      isLoadingPolygons,
+      polygonError,
+      showPolygons,
+      clearPolygons,
+      handlePolygonToggle,
+      getAvailableCategories,
+    } = usePolygonManager({
+      mapInstance: mapInstanceRef.current,
+      onPolygonClick,
+      isLoaded,
+    });
 
     // Load SDK on mount
     useEffect(() => {
@@ -444,7 +207,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
         {/* Polygon Controls */}
         {showPolygonControls && (
-          <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-3 z-20">
+          <div className="absolute top-16 sm:top-4 right-4 bg-white rounded-lg shadow-lg p-3 z-20">
             <div className="flex flex-col gap-2">
               {/* Category Selector */}
               <select
@@ -464,11 +227,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
               <button
                 onClick={handlePolygonToggle}
                 disabled={isLoadingPolygons}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  showPolygons
-                    ? 'bg-red-500 text-white hover:bg-red-600'
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className="px-3 py-1 rounded text-sm font-medium transition-colors bg-light-green text-white hover:bg-lighter-green disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoadingPolygons ? (
                   <div className="flex items-center gap-1">

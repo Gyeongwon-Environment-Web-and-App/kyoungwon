@@ -47,15 +47,23 @@ export interface PinClickEvent {
 
 // Polygon-related types
 export interface PolygonCoordinates {
-  type: 'MultiPolygon';
-  coordinates: number[][][][];
+  type: 'Polygon';
+  coordinates: number[][][]; // [ring][point][lng, lat]
 }
 
 export interface PolygonFeature {
   type: 'Feature';
   properties: {
-    team_id: number;
-    truck_id: number;
+    id: number;
+    team: {
+      id: number;
+      team_nm: string;
+      category: string;
+    };
+    truck: {
+      id: number;
+      truck_no: string;
+    };
   };
   geometry: PolygonCoordinates;
 }
