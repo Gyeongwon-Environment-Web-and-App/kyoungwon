@@ -29,6 +29,12 @@ interface UsePolygonManagerReturn {
   clearPolygons: () => void;
   handlePolygonToggle: () => void;
   getAvailableCategories: () => string[];
+  hoveredPolygon: PolygonFeature | null;
+  hoveredPolygonPosition: { x: number; y: number } | null;
+  setHoveredPolygon: (
+    feature: PolygonFeature | null,
+    position?: { x: number; y: number }
+  ) => void;
 }
 
 const isKakaoPolygon = (
@@ -58,6 +64,43 @@ export const usePolygonManager = ({
   const [isLoadingPolygons, setIsLoadingPolygons] = useState(false);
   const [polygonError, setPolygonError] = useState<string | null>(null);
   const [showPolygons, setShowPolygons] = useState(false);
+  const [hoveredPolygon, setHoveredPolygonState] =
+    useState<PolygonFeature | null>(null);
+  const [hoveredPolygonPosition, setHoveredPolygonPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const mousePositionRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Track mouse position globally for tooltip positioning
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePositionRef.current = { x: e.clientX, y: e.clientY };
+      // Update tooltip position if polygon is hovered
+      if (hoveredPolygon && mousePositionRef.current) {
+        setHoveredPolygonPosition(mousePositionRef.current);
+      }
+    };
+
+    if (hoveredPolygon) {
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }
+  }, [hoveredPolygon]);
+
+  // Create setter function that also calculates position:
+  const setHoveredPolygon = useCallback(
+    (feature: PolygonFeature | null, position?: { x: number; y: number }) => {
+      setHoveredPolygonState(feature);
+      // Use provided position or current mouse position
+      setHoveredPolygonPosition(
+        position || mousePositionRef.current || { x: 0, y: 0 }
+      );
+    },
+    []
+  );
 
   // Clear existing polygons
   const clearPolygons = useCallback(() => {
@@ -215,15 +258,41 @@ export const usePolygonManager = ({
               addListener: (
                 target: unknown,
                 event: string,
-                handler: () => void
+                handler: (mouseEvent?: unknown) => void
               ) => void;
             };
           }
-        ).event.addListener(polygon, 'mouseover', function () {
-          if (isKakaoPolygon(polygon)) {
-            polygon.setOptions({ fillColor: '#C4FFCA', fillOpacity: 0.9, });
+        ).event.addListener(
+          polygon,
+          'mouseover',
+          function (mouseEvent?: unknown) {
+            if (isKakaoPolygon(polygon)) {
+              polygon.setOptions({ fillColor: '#C4FFCA', fillOpacity: 0.9 });
+
+              // Get mouse position from browser event
+              // Kakao Maps events may wrap the original browser event
+              const browserEvent =
+                (mouseEvent as { originalEvent?: MouseEvent })?.originalEvent ||
+                (mouseEvent as MouseEvent);
+
+              if (
+                browserEvent &&
+                'clientX' in browserEvent &&
+                'clientY' in browserEvent
+              ) {
+                // Store current mouse position and set hovered polygon
+                mousePositionRef.current = {
+                  x: browserEvent.clientX,
+                  y: browserEvent.clientY,
+                };
+                setHoveredPolygon(feature, mousePositionRef.current);
+              } else {
+                // Fallback: set feature without specific position (will use mousemove tracking)
+                setHoveredPolygon(feature);
+              }
+            }
           }
-        });
+        );
 
         (
           window.kakao.maps as unknown as {
@@ -238,6 +307,7 @@ export const usePolygonManager = ({
         ).event.addListener(polygon, 'mouseout', function () {
           if (isKakaoPolygon(polygon)) {
             polygon.setOptions({ fillColor: '#fff' });
+            setHoveredPolygon(null);
           }
         });
 
@@ -248,7 +318,7 @@ export const usePolygonManager = ({
         return null;
       }
     },
-    [onPolygonClick, mapInstance]
+    [onPolygonClick, mapInstance, setHoveredPolygon]
   );
 
   // Fetch polygons from API
@@ -354,5 +424,8 @@ export const usePolygonManager = ({
     clearPolygons,
     handlePolygonToggle,
     getAvailableCategories,
+    hoveredPolygon,
+    hoveredPolygonPosition,
+    setHoveredPolygon,
   };
 };

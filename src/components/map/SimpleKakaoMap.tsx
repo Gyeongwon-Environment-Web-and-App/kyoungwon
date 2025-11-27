@@ -5,6 +5,7 @@ import { usePolygonManager } from '@/hooks/usePolygonManager';
 import type { PinClickEvent, PinData, PolygonClickEvent } from '@/types/map';
 
 import { type KakaoMap, useKakaoMaps } from '../../hooks/useKakaoMaps';
+import PolygonTooltip from './PolygonTooltip';
 
 interface SimpleKakaoMapProps {
   center?: { lat: number; lng: number };
@@ -115,6 +116,8 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       clearPolygons,
       handlePolygonToggle,
       getAvailableCategories,
+      hoveredPolygon,
+      hoveredPolygonPosition,
     } = usePolygonManager({
       mapInstance: mapInstanceRef.current,
       onPolygonClick,
@@ -235,9 +238,9 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
                     로딩...
                   </div>
                 ) : showPolygons ? (
-                  '폴리곤 숨기기'
+                  '차량구역 숨기기'
                 ) : (
-                  '폴리곤 표시'
+                  '차량구역 표시'
                 )}
               </button>
 
@@ -249,6 +252,14 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
               )}
             </div>
           </div>
+        )}
+
+        {hoveredPolygon && hoveredPolygonPosition && containerRef.current && (
+          <PolygonTooltip
+            feature={hoveredPolygon}
+            position={hoveredPolygonPosition}
+            mapContainerRef={containerRef}
+          />
         )}
       </div>
     );
