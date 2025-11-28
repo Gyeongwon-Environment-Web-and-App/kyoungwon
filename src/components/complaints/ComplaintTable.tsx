@@ -842,7 +842,7 @@ const ComplaintTable: React.FC = () => {
                 className="flex px-2 md:px-4 items-center shadow-none bg-[#646464] text-white border-none outline-none hover:bg-under hover:text-white text-sm"
                 onClick={handleDelete}
               >
-                <img src={deleteIcon} alt="삭제 아이콘" />
+                <img src={deleteIcon} alt="삭제 아이콘" className="w-4 h-4" />
                 <span className="hidden md:block text-sm">삭제</span>
               </Button>
             </div>

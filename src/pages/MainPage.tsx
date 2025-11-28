@@ -31,7 +31,7 @@ const MainPage: React.FC = () => {
 
   useEffect(() => {
     noticeService.getAllNotices(1, true).then((res) => {
-      setNotices(res.items.slice(0, 3));
+      setNotices(res.items.slice(0, 7));
     });
   }, []);
 
