@@ -65,12 +65,12 @@ const NoticeTable: React.FC = () => {
   }, [apiNotices, searchTerm, filterNoticesByTerm]);
 
   const handlePageChange = (page: number) => {
-    if (page < 1 || page > paginationInfo.totalPages) {
-      console.warn(
-        `Invalid page number: ${page}. Total pages: ${paginationInfo.totalPages}`
-      );
+    // Validation is handled in useNotices hook, but add basic bounds check for UI safety
+    if (page < 1) {
+      console.warn(`Invalid page number: ${page}. Minimum page is 1.`);
       return;
     }
+    // setPage in useNotices will handle validation against totalPages
     setPage(page);
   };
   const handleFirstPage = () => {

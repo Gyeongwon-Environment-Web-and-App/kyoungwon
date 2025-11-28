@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { NOTICE_PAGE_SIZE, noticeService } from '@/services/noticeService';
 import type { Notice } from '@/types/notice';
@@ -23,6 +23,9 @@ export const useNotices = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
+  // Use ref to track latest totalPages for validation in changePage
+  const totalPagesRef = useRef(totalPages);
+
   const loadNotices = useCallback(
     async (pageValue: number, modeValue: boolean) => {
       setIsLoading(true);
@@ -36,6 +39,7 @@ export const useNotices = () => {
 
         setNotices(response.items);
         setTotalPages(response.totalPages);
+        totalPagesRef.current = response.totalPages; // Update ref
         setTotalItems(response.totalItems);
       } catch (error) {
         const errorMessage =
@@ -75,20 +79,47 @@ export const useNotices = () => {
     loadNotices(currentPage, modeDesc);
   }, [currentPage, modeDesc, loadNotices]);
 
+  // Keep ref in sync with totalPages state
   useEffect(() => {
+    totalPagesRef.current = totalPages;
+  }, [totalPages]);
+
+  useEffect(() => {
+    // Ensure currentPage doesn't exceed totalPages after data is loaded
     if (currentPage > totalPages && totalPages > 0) {
+      console.log(
+        `Adjusting page from ${currentPage} to ${totalPages} (totalPages updated)`
+      );
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
 
   const changePage = useCallback(
     (page: number) => {
+      // Use functional update to access latest state values
       setCurrentPage((prev) => {
-        const safePage = Math.max(1, Math.min(page, totalPages || 1));
-        return safePage === prev ? prev : safePage;
+        // Validate page number
+        if (page < 1) {
+          console.warn(`Invalid page number: ${page}. Using page 1 instead.`);
+          return prev === 1 ? prev : 1;
+        }
+
+        // Use ref to get latest totalPages (avoids stale closure)
+        const latestTotalPages = totalPagesRef.current;
+        const maxPage = Math.max(1, latestTotalPages || 1);
+        const safePage = Math.min(page, maxPage);
+
+        if (safePage === prev) {
+          return prev; // No change needed
+        }
+
+        console.log(
+          `Changing page from ${prev} to ${safePage} (requested: ${page}, totalPages: ${latestTotalPages})`
+        );
+        return safePage;
       });
     },
-    [totalPages]
+    [] // No dependencies needed since we use ref
   );
 
   const changeSortMode = useCallback((isDescending: boolean) => {

@@ -196,34 +196,69 @@ export const noticeService = {
     modeDesc: boolean
   ): Promise<NoticeListResult> {
     try {
-      const endpoint = `/post/getPostsByPage/${page}/${NOTICE_PAGE_SIZE}/${modeDesc}`;
+      // Validate page number before API call (1-based indexing)
+      const validatedPage = Math.max(1, Math.floor(page));
+      if (validatedPage !== page) {
+        console.warn(
+          `Invalid page number: ${page}. Using validated page: ${validatedPage}`
+        );
+      }
+
+      const endpoint = `/post/getPostsByPage/${validatedPage}/${NOTICE_PAGE_SIZE}/${modeDesc}`;
+
+      console.log('🌐 API 호출: getAllNotices', {
+        endpoint,
+        page: validatedPage,
+        pageSize: NOTICE_PAGE_SIZE,
+        modeDesc,
+        timestamp: new Date().toISOString(),
+      });
+
       const response = await apiClient.get<NoticePagedApiResponse>(endpoint);
 
-      console.log('getAllNotices', response.data);
+      console.log('📡 API 응답 - getAllNotices', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
 
       const normalizedPosts = response.data.posts
         ? response.data.posts.map(transformApiPostToNotice)
         : [];
 
+      // Improved fallback calculation for totalItems
+      // Prefer API response, but if missing, use length only if we got a full page
       const totalItems =
         response.data.pagination?.totalItems ??
         response.data.totalItems ??
-        normalizedPosts.length;
+        (normalizedPosts.length === NOTICE_PAGE_SIZE
+          ? normalizedPosts.length * validatedPage // Estimate if we got a full page
+          : normalizedPosts.length); // Use actual count if partial page
+
+      // Improved fallback calculation for totalPages
+      // Only use calculated value if API didn't provide it
       const totalPages =
         response.data.pagination?.totalPages ??
         response.data.totalPages ??
         Math.max(1, Math.ceil(totalItems / NOTICE_PAGE_SIZE));
 
+      console.log('📊 Pagination 정보', {
+        requestedPage: validatedPage,
+        totalItems,
+        totalPages,
+        itemsReceived: normalizedPosts.length,
+        pageSize: NOTICE_PAGE_SIZE,
+      });
+
       return {
         items: normalizedPosts,
         totalItems,
         totalPages,
-        currentPage: page,
+        currentPage: validatedPage,
         pageSize: NOTICE_PAGE_SIZE,
         modeDesc,
       };
     } catch (error) {
-      console.error('공지사항 수신 중 오류:', error);
+      console.error('❌ 공지사항 수신 중 오류:', error);
       throw error;
     }
   },
