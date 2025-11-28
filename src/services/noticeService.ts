@@ -206,20 +206,20 @@ export const noticeService = {
 
       const endpoint = `/post/getPostsByPage/${validatedPage}/${NOTICE_PAGE_SIZE}/${modeDesc}`;
 
-      console.log('🌐 API 호출: getAllNotices', {
-        endpoint,
-        page: validatedPage,
-        pageSize: NOTICE_PAGE_SIZE,
-        modeDesc,
-        timestamp: new Date().toISOString(),
-      });
+      // console.log('🌐 API 호출: getAllNotices', {
+      //   endpoint,
+      //   page: validatedPage,
+      //   pageSize: NOTICE_PAGE_SIZE,
+      //   modeDesc,
+      //   timestamp: new Date().toISOString(),
+      // });
 
       const response = await apiClient.get<NoticePagedApiResponse>(endpoint);
 
-      console.log('📡 API 응답 - getAllNotices', {
-        rawResponse: response.data,
-        timestamp: new Date().toISOString(),
-      });
+      // console.log('📡 API 응답 - getAllNotices', {
+      //   rawResponse: response.data,
+      //   timestamp: new Date().toISOString(),
+      // });
 
       const normalizedPosts = response.data.posts
         ? response.data.posts.map(transformApiPostToNotice)
@@ -241,13 +241,13 @@ export const noticeService = {
         response.data.totalPages ??
         Math.max(1, Math.ceil(totalItems / NOTICE_PAGE_SIZE));
 
-      console.log('📊 Pagination 정보', {
-        requestedPage: validatedPage,
-        totalItems,
-        totalPages,
-        itemsReceived: normalizedPosts.length,
-        pageSize: NOTICE_PAGE_SIZE,
-      });
+      // console.log('📊 Pagination 정보', {
+      //   requestedPage: validatedPage,
+      //   totalItems,
+      //   totalPages,
+      //   itemsReceived: normalizedPosts.length,
+      //   pageSize: NOTICE_PAGE_SIZE,
+      // });
 
       return {
         items: normalizedPosts,

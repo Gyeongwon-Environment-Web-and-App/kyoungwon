@@ -196,11 +196,21 @@ export interface DriverInfo {
   phone_no: string;
 }
 
+export interface TruckInfo {
+  id: number;
+  truck_no: string;
+  brand_nm: string;
+  size: string;
+  year: string;
+  status: string;
+}
+
 export interface TeamInfo {
   id: number;
   team_nm: string;
   category: string;
   drivers: DriverInfo[];
+  trucks: TruckInfo[];
 }
 
 export interface DriverDataResponse {

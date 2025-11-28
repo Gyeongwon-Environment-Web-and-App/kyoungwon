@@ -10,6 +10,7 @@ import { useComplaintFormStore } from '../../stores/complaintFormStore';
 import { formatAddressWithDong } from '../../utils/dongMapping';
 import DateTimeBox from '../forms/DateTimeBox';
 import TextForward from '../forms/TextForward';
+import { formatPhoneNumber } from '@/utils/validateDash';
 
 // import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
@@ -177,6 +178,7 @@ export default function ComplaintConfirm({
 
     const driver = getDriverForCategory(category);
     const team = getTeamForCategory(category);
+    const trucks = team?.trucks ?? [];
 
     return (
       <>
@@ -197,22 +199,31 @@ export default function ComplaintConfirm({
               className="w-1/3 mr-2"
               alt="쓰레기 종류 태그"
             />
-            <p className="text-black 3xl:text-base text-sm">
+            <p className="text-black 3xl:text-lg text-base">
               {driver ? `${driver.name} 기사님` : '기사 정보 없음'}
             </p>
           </div>
-          <p className="text-light-green 3xl:text-base text-sm">
+          <p className="text-light-green 3xl:text-lg text-base">
             {driver ? '운행중' : '정보 없음'}
           </p>
         </div>
-        <div className="text-sm text-left text-dark-gary font-normal">
+        <div className="text-base text-left text-dark-gary font-normal">
           <p className="md:py-1">
-            {driver ? driver.phone_no : '전화번호 없음'}
+            {driver ? formatPhoneNumber(driver.phone_no) : '전화번호 없음'}
           </p>
           <p className="md:py-1">{team ? team.team_nm : '팀 정보 없음'}</p>
-          <p className="md:py-1">
-            {driver ? `차량번호 정보` : '차량번호 없음'}
-          </p>
+          {trucks.length > 0 ? (
+            <>
+              {trucks.map((truck) => (
+                <p key={truck.id} className="md:py-1">
+                  {`${truck.truck_no} ${truck.brand_nm} ${
+                    truck.size || '사이즈 정보 없음'}`}
+                </p>
+              ))}
+            </>
+          ) : (
+            <p className="md:py-1">차량 정보 없음</p>
+          )}
         </div>
       </>
     );

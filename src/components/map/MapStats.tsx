@@ -107,7 +107,6 @@ const MapStats: React.FC<MapStatsProps> = ({
     // weekdayStats,
     // complaintTypeColors,
     // dongComplaintColors,
-    complaintDataColors,
     getTrashTypeColor,
     getTrashColor,
     getRegionColor,
@@ -147,6 +146,9 @@ const MapStats: React.FC<MapStatsProps> = ({
     }
     return daysBar;
   }, [trashTypeWeekdayData, daysBar, selectedTrashType]);
+
+  const posNegData = selectedAreas.length > 0 ? regionPosNegData : posNegPie;
+  const posNegColors = posNegData.map((item) => getComplaintColor(item.name));
 
   return (
     <div className="overflow-y-auto h-full pt-2 scrollbar-hide">
@@ -344,52 +346,45 @@ const MapStats: React.FC<MapStatsProps> = ({
             의 민원 통계
           </p>
           <h1 className="font-bold text-xl mt-1">
-            {`총 ${(selectedAreas.length > 0 ? regionPosNegData : posNegPie).reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}
+            {`총 ${posNegData.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}
           </h1>
           <div className="flex flex-col gap-3 mt-2">
             <div className="flex items-center gap-2">
               <div className="flex flex-col gap-1.5">
-                {(selectedAreas.length > 0 ? regionPosNegData : posNegPie).map(
-                  (item) => (
-                    <span
-                      key={item.name}
-                      className="px-2 py-0.5 text-sm font-semibold text-white"
-                      style={{ backgroundColor: getComplaintColor(item.name) }}
-                    >
-                      {mapComplaintLabel(item.name)}
-                    </span>
-                  )
-                )}
+                {posNegData.map((item) => (
+                  <span
+                    key={item.name}
+                    className="px-2 py-0.5 text-sm font-semibold text-white"
+                    style={{ backgroundColor: getComplaintColor(item.name) }}
+                  >
+                    {mapComplaintLabel(item.name)}
+                  </span>
+                ))}
               </div>
               <div className="flex-1">
-                <SimplePieChart
-                  data={selectedAreas.length > 0 ? regionPosNegData : posNegPie}
-                  colors={complaintDataColors}
-                />
+                <SimplePieChart data={posNegData} colors={posNegColors} />
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              {(selectedAreas.length > 0 ? regionPosNegData : posNegPie).map(
-                (item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center justify-between gap-2 pt-1 pb-1.5 border-b border-[#dcdcdc]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{
-                          backgroundColor: getComplaintColor(item.name),
-                        }}
-                      />
-                      <span className="text-base font-semibold">
-                        {mapComplaintLabel(item.name)}
-                      </span>
-                    </div>
-                    <p className="text-base font-semibold">{item.value}건</p>
+              {posNegData.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between gap-2 pt-1 pb-1.5 border-b border-[#dcdcdc]"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{
+                        backgroundColor: getComplaintColor(item.name),
+                      }}
+                    />
+                    <span className="text-base font-semibold">
+                      {mapComplaintLabel(item.name)}
+                    </span>
                   </div>
-                )
-              )}
+                  <p className="text-base font-semibold">{item.value}건</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>

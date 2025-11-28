@@ -83,7 +83,7 @@ const SimpleWeekdayChartComponent: React.FC<SimpleWeekdayChartProps> = ({
 
   return (
     <div
-      className={`h-96 flex items-center justify-center ${mobile ? 'flex-col ' : 'flex-row w-[600px]'} ${className}`}
+      className={`h-96 flex md:flex-row flex-col items-center justify-center ${mobile ? 'flex-col ' : 'flex-row w-[600px]'} ${className}`}
     >
       <div className="flex-1 flex items-center min-w-[400px] scale-90">
         <div className="w-full h-80 flex flex-col justify-end">
