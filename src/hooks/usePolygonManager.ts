@@ -71,24 +71,8 @@ export const usePolygonManager = ({
     y: number;
   } | null>(null);
   const mousePositionRef = useRef<{ x: number; y: number } | null>(null);
-
-  // Track mouse position globally for tooltip positioning
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mousePositionRef.current = { x: e.clientX, y: e.clientY };
-      // Update tooltip position if polygon is hovered
-      if (hoveredPolygon && mousePositionRef.current) {
-        setHoveredPolygonPosition(mousePositionRef.current);
-      }
-    };
-
-    if (hoveredPolygon) {
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-      };
-    }
-  }, [hoveredPolygon]);
+  const touchStartTimeRef = useRef<number>(0);
+  const isTouchInteractionRef = useRef<boolean>(false);
 
   // Create setter function that also calculates position:
   const setHoveredPolygon = useCallback(
@@ -101,6 +85,53 @@ export const usePolygonManager = ({
     },
     []
   );
+
+  // Track mouse position globally for tooltip positioning
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePositionRef.current = { x: e.clientX, y: e.clientY };
+      // Update tooltip position if polygon is hovered (only for mouse, not touch)
+      if (
+        hoveredPolygon &&
+        mousePositionRef.current &&
+        !isTouchInteractionRef.current
+      ) {
+        setHoveredPolygonPosition(mousePositionRef.current);
+      }
+    };
+
+    if (hoveredPolygon) {
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }
+  }, [hoveredPolygon]);
+
+  // Handle clicking outside polygons to close tooltip on mobile
+  useEffect(() => {
+    const handleMapClick = (e: MouseEvent | TouchEvent) => {
+      // Only handle if it's a touch interaction and tooltip is shown
+      if (isTouchInteractionRef.current && hoveredPolygon) {
+        // Check if click is outside any polygon (this is handled by polygon click events)
+        // This is a fallback for clicks on the map itself
+        const target = e.target as HTMLElement;
+        // If clicking on map container (not a polygon), close tooltip
+        if (target && target.classList.contains('map-container')) {
+          setHoveredPolygon(null);
+        }
+      }
+    };
+
+    if (isTouchInteractionRef.current) {
+      window.addEventListener('click', handleMapClick, true);
+      window.addEventListener('touchend', handleMapClick, true);
+      return () => {
+        window.removeEventListener('click', handleMapClick, true);
+        window.removeEventListener('touchend', handleMapClick, true);
+      };
+    }
+  }, [hoveredPolygon, setHoveredPolygon]);
 
   // Clear existing polygons
   const clearPolygons = useCallback(() => {
@@ -231,7 +262,29 @@ export const usePolygonManager = ({
           fillOpacity: 0.7,
         });
 
-        // Add click event listener
+        // Helper function to extract position from event
+        const getEventPosition = (
+          event?: unknown
+        ): { x: number; y: number } | null => {
+          const browserEvent =
+            (event as { originalEvent?: MouseEvent | TouchEvent })
+              ?.originalEvent || (event as MouseEvent | TouchEvent);
+
+          if (browserEvent) {
+            // Handle touch events
+            if ('touches' in browserEvent && browserEvent.touches.length > 0) {
+              const touch = browserEvent.touches[0];
+              return { x: touch.clientX, y: touch.clientY };
+            }
+            // Handle mouse events
+            if ('clientX' in browserEvent && 'clientY' in browserEvent) {
+              return { x: browserEvent.clientX, y: browserEvent.clientY };
+            }
+          }
+          return null;
+        };
+
+        // Add click event listener for polygon click callback
         if (onPolygonClick) {
           (
             window.kakao.maps as unknown as {
@@ -239,19 +292,96 @@ export const usePolygonManager = ({
                 addListener: (
                   target: unknown,
                   event: string,
-                  handler: () => void
+                  handler: (event?: unknown) => void
                 ) => void;
               };
             }
-          ).event.addListener(polygon, 'click', () => {
+          ).event.addListener(polygon, 'click', (event?: unknown) => {
+            // Show tooltip on click (for mobile devices)
+            const position = getEventPosition(event);
+            if (position) {
+              mousePositionRef.current = position;
+              setHoveredPolygon(feature, position);
+            }
+
+            // Call the original click handler
             onPolygonClick({
               polygon: feature,
               map: mapInstance,
             });
           });
+        } else {
+          // If no onPolygonClick handler, still show tooltip on click
+          (
+            window.kakao.maps as unknown as {
+              event: {
+                addListener: (
+                  target: unknown,
+                  event: string,
+                  handler: (event?: unknown) => void
+                ) => void;
+              };
+            }
+          ).event.addListener(polygon, 'click', (event?: unknown) => {
+            const position = getEventPosition(event);
+            if (position) {
+              mousePositionRef.current = position;
+              setHoveredPolygon(feature, position);
+            }
+          });
         }
 
-        // Add hover effects
+        // Add touch event listeners for mobile devices
+        (
+          window.kakao.maps as unknown as {
+            event: {
+              addListener: (
+                target: unknown,
+                event: string,
+                handler: (event?: unknown) => void
+              ) => void;
+            };
+          }
+        ).event.addListener(polygon, 'touchstart', (event?: unknown) => {
+          isTouchInteractionRef.current = true;
+          touchStartTimeRef.current = Date.now();
+
+          if (isKakaoPolygon(polygon)) {
+            polygon.setOptions({ fillColor: '#C4FFCA', fillOpacity: 0.9 });
+          }
+
+          const position = getEventPosition(event);
+          if (position) {
+            mousePositionRef.current = position;
+            setHoveredPolygon(feature, position);
+          }
+
+          // Reset touch flag after a delay to allow mouse events to work again
+          setTimeout(() => {
+            isTouchInteractionRef.current = false;
+          }, 500);
+        });
+
+        (
+          window.kakao.maps as unknown as {
+            event: {
+              addListener: (
+                target: unknown,
+                event: string,
+                handler: (event?: unknown) => void
+              ) => void;
+            };
+          }
+        ).event.addListener(polygon, 'touchend', (event?: unknown) => {
+          // Keep tooltip shown on touch end
+          const position = getEventPosition(event);
+          if (position) {
+            mousePositionRef.current = position;
+            setHoveredPolygon(feature, position);
+          }
+        });
+
+        // Add hover effects (for desktop mouse interactions)
         (
           window.kakao.maps as unknown as {
             event: {
@@ -266,6 +396,9 @@ export const usePolygonManager = ({
           polygon,
           'mouseover',
           function (mouseEvent?: unknown) {
+            // Skip if this is a touch interaction
+            if (isTouchInteractionRef.current) return;
+
             if (isKakaoPolygon(polygon)) {
               polygon.setOptions({ fillColor: '#C4FFCA', fillOpacity: 0.9 });
 
@@ -305,9 +438,30 @@ export const usePolygonManager = ({
             };
           }
         ).event.addListener(polygon, 'mouseout', function () {
+          // Only handle mouseout for non-touch interactions
+          if (isTouchInteractionRef.current) return;
+
           if (isKakaoPolygon(polygon)) {
             polygon.setOptions({ fillColor: '#fff' });
             setHoveredPolygon(null);
+          }
+        });
+
+        // Reset touch interaction flag after a delay
+        (
+          window.kakao.maps as unknown as {
+            event: {
+              addListener: (
+                target: unknown,
+                event: string,
+                handler: () => void
+              ) => void;
+            };
+          }
+        ).event.addListener(polygon, 'touchcancel', function () {
+          isTouchInteractionRef.current = false;
+          if (isKakaoPolygon(polygon)) {
+            polygon.setOptions({ fillColor: '#fff' });
           }
         });
 
