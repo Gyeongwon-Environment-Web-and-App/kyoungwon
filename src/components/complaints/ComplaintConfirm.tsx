@@ -327,12 +327,9 @@ export default function ComplaintConfirm({
               </section>
 
               <section className="md:w-[25%] w-full md:text-center text-left">
-                <p className="text-dark-gray pb-2 md:pb-3">
-                  담당 기사님 실시간 정보
+                <p className="text-dark-gray text-lg pb-2 md:pb-3">
+                  담당 기사님 정보
                 </p>
-                <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
-                  {/* 실시간 지도 */}
-                </div>
                 {renderDriverInfo(category)}
               </section>
             </div>

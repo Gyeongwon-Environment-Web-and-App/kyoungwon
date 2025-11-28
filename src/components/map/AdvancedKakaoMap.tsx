@@ -91,13 +91,13 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
       }
 
       // Use provided coordinates if available, otherwise default center
-      let centerLat = 37.6713997467788; // Default Seoul center
+      let centerLat = 37.6713997467788; // 기본 서울 중심
       let centerLng = 127.04148388606;
 
       if (latitude && longitude) {
         centerLat = latitude;
         centerLng = longitude;
-        console.log(`🗺️ 지도 초기화: 좌표 사용 (${centerLat}, ${centerLng})`);
+        // console.log(`🗺️ 지도 초기화: 좌표 사용 (${centerLat}, ${centerLng})`);
       } else {
         console.log(
           `🗺️ 지도 초기화: 기본 좌표 사용 (${centerLat}, ${centerLng})`
@@ -122,7 +122,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
 
       // If we have coordinates, create marker immediately
       if (latitude && longitude) {
-        console.log(`📍 마커 생성: (${latitude}, ${longitude})`);
+        // console.log(`📍 마커 생성: (${latitude}, ${longitude})`);
         const position = new window.kakao.maps.LatLng(latitude, longitude);
         const marker = new window.kakao.maps.Marker({
           map: newMap,

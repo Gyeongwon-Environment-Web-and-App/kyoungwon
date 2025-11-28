@@ -506,12 +506,6 @@ const ComplaintDetail: React.FC = () => {
             <p className="text-sm md:text-base font-semibold text-[#7C7C7C]">
               {selectedComplaint?.status ? '수거 완료' : '차량 수거 중'}
             </p>
-            <button
-              className="text-[#0009FF] p-0 text-sm md:text-base"
-              onClick={() => window.alert('아직 개발 중입니다!')}
-            >
-              동선 조회
-            </button>
           </div>
 
           <div className="pt-2 md:pt-5">
