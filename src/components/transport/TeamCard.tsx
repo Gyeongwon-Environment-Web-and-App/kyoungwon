@@ -15,10 +15,9 @@ import food from '../../assets/icons/categories/tags/food.svg';
 import general from '../../assets/icons/categories/tags/general.svg';
 import other from '../../assets/icons/categories/tags/other.svg';
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
-// import teamIcon from '../../assets/icons/common/team.svg';
 import pin from '../../assets/icons/map_card/location_pin.svg';
 import truck from '../../assets/icons/map_card/truck.svg';
-import team from '../../assets/icons/transport/team.svg';
+import team from '../../assets/icons/transport/team.png';
 
 interface TeamCardProps {
   teamName: string;

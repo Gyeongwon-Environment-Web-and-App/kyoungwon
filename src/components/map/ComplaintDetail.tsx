@@ -17,7 +17,7 @@ import other from '../../assets/icons/categories/tags/other.svg';
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
 import bad from '../../assets/icons/categories/tags/repeat.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';
-import fix from '../../assets/icons/common/fix.svg';
+import pen from '../../assets/icons/common/pen.png';
 import greenCircle from '../../assets/icons/map_card/green_circle.svg';
 import pin from '../../assets/icons/map_card/location_pin.svg';
 import phone from '../../assets/icons/map_card/phone.svg';
@@ -414,7 +414,7 @@ const ComplaintDetail: React.FC = () => {
                 }
               }}
             >
-              <img src={fix} alt="수정버튼" />
+              <img src={pen} alt="수정버튼" />
             </button>
           </div>
           <p className="text-sm md:text-base text-[#7C7C7C] font-semibold">

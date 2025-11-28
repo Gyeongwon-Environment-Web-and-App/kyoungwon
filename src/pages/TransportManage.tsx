@@ -11,7 +11,7 @@ import VehicleForm from '@/components/transport/VehicleForm';
 import VehicleInfo from '@/components/transport/VehicleInfo';
 
 import driverIcon from '../assets/icons/common/driver.svg';
-import teamIcon from '../assets/icons/common/team.svg';
+import teamIcon from '../assets/icons/common/team.png';
 import truckIcon from '../assets/icons/common/truck.svg';
 import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';

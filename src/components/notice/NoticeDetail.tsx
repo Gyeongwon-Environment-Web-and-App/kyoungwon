@@ -14,8 +14,8 @@ import { ChevronDownIcon, ChevronLeft, Download } from '@/lib/icons';
 import type { Notice, NoticeByIdApiResponse } from '@/types/notice';
 import { formatDateToYYMMDD } from '@/utils/formatDate';
 
-import deleteIcon from '../../assets/icons/actions/delete.svg';
-import fix from '../../assets/icons/common/pen.svg';
+import deleteIcon from '../../assets/icons/actions/delete.png';
+import fix from '../../assets/icons/common/pen.png';
 import { Button } from '../ui/button';
 
 interface NoticeDetailData extends Notice {

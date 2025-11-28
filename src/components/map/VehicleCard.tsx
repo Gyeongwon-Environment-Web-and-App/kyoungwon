@@ -4,7 +4,7 @@ import food from '../../assets/icons/categories/tags/food.svg';
 import general from '../../assets/icons/categories/tags/general.svg';
 import other from '../../assets/icons/categories/tags/other.svg';
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
-import team from '../../assets/icons/transport/team.svg';
+import team from '../../assets/icons/transport/team.png';
 import phone from '../../assets/icons/map_card/phone.svg';
 import clean1 from '../../assets/icons/trucks/clean1.svg';
 import clean25 from '../../assets/icons/trucks/clean25.svg';

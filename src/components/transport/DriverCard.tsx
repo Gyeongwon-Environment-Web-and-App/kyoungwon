@@ -12,7 +12,7 @@ import {
 import three from '../../assets/icons/actions/three.svg';
 import phone from '../../assets/icons/map_card/phone.svg';
 import driver from '../../assets/icons/transport/sample_driver.svg';
-import team from '../../assets/icons/transport/team.svg';
+import team from '../../assets/icons/transport/team.png';
 import { formatPhoneNumber } from '@/utils/validateDash';
 
 interface DriverCardProps {

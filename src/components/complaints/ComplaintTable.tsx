@@ -33,7 +33,7 @@ import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { formatDateToYYMMDD } from '@/utils/formatDate';
 
-import deleteIcon from '../../assets/icons/actions/delete.svg';
+import deleteIcon from '../../assets/icons/actions/delete.png';
 import filter from '../../assets/icons/actions/filter.svg';
 import triangle from '../../assets/icons/actions/triangle.svg';
 import type { Complaint } from '../../types/complaint';
