@@ -151,6 +151,11 @@ export default function ComplaintConfirm({
     return team?.drivers[0] || null; // Get first driver if multiple
   };
 
+  // Helper function to get team for specific category
+  const getTeamForCategory = (category: string) => {
+    return driverData.teams.find((team) => team.category === category) || null;
+  };
+
   // Render driver information with loading and error states
   const renderDriverInfo = (category: string) => {
     if (driverData.loading) {
@@ -171,6 +176,7 @@ export default function ComplaintConfirm({
     }
 
     const driver = getDriverForCategory(category);
+    const team = getTeamForCategory(category);
 
     return (
       <>
@@ -203,9 +209,7 @@ export default function ComplaintConfirm({
           <p className="md:py-1">
             {driver ? driver.phone_no : '전화번호 없음'}
           </p>
-          <p className="md:py-1">
-            {driver ? `${category} 담당팀` : '팀 정보 없음'}
-          </p>
+          <p className="md:py-1">{team ? team.team_nm : '팀 정보 없음'}</p>
           <p className="md:py-1">
             {driver ? `차량번호 정보` : '차량번호 없음'}
           </p>

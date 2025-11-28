@@ -113,7 +113,7 @@ const ComplaintManage = () => {
   const onSubmit = async (uploadedFileKeys?: string[]) => {
     try {
       // 1. 백엔드 API 형식에 맞춘 데이터 준비
-      console.log(formData.categories);
+      // console.log(formData.categories);
 
       // Transform uploadedFiles to objectInfos format
       // Use file keys passed directly from ComplaintConfirm, or fallback to store
@@ -142,6 +142,15 @@ const ComplaintManage = () => {
 
       const complaintData = {
         address: formData.address,
+        // Add coordinates if available (convert from { latitude, longitude } to { x_coord, y_coord })
+        ...(formData.coordinates &&
+          !isNaN(formData.coordinates.latitude) &&
+          !isNaN(formData.coordinates.longitude) && {
+            coordinates: {
+              x_coord: formData.coordinates.longitude, // x_coord = longitude
+              y_coord: formData.coordinates.latitude, // y_coord = latitude
+            },
+          }),
         datetime: formData.datetime || new Date().toISOString(),
         categories: formData.categories || [],
         type: formData.type,
@@ -161,8 +170,8 @@ const ComplaintManage = () => {
       };
 
       console.log('민원 제출 데이터:', complaintData);
-      console.log('파일 정보:', objectInfos);
-      console.log('파일 키 개수:', fileKeys.length);
+      // console.log('파일 정보:', objectInfos);
+      // console.log('파일 키 개수:', fileKeys.length);
 
       // 2. apiClient를 사용하여 백엔드로 전송 (자동으로 토큰 추가됨)
       const response = await apiClient.post('/complaint/create', complaintData);

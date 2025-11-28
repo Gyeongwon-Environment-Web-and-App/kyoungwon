@@ -87,9 +87,26 @@ export default function ComplaintForm({
       formData.address && formData.categories && formData.categories.length > 0;
 
     if (shouldFetchDriverData) {
-      fetchDriverData(formData.address, formData.categories);
+      // Prepare coordinates in API format (x_coord = longitude, y_coord = latitude)
+      const coordinates =
+        formData.coordinates &&
+        !isNaN(formData.coordinates.longitude) &&
+        !isNaN(formData.coordinates.latitude)
+          ? {
+              x_coord: formData.coordinates.longitude,
+              y_coord: formData.coordinates.latitude,
+            }
+          : undefined;
+
+      fetchDriverData(formData.address, formData.categories, coordinates);
+      
     }
-  }, [formData.address, formData.categories]);
+  }, [
+    formData.address,
+    formData.categories,
+    formData.coordinates,
+    fetchDriverData,
+  ]);
 
   // Reset map center flag after it's been used (simplified)
   useEffect(() => {
@@ -176,7 +193,19 @@ export default function ComplaintForm({
     name?: string;
   }) => {
     const selectedAddress = address.roadAddress || address.jibunAddress;
-    updateFormData({ address: selectedAddress });
+
+    // Store coordinates when address is selected
+    // In Kakao Maps: x = longitude, y = latitude
+    const latitude = parseFloat(address.y);
+    const longitude = parseFloat(address.x);
+
+    updateFormData({
+      address: selectedAddress,
+      coordinates:
+        !isNaN(latitude) && !isNaN(longitude)
+          ? { latitude, longitude }
+          : undefined,
+    });
 
     // Reset map center for new address
     setResetMapCenter(true);

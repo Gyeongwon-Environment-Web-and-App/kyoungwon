@@ -42,7 +42,11 @@ interface ComplaintFormState {
   setError: (error: string | null) => void;
   setTempAddress: (address: string) => void;
   resetForm: () => void;
-  fetchDriverData: (address: string, categories: string[]) => Promise<void>;
+  fetchDriverData: (
+    address: string,
+    categories: string[],
+    coordinates?: { x_coord: number; y_coord: number }
+  ) => Promise<void>;
   setDriverData: (data: DriverData) => void;
   resetDriverData: () => void;
 
@@ -128,7 +132,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
               name: link.key.split('/').pop() || 'file',
               url: link.key,
               type: '',
-              size: 0, 
+              size: 0,
               previewUrl: link.url,
             }))
           : [];
@@ -158,16 +162,37 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
     }),
 
   // 차량 기사 정보 가져오기
-  fetchDriverData: async (address: string, categories: string[]) => {
+  fetchDriverData: async (
+    address: string,
+    categories: string[],
+    coordinates?: { x_coord: number; y_coord: number }
+  ) => {
     set((state) => ({
       driverData: { ...state.driverData, loading: true, error: null },
     }));
 
     try {
+      // Build payload with new API format
+      const payload: {
+        address: string;
+        coordinates?: { x_coord: number; y_coord: number };
+        categories: string[];
+      } = {
+        address,
+        categories,
+      };
+
+      // Include coordinates if available
+      if (coordinates) {
+        payload.coordinates = coordinates;
+      }
+
       const response = await apiClient.post<DriverDataResponse>(
         '/complaint/getTeamsDriversForComplaint',
-        { address, categories }
+        payload
       );
+
+      console.log(response);
 
       set((state) => ({
         driverData: {
