@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import mdLogo from '../assets/icons/brand/mid_logo.svg';
+import mdLogo from '../assets/icons/brand/mid_logo.png';
 import { authService } from '../services/authService';
 import { validatePhoneNumber } from '../utils/validateDash';
 
@@ -66,9 +66,14 @@ const Register: React.FC = () => {
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen w-screen">
-      <div className="h-full flex items-center justify-center w-2/3 md:w-1/2">
+      <div
+        className="h-full flex items-center justify-center w-2/3 md:w-1/2 cursor-pointer"
+        onClick={() => {
+          navigate('/');
+        }}
+      >
         <img
-          className="text-2xl font-bold mb-6 text-center"
+          className="mb-6 text-center w-full md:w-[70%]"
           src={mdLogo}
           alt="중간 크기 경원환경개발 초록색 로고"
         />
