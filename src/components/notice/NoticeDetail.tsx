@@ -55,20 +55,25 @@ const NoticeDetail: React.FC = () => {
     presigned_links?: Array<{ url: string; key: string }>;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLocalLoading, setIsLocalLoading] = useState(true);
 
   // Fetch notice data when id changes
   useEffect(() => {
     if (!id) {
+      setIsLocalLoading(false);
       return;
     }
 
     const fetchNotice = async () => {
+      setIsLocalLoading(true);
       try {
         const modeValue = mode === 'true' || mode === undefined || mode === '';
         const noticeData = await getNoticeById(Number(id), modeValue);
         setNotice(noticeData);
       } catch (error) {
         console.error('Failed to fetch notice:', error);
+      } finally {
+        setIsLocalLoading(false);
       }
     };
 
@@ -143,7 +148,7 @@ const NoticeDetail: React.FC = () => {
   };
 
   // Loading state
-  if (isLoading) {
+  if (isLocalLoading || isLoading) {
     return (
       <div className="w-full flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-2">
@@ -156,8 +161,8 @@ const NoticeDetail: React.FC = () => {
     );
   }
 
-  // Error state
-  if (fetchError || !notice) {
+  // Error state - only show error when not loading and there's an error or no notice
+  if (!isLocalLoading && (fetchError || !notice)) {
     return (
       <div className="w-full flex items-center justify-center py-12">
         <div className="text-center">
@@ -170,6 +175,11 @@ const NoticeDetail: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // TypeScript guard - should never reach here if notice is null due to above check
+  if (!notice) {
+    return null;
   }
 
   return (
