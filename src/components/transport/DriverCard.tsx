@@ -13,6 +13,7 @@ import three from '../../assets/icons/actions/three.svg';
 import phone from '../../assets/icons/map_card/phone.svg';
 import driver from '../../assets/icons/transport/sample_driver.svg';
 import team from '../../assets/icons/transport/team.svg';
+import { formatPhoneNumber } from '@/utils/validateDash';
 
 interface DriverCardProps {
   name: string;
@@ -68,7 +69,7 @@ const DriverCard: React.FC<DriverCardProps> = ({
         <span className="text-xl">{name} 기사님</span>
         <div className="flex items-center text-base md:text-lg">
           <img src={phone} alt="전화번호" className="mr-1 h-5 w-5" />
-          <span className="">{phoneNum}</span>
+          <span className="">{formatPhoneNumber(phoneNum)}</span>
         </div>
         <div className="flex items-start text-base md:text-lg">
           <img src={team} alt="소속팀" className="mr-1 mt-0.5 h-6 w-6" />

@@ -33,3 +33,12 @@ export const validatePhoneNumber = (
   }
   return { isValid: true };
 };
+
+export const formatPhoneNumber = (phoneNum: string) => {
+  if (!phoneNum) return '';
+  const cleaned = phoneNum.replace(/\D/g, '');
+  if (cleaned.length === 11) {
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+  }
+  return phoneNum;
+}
