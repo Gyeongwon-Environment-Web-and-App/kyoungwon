@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useId, useRef } from 'react';
+import React, { forwardRef, useEffect, useId, useRef, useState } from 'react';
 
 import { usePinManager } from '@/hooks/usePinManager';
 import { usePolygonManager } from '@/hooks/usePolygonManager';
@@ -35,24 +35,16 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     // Combine dummy pins with provided pins
     const allPins = [...pins];
     const mapId = useId();
+    const [mapInstance, setMapInstance] = useState<KakaoMap | null>(null);
     const mapInstanceRef = useRef<KakaoMap | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
 
-    // Initialize map when SDK is ready
+    // Initialize map when SDK is ready (only once)
     useEffect(() => {
-      if (!isLoaded || !containerRef.current) return;
+      if (!isLoaded || !containerRef.current || mapInstanceRef.current) return;
 
       try {
-        // Clean up existing map instance
-        if (mapInstanceRef.current) {
-          // Kakao Maps doesn't have a direct destroy method, but we can clear the container
-          const container = containerRef.current;
-          if (container) {
-            container.innerHTML = '';
-          }
-        }
-
         // Create new map instance with interaction controls
         const options = {
           center: new window.kakao.maps.LatLng(center.lat, center.lng),
@@ -65,11 +57,12 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
           keyboardShortcuts: true,
         };
 
-        const mapInstance = new window.kakao.maps.Map(
+        const newMapInstance = new window.kakao.maps.Map(
           containerRef.current,
           options
         );
-        mapInstanceRef.current = mapInstance;
+        mapInstanceRef.current = newMapInstance;
+        setMapInstance(newMapInstance);
 
         // Set ref for parent component
         if (
@@ -85,23 +78,23 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         console.error('Failed to initialize map:', error);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isLoaded, center.lat, center.lng, zoom]);
+    }, [isLoaded]);
 
-    // Update map center and zoom when props change
+    // Update map center and zoom when props change (without re-initializing)
     useEffect(() => {
-      if (!mapInstanceRef.current || !isLoaded) return;
+      if (!mapInstance || !isLoaded) return;
 
       try {
         const newCenter = new window.kakao.maps.LatLng(center.lat, center.lng);
-        mapInstanceRef.current.setCenter(newCenter);
-        mapInstanceRef.current.setLevel(zoom);
+        mapInstance.setCenter(newCenter);
+        mapInstance.setLevel(zoom);
       } catch (error) {
         console.error('Failed to update map:', error);
       }
-    }, [center.lat, center.lng, zoom, isLoaded]);
+    }, [center.lat, center.lng, zoom, isLoaded, mapInstance]);
 
     const { isGeocoding, clearMarkers } = usePinManager({
-      mapInstance: mapInstanceRef.current,
+      mapInstance: mapInstance,
       pins: allPins,
       onPinClick,
       isLoaded,
@@ -119,7 +112,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       hoveredPolygon,
       hoveredPolygonPosition,
     } = usePolygonManager({
-      mapInstance: mapInstanceRef.current,
+      mapInstance: mapInstance,
       onPolygonClick,
       isLoaded,
     });
@@ -140,6 +133,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
           containerRef.current.innerHTML = '';
           mapInstanceRef.current = null;
         }
+        setMapInstance(null);
       };
     }, [clearMarkers, clearPolygons]);
 

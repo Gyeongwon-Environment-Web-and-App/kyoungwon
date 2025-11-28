@@ -404,8 +404,7 @@ export const usePinManager = ({
     };
 
     processPinsAndCreateMarkers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pinsHash, isLoaded]);
+  }, [pinsHash, isLoaded, mapInstance, clearMarkers, createMarker]);
 
   return {
     isGeocoding,
