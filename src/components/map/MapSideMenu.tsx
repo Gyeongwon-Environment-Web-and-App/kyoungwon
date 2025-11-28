@@ -84,7 +84,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
   const SharedSidebarHeader = () => (
     <>
       {/* Area Selection Section */}
-      <div className="flex items-end md:items-center justify-between px-2 pt-0 pb-3 md:pt-5 md:pb-5">
+      <div className="flex items-end md:items-center justify-between px-2 pt-3 pb-3 md:pt-5 md:pb-5">
         <div className="rounded-lg mr-2 md:mr-0">
           <p className="font-semibold text-sm md:text-base text-[#8D8D8D] mb-1">
             현재 조회 중인 지역은

@@ -62,7 +62,7 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               ? '민원 이미지'
               : '임시 이미지'
           }
-          className="rounded-lg w-28 xsm:w-32 md:w-40 max-h-28"
+          className="rounded-lg w-28 xsm:w-32 md:w-40 max-h-24"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             const presignedUrl = complaint.presigned_links?.[0]?.url;
@@ -108,8 +108,9 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               ''
             )}
             <p className="font-semibold text-sm md:text-base truncate min-w-0 flex-1">
-              {complaint.content ||
-                `${complaint.address.address.slice(7)} 민원`}
+              {complaint.content
+                ? `${complaint.content.slice(0, 8)}${complaint.content.length > 8 ? ' ...' : ''}`
+                : `${complaint.address.address.slice(7)} 민원`}
             </p>
           </div>
           <p className="text-xs md:text-sm font-semibold text-[#7C7C7C] mt-1">

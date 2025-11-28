@@ -170,7 +170,6 @@ const ComplaintDetail: React.FC = () => {
         // Clear any cached data first
         setSelectedComplaint(null);
         const complaint = await getComplaintById(currentComplaintId);
-        console.log('ComplaintDetail - Fetched complaint data:', complaint);
         setSelectedComplaint(complaint);
 
         // Remove refresh parameter from URL after successful fetch
@@ -196,7 +195,6 @@ const ComplaintDetail: React.FC = () => {
 
   useEffect(() => {
     if (!isPopupOpen && currentComplaintId) {
-      console.log('팝업이 닫혔습니다. 민원 데이터를 새로고침합니다.');
       const refreshComplaint = async () => {
         try {
           const updatedComplaint = await getComplaintById(currentComplaintId);
@@ -308,7 +306,7 @@ const ComplaintDetail: React.FC = () => {
       </header>
 
       {/* Complaint Details */}
-      <div className="p-2 py-0 md:p-4 md:py-2">
+      <div className="p-2 py-0 md:p-4 md:py-2 overflow-y-auto h-[83vh] md:h-[87vh] scrollbar-hide">
         <div className="relative mb-3 md:mb-6">
           <img
             src={
@@ -407,14 +405,15 @@ const ComplaintDetail: React.FC = () => {
                 `${selectedComplaint?.address?.address?.slice(7)} 민원`}
             </p>
             <button
-              className="flex p-0 w-[3.2rem]"
+              className="flex items-center px-2 py-0.5 border border-light-border gap-1 rounded text-sm"
               onClick={() => {
                 if (selectedComplaint) {
                   navigate(`/complaints/edit/${selectedComplaint.id}`);
                 }
               }}
             >
-              <img src={pen} alt="수정버튼" />
+              <img src={pen} alt="수정버튼" className='w-4 h-4' />
+              수정
             </button>
           </div>
           <p className="text-sm md:text-base text-[#7C7C7C] font-semibold">
