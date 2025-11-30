@@ -31,6 +31,7 @@ import {
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
 import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
+import { getBuildingNameFromAddress } from '@/utils/buildingName';
 import { formatDateToYYMMDD } from '@/utils/formatDate';
 
 import deleteIcon from '../../assets/icons/actions/delete.png';
@@ -45,6 +46,52 @@ import ComplaintCard from './ComplaintCard';
 interface ComplaintWithCallback extends Complaint {
   onStatusChange?: (id: number) => void;
 }
+
+// Address cell component with lazy-loaded building name
+const AddressCell: React.FC<{ address: string }> = ({ address }) => {
+  const [buildingName, setBuildingName] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const shortAddress = address.split(' ').slice(-2).join(' ');
+
+  const handleMouseEnter = async () => {
+    // Only fetch if we haven't fetched yet and not currently loading
+    if (buildingName === null && !isLoading) {
+      console.log('enter!');
+      setIsLoading(true);
+      try {
+        const name = await getBuildingNameFromAddress(address);
+        setBuildingName(name);
+      } catch (error) {
+        console.error('Failed to fetch building name:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // Format display text: 'address (buildingName)' or just 'address'
+  const displayText = buildingName ? `${address} (${buildingName})` : address;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="text-center cursor-pointer truncate"
+            onMouseEnter={handleMouseEnter}
+          >
+            {shortAddress}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="max-w-md break-words text-base text-black">
+            {isLoading ? `${address} (조회 중...)` : displayText}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 const ComplaintTable: React.FC = () => {
   const navigate = useNavigate();
@@ -223,24 +270,7 @@ const ComplaintTable: React.FC = () => {
       header: '주소',
       cell: ({ row }) => {
         const address: string = row.original.address.address;
-        const shortAddress = address.split(' ').slice(-2).join(' ');
-
-        return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="text-center cursor-pointer truncate">
-                  {shortAddress}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-md break-words text-base text-black">
-                  {address}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        );
+        return <AddressCell address={address} />;
       },
     },
     {

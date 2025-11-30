@@ -9,6 +9,7 @@ import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { Complaint } from '@/types/complaint';
+import { getBuildingNameFromAddress } from '@/utils/buildingName';
 
 import sample from '../../assets/background/sample.jpg';
 import food from '../../assets/icons/categories/tags/food.svg';
@@ -58,6 +59,7 @@ const ComplaintDetail: React.FC = () => {
   const [addressFrequency, setAddressFrequency] = useState<number | null>(null);
   const [phoneFrequency, setPhoneFrequency] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [buildingName, setBuildingName] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const {
@@ -216,6 +218,16 @@ const ComplaintDetail: React.FC = () => {
       if (phoneNo) {
         fetchPhoneFrequency(phoneNo);
       }
+
+      // Fetch building name
+      getBuildingNameFromAddress(selectedComplaint.address.address)
+        .then((name) => {
+          setBuildingName(name);
+        })
+        .catch((error) => {
+          console.error('Failed to fetch building name:', error);
+          setBuildingName(null);
+        });
 
       // Reset image index when complaint changes
       setCurrentImageIndex(0);
@@ -412,7 +424,7 @@ const ComplaintDetail: React.FC = () => {
                 }
               }}
             >
-              <img src={pen} alt="수정버튼" className='w-4 h-4' />
+              <img src={pen} alt="수정버튼" className="w-4 h-4" />
               수정
             </button>
           </div>
@@ -432,7 +444,11 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-1 md:gap-2 items-center">
             <img src={pin} alt="주소 핀" className="w-4 md:w-5 h-4 md:h-5" />
             <label className="text-base md:text-lg font-semibold">
-              {selectedComplaint?.address?.address || '주소 정보 없음'}
+              {selectedComplaint?.address?.address
+                ? buildingName
+                  ? `${selectedComplaint.address.address} (${buildingName})`
+                  : selectedComplaint.address.address
+                : '주소 정보 없음'}
             </label>
           </div>
 
