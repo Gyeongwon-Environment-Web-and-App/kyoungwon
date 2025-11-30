@@ -128,7 +128,7 @@ const ComplaintStats = () => {
   });
 
   const hasUserInteracted =
-    selectedTrashType !== '쓰레기 종류' ||
+    selectedTrashType !== '성상별' ||
     selectedAreas.length > 0 ||
     selectedWeekday !== '전체 요일' ||
     dateRange !== undefined;
@@ -153,7 +153,7 @@ const ComplaintStats = () => {
   const displayDaysData = useMemo(() => {
     if (
       normalizedTrashTypeWeekdayData.length > 0 &&
-      selectedTrashType !== '쓰레기 종류' &&
+      selectedTrashType !== '성상별' &&
       selectedTrashType !== '전체통계'
     ) {
       return normalizedTrashTypeWeekdayData;
@@ -202,7 +202,7 @@ const ComplaintStats = () => {
                   <span className="text-sm font-semibold">
                     {selectedTrashType}
                   </span>
-                  <img src={triangle} alt="쓰레기 종류 선택" />
+                  <img src={triangle} alt="성상 선택" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -598,7 +598,7 @@ const ComplaintStats = () => {
               } else if (
                 selectedTrashType &&
                 selectedTrashType !== '전체통계' &&
-                selectedTrashType !== '쓰레기 종류' &&
+                selectedTrashType !== '성상별' &&
                 chartData.complaintData.length > 0
               ) {
                 // Use category-specific data when a specific trash type is selected
@@ -692,7 +692,7 @@ const ComplaintStats = () => {
                   colors={
                     selectedTrashType &&
                     selectedTrashType !== '전체통계' &&
-                    selectedTrashType !== '쓰레기 종류'
+                    selectedTrashType !== '성상별'
                       ? [getTrashColor(selectedTrashType)]
                       : Object.values(ColorMappings.trash)
                   }
@@ -734,7 +734,7 @@ const ComplaintStats = () => {
                 <SimpleWeekdayChart
                   data={displayDaysData}
                   colors={
-                    selectedTrashType !== '쓰레기 종류' &&
+                    selectedTrashType !== '성상별' &&
                     selectedTrashType !== '전체통계'
                       ? [getTrashTypeColor(selectedTrashType)]
                       : ['#59B9FF']
@@ -798,7 +798,7 @@ const ComplaintStats = () => {
                     colors={
                       selectedTrashType &&
                       selectedTrashType !== '전체통계' &&
-                      selectedTrashType !== '쓰레기 종류'
+                      selectedTrashType !== '성상별'
                         ? [getTrashTypeColor(selectedTrashType)]
                         : ['#59B9FF'] // Default blue color
                     }

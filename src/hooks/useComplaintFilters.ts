@@ -12,7 +12,7 @@ export const useComplaintFilters = (externalDateRange?: DateRange) => {
   >();
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedTrashType, setSelectedTrashType] =
-    useState<string>('쓰레기 종류');
+    useState<string>('성상별');
   const [selectedTimeline, setSelectedTimeline] =
     useState<string>('전체 시간대');
   const [selectedWeekday, setSelectedWeekday] = useState<string>('전체 요일');
@@ -85,7 +85,7 @@ export const useComplaintFilters = (externalDateRange?: DateRange) => {
 
       // Clear trash type data when switching to region selection
       if (areas.length > 0) {
-        setSelectedTrashType('쓰레기 종류');
+        setSelectedTrashType('성상별');
         clearStatistics();
       }
 
@@ -113,7 +113,7 @@ export const useComplaintFilters = (externalDateRange?: DateRange) => {
       setSelectedAreas([]);
       clearRegionStatistics();
 
-      if (trashType === '전체통계' || trashType === '쓰레기 종류') {
+      if (trashType === '전체통계' || trashType === '성상별') {
         clearStatistics();
         return;
       }
@@ -138,7 +138,7 @@ export const useComplaintFilters = (externalDateRange?: DateRange) => {
       if (
         selectedTrashType &&
         selectedTrashType !== '전체통계' &&
-        selectedTrashType !== '쓰레기 종류'
+        selectedTrashType !== '성상별'
       ) {
         await fetchStatistics([selectedTrashType], dateRange);
       } else {
@@ -163,7 +163,7 @@ export const useComplaintFilters = (externalDateRange?: DateRange) => {
   // Effect to reset related filters when one filter changes
   useEffect(() => {
     // Reset timeline and weekday when trash type changes
-    if (selectedTrashType !== '쓰레기 종류') {
+    if (selectedTrashType !== '성상별') {
       setSelectedTimeline('전체 시간대');
       setSelectedWeekday('전체 요일');
     }
@@ -188,7 +188,7 @@ export const useComplaintFilters = (externalDateRange?: DateRange) => {
       selectedWeekday !== '전체 요일' ||
       (selectedTrashType &&
         selectedTrashType !== '전체통계' &&
-        selectedTrashType !== '쓰레기 종류');
+        selectedTrashType !== '성상별');
 
     if (shouldSelectAllAreas && selectedAreas.length === 0) {
       const allAreas = [

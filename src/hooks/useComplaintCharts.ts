@@ -201,7 +201,7 @@ export const useComplaintCharts = ({
       transformedData &&
       selectedTrashType &&
       selectedTrashType !== '전체통계' &&
-      selectedTrashType !== '쓰레기 종류'
+      selectedTrashType !== '성상별'
     ) {
       return transformedData.days;
     }

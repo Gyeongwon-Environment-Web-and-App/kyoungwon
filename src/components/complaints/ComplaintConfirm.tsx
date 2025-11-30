@@ -197,7 +197,7 @@ export default function ComplaintConfirm({
                         : ''
               }
               className="w-1/3 mr-2"
-              alt="쓰레기 종류 태그"
+              alt="성상별 태그"
             />
             <p className="text-black 3xl:text-lg text-base">
               {driver ? `${driver.name} 기사님` : '기사 정보 없음'}

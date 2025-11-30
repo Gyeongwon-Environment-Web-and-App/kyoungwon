@@ -124,7 +124,7 @@ const MapStats: React.FC<MapStatsProps> = ({
   });
 
   const hasUserInteracted =
-    selectedTrashType !== '쓰레기 종류' ||
+    selectedTrashType !== '성상별' ||
     selectedAreas.length > 0 ||
     selectedWeekday !== '전체 요일' ||
     dateRange !== undefined;
@@ -139,7 +139,7 @@ const MapStats: React.FC<MapStatsProps> = ({
   const displayDaysData = useMemo(() => {
     if (
       trashTypeWeekdayData.length > 0 &&
-      selectedTrashType !== '쓰레기 종류' &&
+      selectedTrashType !== '성상별' &&
       selectedTrashType !== '전체통계'
     ) {
       return trashTypeWeekdayData;
@@ -430,7 +430,7 @@ const MapStats: React.FC<MapStatsProps> = ({
                 colors={
                   selectedTrashType &&
                   selectedTrashType !== '전체통계' &&
-                  selectedTrashType !== '쓰레기 종류'
+                  selectedTrashType !== '성상별'
                     ? [getTrashColor(selectedTrashType)]
                     : Object.values(ColorMappings.trash)
                 }
@@ -480,7 +480,7 @@ const MapStats: React.FC<MapStatsProps> = ({
               <SimpleWeekdayChart
                 data={displayDaysData}
                 colors={
-                  selectedTrashType !== '쓰레기 종류' &&
+                  selectedTrashType !== '성상별' &&
                   selectedTrashType !== '전체통계'
                     ? [getTrashTypeColor(selectedTrashType)]
                     : ['#59B9FF']
@@ -545,7 +545,7 @@ const MapStats: React.FC<MapStatsProps> = ({
                   colors={
                     selectedTrashType &&
                     selectedTrashType !== '전체통계' &&
-                    selectedTrashType !== '쓰레기 종류'
+                    selectedTrashType !== '성상별'
                       ? [getTrashTypeColor(selectedTrashType)]
                       : ['#59B9FF']
                   }

@@ -35,6 +35,6 @@ export const shouldShowFirstPieChart = (
   return (
     !selectedCategory ||
     selectedCategory === '전체통계' ||
-    selectedCategory === '쓰레기 종류'
+    selectedCategory === '성상별'
   );
 };

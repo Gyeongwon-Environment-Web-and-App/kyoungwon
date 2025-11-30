@@ -308,7 +308,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ onSubmit }) => {
             <div
               className={`flex text-sm border border-light-border rounded w-[50%]`}
             >
-              {['방학1동', '방학2동'].map((label, idx, arr) => (
+              {['방학1동', '방학3동'].map((label, idx, arr) => (
                 <button
                   key={label}
                   type="button"

@@ -203,7 +203,7 @@ const ComplaintTable: React.FC = () => {
     },
     {
       accessorKey: 'category',
-      header: '상성',
+      header: '성상',
       cell: ({ row }) => {
         const filteredCategories =
           row.original.teams
@@ -213,7 +213,7 @@ const ComplaintTable: React.FC = () => {
           <div className="text-center truncate">
             {filteredCategories.length > 0
               ? filteredCategories.join(', ')
-              : '상성 없음'}
+              : '성상 없음'}
           </div>
         );
       },
@@ -739,7 +739,7 @@ const ComplaintTable: React.FC = () => {
                     disabled={isCategoryLoading}
                   >
                     {isCategoryLoading ? '로딩중...' : '전체 민원'}
-                    <img src={triangle} alt="쓰레기상성 필터 버튼" />
+                    <img src={triangle} alt="쓰레기성성 필터 버튼" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>

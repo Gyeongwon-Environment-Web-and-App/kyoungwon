@@ -32,7 +32,7 @@ export const exportStatisticsToExcel = (data: ExcelExportData) => {
       if (trucks.length > 0) {
         trucks.forEach((truck) => {
           categoryRows.push({
-            '쓰레기 종류': category,
+            '성상별': category,
             '총 건수': catData.total_count,
             '차량 번호': truck.truck_no,
             '차량별 건수': truck.count,
@@ -42,7 +42,7 @@ export const exportStatisticsToExcel = (data: ExcelExportData) => {
       } else {
         // Category w/ X trucks
         categoryRows.push({
-          '쓰레기 종류': category,
+          '성상별': category,
           '총 건수': catData.total_count,
           '차량 번호': '(없음)',
           '차량별 건수': 0,
@@ -52,7 +52,7 @@ export const exportStatisticsToExcel = (data: ExcelExportData) => {
     });
 
     const categorySheet = XLSX.utils.json_to_sheet(categoryRows);
-    XLSX.utils.book_append_sheet(workbook, categorySheet, '쓰레기 종류별');
+    XLSX.utils.book_append_sheet(workbook, categorySheet, '성상별');
   }
 
   // Sheet 2: Regions
