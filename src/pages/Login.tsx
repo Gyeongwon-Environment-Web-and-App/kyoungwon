@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-import mdLogo from '../assets/icons/brand/mid_logo.svg';
 import pngMdLogo from '../assets/icons/brand/mid_logo.png';
+import mdLogo from '../assets/icons/brand/mid_logo.svg';
 import { authService, type LoginResult } from '../services/authService';
 
 interface LoginProps {
@@ -21,6 +21,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
+
+  // Helper function to validate and parse serial number
+  const isValidSerial = (serialValue: string): { valid: boolean; serialNo?: number } => {
+    if (!serialValue || serialValue.trim() === '') {
+      return { valid: false };
+    }
+    const serialNo = parseInt(serialValue.trim(), 10);
+    if (isNaN(serialNo) || serialNo <= 0) {
+      return { valid: false };
+    }
+    return { valid: true, serialNo };
+  };
 
   // 로그인 API 호출 함수
   const loginWithSerial = async (serial_no: number): Promise<LoginResult> => {
@@ -45,7 +57,23 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setError(false);
 
     try {
-      const serialNo = parseInt(serial);
+      // Validate serial number before parsing
+      const validation = isValidSerial(serial);
+      if (!validation.valid || !validation.serialNo) {
+        setError(true);
+        setLoading(false);
+        setLoadingMessage('로그인 중...');
+        console.error('Invalid serial number:', serial);
+        return;
+      }
+
+      const serialNo = validation.serialNo;
+      console.log(
+        'Attempting login with serial number:',
+        serialNo,
+        'from input:',
+        serial
+      );
 
       // Show different messages during the wait
       const messageTimeout = setTimeout(() => {
@@ -144,11 +172,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <button
             type="submit"
             className={`w-full py-2 text-lg rounded transition outline-none border-none focus:outline-none ${
-              serial
+              isValidSerial(serial).valid
                 ? 'bg-[#00BA13] text-white hover:bg-green-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
-            disabled={loading}
+            disabled={loading || !isValidSerial(serial).valid}
           >
             {loading ? loadingMessage : '로그인'}
           </button>

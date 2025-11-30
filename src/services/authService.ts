@@ -45,9 +45,24 @@ export const authService = {
    */
   login: async (serialNo: number): Promise<LoginResult> => {
     try {
-      const response = await apiClient.get<LoginResponse>(
-        `/user/login/${serialNo}`
+      // Validate serialNo before making the request
+      if (!serialNo || isNaN(serialNo) || serialNo <= 0) {
+        console.error('Invalid serialNo provided to login:', serialNo);
+        return {
+          success: false,
+          message: '유효하지 않은 시리얼 번호입니다.',
+        };
+      }
+
+      const loginUrl = `/user/login/${serialNo}`;
+      console.log(
+        'Making login request to:',
+        loginUrl,
+        'with serialNo:',
+        serialNo
       );
+
+      const response = await apiClient.get<LoginResponse>(loginUrl);
 
       if (response.status === 200) {
         const { message, user, token } = response.data;
