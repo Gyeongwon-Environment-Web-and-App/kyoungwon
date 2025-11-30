@@ -86,6 +86,23 @@ export const authService = {
       };
     } catch (error) {
       console.error('Login failed:', error);
+      console.error('Login error details:', {
+        isAxiosError: axios.isAxiosError(error),
+        errorCode: axios.isAxiosError(error) ? error.code : undefined,
+        errorMessage: axios.isAxiosError(error) ? error.message : String(error),
+        responseStatus: axios.isAxiosError(error)
+          ? error.response?.status
+          : undefined,
+        responseData: axios.isAxiosError(error)
+          ? error.response?.data
+          : undefined,
+        requestURL: axios.isAxiosError(error)
+          ? `${error.config?.baseURL}${error.config?.url}`
+          : undefined,
+        requestMethod: axios.isAxiosError(error)
+          ? error.config?.method
+          : undefined,
+      });
 
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) {

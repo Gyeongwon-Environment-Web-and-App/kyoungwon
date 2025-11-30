@@ -1,4 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { Capacitor } from '@capacitor/core';
 
 // Retry configuration for Render free instance cold starts
 const MAX_RETRIES = 2; // Retry up to 2 times (3 total attempts)
@@ -30,7 +31,9 @@ const delay = (ms: number): Promise<void> => {
 };
 
 // Create Axios instance with base configuration
-const apiClient = axios.create({
+// Note: On native platforms (iOS/Android), don't force xhr adapter as it may not work properly
+const isNative = Capacitor.isNativePlatform();
+const apiClientConfig: any = {
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
     'https://kyoungwon-proxy.onrender.com/api',
@@ -40,9 +43,14 @@ const apiClient = axios.create({
   },
   // Add HTTPS configuration for development with self-signed certificates
   withCredentials: false,
-  // Disable service worker interference for API calls
-  adapter: 'xhr',
-});
+};
+
+// Only use xhr adapter on web, not on native platforms
+if (!isNative) {
+  apiClientConfig.adapter = 'xhr';
+}
+
+const apiClient = axios.create(apiClientConfig);
 
 // Request interceptor - Add auth token and track retry count
 apiClient.interceptors.request.use(
@@ -52,6 +60,16 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Log request details for debugging (especially on iOS)
+    console.log('API Request:', {
+      method: config.method,
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      headers: config.headers,
+      timestamp: new Date().toISOString(),
+    });
 
     // Initialize retry count if not present
     const configWithRetry = config as InternalAxiosRequestConfig & {
@@ -65,6 +83,11 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     console.error('Request interceptor error:', error);
+    console.error('Request error details:', {
+      message: error.message,
+      code: error.code,
+      config: error.config,
+    });
     return Promise.reject(error);
   }
 );
@@ -93,6 +116,10 @@ apiClient.interceptors.response.use(
       token: localStorage.getItem('userToken') ? 'exists' : 'missing',
       baseURL: error.config?.baseURL,
       retryCount: config.retryCount,
+      errorCode: error.code,
+      errorMessage: error.message,
+      responseData: error.response?.data,
+      requestHeaders: error.config?.headers,
     });
 
     // Check if we should retry this request

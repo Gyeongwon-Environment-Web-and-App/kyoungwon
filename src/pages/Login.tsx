@@ -23,7 +23,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
 
   // Helper function to validate and parse serial number
-  const isValidSerial = (serialValue: string): { valid: boolean; serialNo?: number } => {
+  const isValidSerial = (
+    serialValue: string
+  ): { valid: boolean; serialNo?: number } => {
     if (!serialValue || serialValue.trim() === '') {
       return { valid: false };
     }
@@ -96,6 +98,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
     } catch (error) {
       console.error('로그인 처리 중 오류:', error);
+      console.error('Login error details:', {
+        error,
+        errorType:
+          error instanceof Error ? error.constructor.name : typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+      });
       setError(true);
       setLoadingMessage('로그인 중...');
     } finally {
