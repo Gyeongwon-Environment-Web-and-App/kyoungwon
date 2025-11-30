@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { formatPhoneNumber } from '@/utils/validateDash';
+
 import food from '../../assets/icons/categories/tags/food.svg';
 import general from '../../assets/icons/categories/tags/general.svg';
 import other from '../../assets/icons/categories/tags/other.svg';
@@ -10,7 +12,6 @@ import { useComplaintFormStore } from '../../stores/complaintFormStore';
 import { formatAddressWithDong } from '../../utils/dongMapping';
 import DateTimeBox from '../forms/DateTimeBox';
 import TextForward from '../forms/TextForward';
-import { formatPhoneNumber } from '@/utils/validateDash';
 
 // import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
@@ -53,7 +54,13 @@ export default function ComplaintConfirm({
     formatAddress();
   }, [formData.address]);
 
-  const handleSubmitWithUpload = async () => {
+  const handleSubmitWithUpload = async (
+    e?: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    // Prevent default form submission behavior
+    e?.preventDefault();
+    e?.stopPropagation();
+
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -217,7 +224,8 @@ export default function ComplaintConfirm({
               {trucks.map((truck) => (
                 <p key={truck.id} className="md:py-1">
                   {`${truck.truck_no} ${truck.brand_nm} ${
-                    truck.size || '사이즈 정보 없음'}`}
+                    truck.size || '사이즈 정보 없음'
+                  }`}
                 </p>
               ))}
             </>
@@ -231,7 +239,13 @@ export default function ComplaintConfirm({
 
   return (
     <div className="overflow-y-auto overflow-x-hidden w-full">
-      <form className="md:border md:border-light-border rounded-[15px]">
+      <form
+        className="md:border md:border-light-border rounded-[15px]"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      >
         <DateTimeBox
           visible={false}
           repeat={formData.source.bad}
@@ -383,7 +397,7 @@ export default function ComplaintConfirm({
       {/* 제출 버튼 */}
       <div className="text-center mt-5">
         <button
-          type="submit"
+          type="button"
           className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleSubmitWithUpload}
           disabled={isSubmitting}
