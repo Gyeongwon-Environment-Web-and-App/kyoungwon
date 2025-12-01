@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import pngMdLogo from '../assets/icons/brand/mid_logo.png';
 import mdLogo from '../assets/icons/brand/mid_logo.svg';
 import { authService, type LoginResult } from '../services/authService';
+import { setStorageItem } from '../utils/storage';
 
 interface LoginProps {
   onLogin: (userData: {
@@ -40,11 +41,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const loginWithSerial = async (serial_no: number): Promise<LoginResult> => {
     const result = await authService.login(serial_no);
 
-    // 로그인 성공 시 로컬 스토리지에 사용자 정보 저장 (자동 로그인용)
+    // 로그인 성공 시 스토리지에 사용자 정보 저장 (자동 로그인용)
+    // Use storage utility for cross-platform compatibility
     if (result.success && result.data && autoLogin) {
-      localStorage.setItem('userData', JSON.stringify(result.data));
-      localStorage.setItem('serial_no', result.data.serial_no.toString());
-      localStorage.setItem('userToken', result.data.token);
+      await setStorageItem('userData', JSON.stringify(result.data));
+      await setStorageItem('serial_no', result.data.serial_no.toString());
+      await setStorageItem('userToken', result.data.token);
       console.log('userToken: ', result.data.token);
     }
 

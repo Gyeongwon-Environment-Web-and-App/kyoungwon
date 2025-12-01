@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import apiClient from '../lib/api';
+import { getStorageItem, removeStorageItem } from '../utils/storage';
 
 // Type definitions for API responses
 export interface User {
@@ -213,29 +214,33 @@ export const authService = {
   /**
    * Logout user (clear local storage)
    */
-  logout: () => {
+  logout: async () => {
+    await removeStorageItem('userData');
+    await removeStorageItem('serial_no');
+    await removeStorageItem('userToken');
+    // Also clear localStorage for backward compatibility
     localStorage.removeItem('userData');
     localStorage.removeItem('serial_no');
     localStorage.removeItem('userToken');
   },
 
   /**
-   * Get current user data from localStorage
+   * Get current user data from storage
    */
-  getCurrentUser: () => {
-    const userData = localStorage.getItem('userData');
+  getCurrentUser: async () => {
+    const userData = await getStorageItem('userData');
     return userData ? JSON.parse(userData) : null;
   },
 
   /**
    * Check if user is authenticated
    */
-  isAuthenticated: () => {
-    const token = localStorage.getItem('userToken');
+  isAuthenticated: async () => {
+    const token = await getStorageItem('userToken');
     return !!token;
   },
 
-  getToken: () => {
-    return localStorage.getItem('userToken');
+  getToken: async () => {
+    return await getStorageItem('userToken');
   },
 };

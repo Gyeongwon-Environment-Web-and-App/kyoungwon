@@ -468,7 +468,8 @@ export const noticeService = {
       const endpoint = `/post/edit/${id}`;
 
       // 상세한 요청 정보 로깅
-      const token = localStorage.getItem('userToken');
+      const { getStorageItemSync } = await import('../utils/storage');
+      const token = getStorageItemSync('userToken');
       console.log('🔍 === API 요청 상세 정보 ===');
       console.log('URL:', endpoint);
       console.log('Method: PATCH');

@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { Capacitor } from '@capacitor/core';
+import { getStorageItemSync, removeStorageItemSync } from '../utils/storage';
 
 // Retry configuration for Render free instance cold starts
 const MAX_RETRIES = 2; // Retry up to 2 times (3 total attempts)
@@ -55,8 +56,8 @@ const apiClient = axios.create(apiClientConfig);
 // Request interceptor - Add auth token and track retry count
 apiClient.interceptors.request.use(
   (config) => {
-    // Add auth token
-    const token = localStorage.getItem('userToken');
+    // Add auth token - use storage utility for cross-platform compatibility
+    const token = getStorageItemSync('userToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -113,7 +114,7 @@ apiClient.interceptors.response.use(
       status: error.response?.status,
       url: error.config?.url,
       method: error.config?.method,
-      token: localStorage.getItem('userToken') ? 'exists' : 'missing',
+      token: getStorageItemSync('userToken') ? 'exists' : 'missing',
       baseURL: error.config?.baseURL,
       retryCount: config.retryCount,
       errorCode: error.code,
@@ -143,13 +144,14 @@ apiClient.interceptors.response.use(
 
     // Handle 401 Unauthorized - redirect to login
     // Only clear tokens and redirect if we actually have a token and get a real 401
-    if (error.response?.status === 401 && localStorage.getItem('userToken')) {
+    if (error.response?.status === 401 && getStorageItemSync('userToken')) {
       console.log(
         '401 Unauthorized - clearing tokens and redirecting to login'
       );
-      localStorage.removeItem('userToken');
-      localStorage.removeItem('userData');
-      localStorage.removeItem('serial_no');
+      // Use storage utility for cross-platform compatibility
+      removeStorageItemSync('userToken');
+      removeStorageItemSync('userData');
+      removeStorageItemSync('serial_no');
       // Only redirect if not already on login page
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
@@ -205,8 +207,8 @@ export const getApiConfig = () => {
   return {
     baseURL: apiClient.defaults.baseURL,
     timeout: apiClient.defaults.timeout,
-    hasToken: !!localStorage.getItem('userToken'),
-    token: localStorage.getItem('userToken') ? 'exists' : 'missing',
+    hasToken: !!getStorageItemSync('userToken'),
+    token: getStorageItemSync('userToken') ? 'exists' : 'missing',
   };
 };
 

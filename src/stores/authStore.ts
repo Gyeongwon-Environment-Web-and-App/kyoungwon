@@ -1,6 +1,7 @@
 // stores/authStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { setStorageItem, removeStorageItem, getStorageItem } from '../utils/storage';
 
 // Define user data interface
 interface UserData {
@@ -49,11 +50,12 @@ export const useAuthStore = create<AuthState>()(
       token: null,
 
       // Actions
-      login: (userData: UserData) => {
-        // Store data in localStorage for persistence
-        localStorage.setItem('userData', JSON.stringify(userData));
-        localStorage.setItem('serial_no', userData.serial_no);
-        localStorage.setItem('userToken', userData.token);
+      login: async (userData: UserData) => {
+        // Store data using storage utility for cross-platform compatibility
+        // This stores in both Preferences (async, for persistence) and localStorage (sync, for immediate access)
+        await setStorageItem('userData', JSON.stringify(userData));
+        await setStorageItem('serial_no', userData.serial_no);
+        await setStorageItem('userToken', userData.token);
 
         // Update Zustand state
         set({
@@ -64,11 +66,14 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      logout: () => {
-        // Clear all storage
-        localStorage.removeItem('userData');
-        localStorage.removeItem('serial_no');
-        localStorage.removeItem('userToken');
+      logout: async () => {
+        // Clear all storage using storage utility
+        // This clears both Preferences and localStorage
+        await removeStorageItem('userData');
+        await removeStorageItem('serial_no');
+        await removeStorageItem('userToken');
+        
+        // Also clear sessionStorage
         sessionStorage.removeItem('userData');
         sessionStorage.removeItem('serial_no');
         sessionStorage.removeItem('userToken');
@@ -82,15 +87,25 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      checkAuthStatus: () => {
+      checkAuthStatus: async () => {
         try {
-          const userData = localStorage.getItem('userData');
-          const token = localStorage.getItem('userToken');
+          // Use storage utility for cross-platform compatibility
+          const userData = await getStorageItem('userData');
+          const token = await getStorageItem('userToken');
+          const serialNo = await getStorageItem('serial_no');
 
           if (userData && token) {
             if (isTokenExpired(token)) {
-              get().logout();
+              await get().logout();
               return;
+            }
+
+            // Sync to localStorage for synchronous access in request interceptors
+            // This ensures the token is available immediately for API calls
+            localStorage.setItem('userData', userData);
+            localStorage.setItem('userToken', token);
+            if (serialNo) {
+              localStorage.setItem('serial_no', serialNo);
             }
 
             const parsedUserData = JSON.parse(userData);

@@ -6,6 +6,7 @@ import type {
   TeamFormData,
   VehicleFormData,
 } from '@/types/transport';
+import { getStorageItemSync } from '@/utils/storage';
 
 import { uploadFilesToCloudflare } from './fileUploadService';
 
@@ -565,7 +566,7 @@ export const transportService = {
         method: 'PATCH',
         payload: cleanedApiData,
         id: id,
-        hasBearerToken: !!localStorage.getItem('userToken'),
+        hasBearerToken: !!getStorageItemSync('userToken'),
       });
 
       const response = await apiClient.patch<UpdateDriverApiResponse>(
@@ -715,7 +716,7 @@ export const transportService = {
         method: 'PATCH',
         payload: cleanedApiData,
         id: id,
-        hasBearerToken: !!localStorage.getItem('userToken'),
+        hasBearerToken: !!getStorageItemSync('userToken'),
       });
 
       const response = await apiClient.patch<UpdateTeamApiResponse>(
@@ -942,7 +943,7 @@ export const transportService = {
         method: 'PATCH',
         payload: cleanedApiData,
         id: id,
-        hasBearerToken: !!localStorage.getItem('userToken'),
+        hasBearerToken: !!getStorageItemSync('userToken'),
       });
 
       const response = await apiClient.patch<UpdateVehicleApiResponse>(
