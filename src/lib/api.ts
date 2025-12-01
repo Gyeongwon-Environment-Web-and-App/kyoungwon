@@ -1,5 +1,10 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { Capacitor } from '@capacitor/core';
+import axios, {
+  type AxiosError,
+  type CreateAxiosDefaults,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+
 import { getStorageItemSync, removeStorageItemSync } from '../utils/storage';
 
 // Retry configuration for Render free instance cold starts
@@ -34,7 +39,7 @@ const delay = (ms: number): Promise<void> => {
 // Create Axios instance with base configuration
 // Note: On native platforms (iOS/Android), don't force xhr adapter as it may not work properly
 const isNative = Capacitor.isNativePlatform();
-const apiClientConfig: any = {
+const apiClientConfig: CreateAxiosDefaults = {
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
     'https://kyoungwon-proxy.onrender.com/api',
@@ -63,14 +68,14 @@ apiClient.interceptors.request.use(
     }
 
     // Log request details for debugging (especially on iOS)
-    console.log('API Request:', {
-      method: config.method,
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
-      headers: config.headers,
-      timestamp: new Date().toISOString(),
-    });
+    // console.log('API Request:', {
+    //   method: config.method,
+    //   url: config.url,
+    //   baseURL: config.baseURL,
+    //   fullURL: `${config.baseURL}${config.url}`,
+    //   headers: config.headers,
+    //   timestamp: new Date().toISOString(),
+    // });
 
     // Initialize retry count if not present
     const configWithRetry = config as InternalAxiosRequestConfig & {

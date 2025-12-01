@@ -488,7 +488,7 @@ const MapStats: React.FC<MapStatsProps> = ({
                 mobile={true}
               />
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 mt-5">
               <div>
                 <p className="text-[#585858] font-semibold text-base">
                   가장 많은 민원이 들어온 요일
@@ -549,6 +549,7 @@ const MapStats: React.FC<MapStatsProps> = ({
                       ? [getTrashTypeColor(selectedTrashType)]
                       : ['#59B9FF']
                   }
+                  mobile={true}
                 />
               </div>
               <div className="flex flex-col gap-2">

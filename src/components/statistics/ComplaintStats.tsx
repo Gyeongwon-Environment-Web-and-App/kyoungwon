@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useComplaintCharts } from '@/hooks/useComplaintCharts';
 import { useComplaintFilters } from '@/hooks/useComplaintFilters';
 import { useInitialStats } from '@/hooks/useInitialStats';
@@ -77,6 +78,7 @@ const normalizeWeekdayData = (
 };
 
 const ComplaintStats = () => {
+  const isMobile = useIsMobile();
   const {
     dateRange,
     setDateRange,
@@ -696,6 +698,7 @@ const ComplaintStats = () => {
                       ? [getTrashColor(selectedTrashType)]
                       : Object.values(ColorMappings.trash)
                   }
+                  mobile={isMobile}
                 />
               </div>
               <div className="flex flex-col items-center md:gap-y-3 w-[95%] ">
@@ -739,6 +742,7 @@ const ComplaintStats = () => {
                       ? [getTrashTypeColor(selectedTrashType)]
                       : ['#59B9FF']
                   }
+                  mobile={isMobile}
                 />
               </div>
               <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5 mt-10 md:mt-0">
@@ -802,6 +806,7 @@ const ComplaintStats = () => {
                         ? [getTrashTypeColor(selectedTrashType)]
                         : ['#59B9FF'] // Default blue color
                     }
+                    mobile={isMobile}
                   />
                 </div>
                 <div className="flex flex-col items-center md:gap-y-3 w-[95%]">
