@@ -157,8 +157,6 @@ const ComplaintDetail: React.FC = () => {
   // Get refresh parameter to force refetch after edit
   const refreshParam = searchParams.get('refresh');
 
-  console.log('ComplaintDetail:', updateComplaint);
-
   // Fetch complaint data when ID changes or refresh parameter changes
   useEffect(() => {
     if (!currentComplaintId) {
