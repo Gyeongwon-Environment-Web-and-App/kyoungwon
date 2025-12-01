@@ -10,6 +10,7 @@ import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { Complaint } from '@/types/complaint';
 import { getBuildingNameFromAddress } from '@/utils/buildingName';
+import { formatPhoneNumber } from '@/utils/validateDash';
 
 import sample from '../../assets/background/sample.jpg';
 import food from '../../assets/icons/categories/tags/food.svg';
@@ -29,10 +30,6 @@ import rightArrow from '../../assets/icons/navigation/arrows/gray_arrow_right.sv
 import Popup from '../forms/Popup';
 
 // Helper function to safely access nested properties
-const getPhoneNumber = (complaint: Complaint | null): string | null => {
-  return complaint?.source?.phone_no || null;
-};
-
 const getFirstUsername = (complaint: Complaint | null): string | null => {
   return complaint?.notify?.usernames?.[0] || null;
 };
@@ -159,6 +156,8 @@ const ComplaintDetail: React.FC = () => {
   const currentComplaintId = complaintId;
   // Get refresh parameter to force refetch after edit
   const refreshParam = searchParams.get('refresh');
+
+  console.log('ComplaintDetail:', updateComplaint);
 
   // Fetch complaint data when ID changes or refresh parameter changes
   useEffect(() => {
@@ -467,10 +466,9 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-1 md:gap-2 items-center">
             <img src={phone} alt="전화" className="w-4 md:w-5 h-4 md:h-5" />
             <label className="text-base md:text-lg font-semibold">
-              {selectedComplaint?.teams[0]?.team_nm || '담당부서'} (
-              {selectedComplaint?.user.phone_no ||
-                getPhoneNumber(selectedComplaint) ||
-                '연락처 없음'}
+              {selectedComplaint?.route} (
+              {formatPhoneNumber(selectedComplaint?.source?.phone_no) ||
+                '전화번호 없음'}
               )
             </label>
           </div>
@@ -517,7 +515,8 @@ const ComplaintDetail: React.FC = () => {
             <label className="text-base md:text-lg font-semibold">
               {selectedComplaint?.teams[0]?.drivers[0]?.name ||
                 getFirstUsername(selectedComplaint) ||
-                '담당자 정보 없음'}
+                '담당자 정보 없음'}{' '}
+              ({formatPhoneNumber(selectedComplaint?.teams[0]?.drivers[0]?.phone_no)})
             </label>
             <p className="text-sm md:text-base font-semibold text-[#7C7C7C]">
               {selectedComplaint?.status ? '수거 완료' : '차량 수거 중'}
