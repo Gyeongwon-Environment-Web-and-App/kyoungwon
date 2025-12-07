@@ -421,15 +421,18 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-2 items-center">
             <div className="flex gap-1">
               {(() => {
-                // Get all unique categories from teams
+                // Use complaint.categories if available, otherwise fallback to teams[].category
                 const teamCategories =
-                  selectedComplaint?.teams
-                    ?.map((team) => team.category)
-                    ?.filter(
-                      (category, index, array) =>
-                        array.indexOf(category) === index
-                    ) // Remove duplicates
-                    ?.filter((category) => category !== 'manager') || [];
+                  selectedComplaint?.categories &&
+                  selectedComplaint.categories.length > 0
+                    ? selectedComplaint.categories
+                    : selectedComplaint?.teams
+                        ?.map((team) => team.category)
+                        ?.filter(
+                          (category, index, array) =>
+                            array.indexOf(category) === index
+                        ) // Remove duplicates
+                        ?.filter((category) => category !== 'manager') || [];
 
                 return teamCategories?.map((category, index) => {
                   return (

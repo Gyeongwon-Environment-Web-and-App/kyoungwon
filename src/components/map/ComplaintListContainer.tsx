@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 
 import type { DateRange } from 'react-day-picker';
 
+import { getEnglishId } from '@/utils/categoryMapping';
+
 import { useComplaints } from '../../hooks/useComplaints';
 import ComplaintListCard from './ComplaintListCard';
 
@@ -19,9 +21,17 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   selectedAreas = [],
   searchQuery,
 }) => {
+  // Convert Korean category to English ID for useComplaints hook
+  const englishCategory = useMemo(() => {
+    if (!selectedCategory || selectedCategory === '전체') {
+      return undefined;
+    }
+    return getEnglishId(selectedCategory);
+  }, [selectedCategory]);
+
   const { complaints, isLoading, fetchError } = useComplaints(
     dateRange,
-    selectedCategory,
+    englishCategory,
     selectedAreas.length > 0 ? selectedAreas : undefined
   );
 

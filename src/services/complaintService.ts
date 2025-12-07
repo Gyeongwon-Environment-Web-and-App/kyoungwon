@@ -259,13 +259,17 @@ export const complaintService = {
       const requestBody: {
         startDate: string;
         endDate: string;
-        category: string;
+        category?: string;
         region_nms?: string[];
       } = {
         startDate: dateRangeRequest.startDate,
         endDate: dateRangeRequest.endDate,
-        category: category && category !== 'all' ? category : 'string',
       };
+
+      // Only include category if provided and not 'all'
+      if (category && category !== 'all') {
+        requestBody.category = category;
+      }
 
       // Only include region_nms if provided and has values
       if (region_nms && region_nms.length > 0) {

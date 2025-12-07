@@ -77,14 +77,17 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
           <div className="flex gap-1 overflow-hidden">
             <div className="flex gap-1">
               {(() => {
+                // Use complaint.categories if available, otherwise fallback to teams[].category
                 const teamCategories =
-                  complaint.teams
-                    ?.map((team) => team.category)
-                    ?.filter(
-                      (category, index, array) =>
-                        array.indexOf(category) === index
-                    )
-                    ?.filter((category) => category !== 'manager') || [];
+                  complaint.categories && complaint.categories.length > 0
+                    ? complaint.categories
+                    : complaint.teams
+                        ?.map((team) => team.category)
+                        ?.filter(
+                          (category, index, array) =>
+                            array.indexOf(category) === index
+                        )
+                        ?.filter((category) => category !== 'manager') || [];
 
                 return teamCategories?.map((category, index) => {
                   return (
