@@ -10,6 +10,7 @@ type PieDatum = { name: string; value: number };
 interface UseInitialStatsForPiesParams {
   dateRange?: DateRange;
   selectedAreas: string[];
+  selectedTrashType?: string;
 }
 
 interface UseInitialStatsForPiesResult {
@@ -54,6 +55,7 @@ const filterOutParentAreas = (areas: string[]): string[] => {
 export function useInitialStats({
   dateRange,
   selectedAreas,
+  selectedTrashType,
 }: UseInitialStatsForPiesParams): UseInitialStatsForPiesResult {
   const [categoryPie, setCategoryPie] = useState<PieDatum[]>([]);
   const [regionPie, setRegionPie] = useState<PieDatum[]>([]);
@@ -94,6 +96,20 @@ export function useInitialStats({
     return DEFAULT_REGIONS;
   }, [selectedAreas]);
 
+  // Determine which categories to fetch based on selectedTrashType
+  const categoriesToFetch = useMemo(() => {
+    if (
+      selectedTrashType &&
+      selectedTrashType !== '전체통계' &&
+      selectedTrashType !== '성상별'
+    ) {
+      // If a specific category is selected, fetch only that category
+      return [selectedTrashType];
+    }
+    // Otherwise, fetch all categories
+    return DEFAULT_CATEGORIES;
+  }, [selectedTrashType]);
+
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -102,7 +118,7 @@ export function useInitialStats({
       try {
         const [categoriesResp, regionsResp, daysResp, posNegResp] =
           await Promise.all([
-            statisticsService.getAllByCategories(DEFAULT_CATEGORIES, dateRange),
+            statisticsService.getAllByCategories(categoriesToFetch, dateRange),
             statisticsService.getAllByRegions(regionsPayload, dateRange),
             statisticsService.getAllByDays(dateRange),
             statisticsService.getAllByPosNeg(dateRange),
@@ -164,7 +180,7 @@ export function useInitialStats({
     return () => {
       isMounted = false;
     };
-  }, [dateRange, dateRange?.from, dateRange?.to, regionsPayload]);
+  }, [dateRange, dateRange?.from, dateRange?.to, regionsPayload, categoriesToFetch]);
 
   return {
     categoryPie,

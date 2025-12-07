@@ -134,6 +134,7 @@ const MapStats: React.FC<MapStatsProps> = ({
     useInitialStats({
       dateRange,
       selectedAreas,
+      selectedTrashType,
     });
 
   const displayDaysData = useMemo(() => {

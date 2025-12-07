@@ -31,7 +31,7 @@ import {
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
 import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
-import { getBuildingNameFromAddress } from '@/utils/buildingName';
+// import { getBuildingNameFromAddress } from '@/utils/buildingName';
 import { formatDateToYYMMDD } from '@/utils/formatDate';
 
 import deleteIcon from '../../assets/icons/actions/delete.png';
@@ -49,28 +49,29 @@ interface ComplaintWithCallback extends Complaint {
 
 // Address cell component with lazy-loaded building name
 const AddressCell: React.FC<{ address: string }> = ({ address }) => {
-  const [buildingName, setBuildingName] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [buildingName, setBuildingName] = useState<string | null>(null);
+  // const [isLoading, setIsLoading] = useState(false);
   const shortAddress = address.split(' ').slice(-2).join(' ');
 
   const handleMouseEnter = async () => {
     // Only fetch if we haven't fetched yet and not currently loading
-    if (buildingName === null && !isLoading) {
-      console.log('enter!');
-      setIsLoading(true);
-      try {
-        const name = await getBuildingNameFromAddress(address);
-        setBuildingName(name);
-      } catch (error) {
-        console.error('Failed to fetch building name:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+    // if (buildingName === null && !isLoading) {
+    //   console.log('enter!');
+    //   setIsLoading(true);
+    //   try {
+    //     const name = await getBuildingNameFromAddress(address);
+    //     setBuildingName(name);
+    //   } catch (error) {
+    //     console.error('Failed to fetch building name:', error);
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // }
   };
 
   // Format display text: 'address (buildingName)' or just 'address'
-  const displayText = buildingName ? `${address} (${buildingName})` : address;
+  // const displayText = buildingName ? `${address} (${buildingName})` : address;
+  const displayText = address;
 
   return (
     <TooltipProvider>
@@ -85,7 +86,8 @@ const AddressCell: React.FC<{ address: string }> = ({ address }) => {
         </TooltipTrigger>
         <TooltipContent>
           <p className="max-w-md break-words text-base text-black">
-            {isLoading ? `${address} (조회 중...)` : displayText}
+            {/* {isLoading ? `${address} (조회 중...)` : displayText} */}
+            {displayText}
           </p>
         </TooltipContent>
       </Tooltip>
@@ -252,10 +254,10 @@ const ComplaintTable: React.FC = () => {
       accessorKey: 'category',
       header: '성상',
       cell: ({ row }) => {
-        const filteredCategories =
-          row.original.teams
-            ?.filter((team) => ALLOWED_CATEGORIES.includes(team.category))
-            .map((team) => team.category) || [];
+        const categories = row.original.categories || [];
+        const filteredCategories = categories.filter((cat) =>
+          ALLOWED_CATEGORIES.includes(cat)
+        );
         return (
           <div className="text-center truncate">
             {filteredCategories.length > 0

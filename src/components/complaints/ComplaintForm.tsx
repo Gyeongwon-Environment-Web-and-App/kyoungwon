@@ -99,7 +99,6 @@ export default function ComplaintForm({
           : undefined;
 
       fetchDriverData(formData.address, formData.categories, coordinates);
-      
     }
   }, [
     formData.address,
@@ -519,13 +518,13 @@ export default function ComplaintForm({
 
           {/* 민원 접수 경로 */}
           <label
-            className={`md:col-span-1 col-span-3 font-bold text-[1rem] md:pt-5 ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
+            className={`md:col-span-1 col-span-3 font-bold text-[1rem] md:pt-5 ${!formData.route || formData.route.trim() === '' ? 'md:mb-5' : ''}`}
           >
             민원 접수 경로
             <span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-3 md:mt-5 text-[0.73rem] md:text-sm border border-light-border rounded ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
+            className={`flex col-span-3 md:mt-5 text-[0.73rem] md:text-sm border border-light-border rounded ${!formData.route || formData.route.trim() === '' ? 'md:mb-5' : ''}`}
           >
             {['경원환경', '120', '구청', '주민센터'].map((label, idx, arr) => (
               <button
@@ -551,7 +550,7 @@ export default function ComplaintForm({
           <input
             type="text"
             placeholder={focus.routeInput ? '' : '직접 입력'}
-            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 mb-3 md:mb-0 md:mt-5 rounded w-full md:text-center text-left font-bold ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 mb-3 md:mb-0 md:mt-5 rounded w-full md:text-center text-left font-bold ${!formData.route || formData.route.trim() === '' ? 'md:mb-5' : ''}`}
             value={
               !['경원환경', '다산콜(120)', '구청', '주민센터'].includes(
                 formData.route
@@ -566,12 +565,12 @@ export default function ComplaintForm({
           />
 
           {/* 직접 전화번호 입력 - 데스크톱에서만 표시 */}
-          {formData.route === '경원환경' && (
+          {formData.route && formData.route.trim() !== '' && (
             <>
               <div className="hidden md:block md:col-span-1"></div>
               <input
                 tabIndex={8}
-                id="경원환경 직접 전화번호 입력"
+                id="직접 전화번호 입력"
                 type="text"
                 value={formData.source.phone_no}
                 className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 md:py-2 md:mt-2 md:mb-5 rounded"

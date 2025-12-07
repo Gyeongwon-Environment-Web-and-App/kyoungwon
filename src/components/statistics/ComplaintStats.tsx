@@ -140,6 +140,7 @@ const ComplaintStats = () => {
     useInitialStats({
       dateRange,
       selectedAreas,
+      selectedTrashType,
     });
 
   const normalizedDaysBar = useMemo(

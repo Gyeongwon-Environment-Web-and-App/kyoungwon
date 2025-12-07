@@ -163,6 +163,7 @@ const convertComplaintExtendedWithDriversToComplaint = (
     user: complaintExtended.user,
     teams: finalTeams,
     presigned_links: complaintExtended.presigned_links || [],
+    categories: complaintExtended.categories || [],
   };
 };
 
@@ -249,7 +250,8 @@ const convertMapComplaintToComplaint = (
 export const complaintService = {
   async getComplaintsByCategoryAndOrDates(
     dateRange?: DateRange,
-    category?: string
+    category?: string,
+    region_nms?: string[]
   ): Promise<Complaint[]> {
     try {
       const dateRangeRequest = getDateRangeFromPicker(dateRange);
@@ -257,14 +259,17 @@ export const complaintService = {
       const requestBody: {
         startDate: string;
         endDate: string;
-        category?: string;
+        category: string;
+        region_nms?: string[];
       } = {
         startDate: dateRangeRequest.startDate,
         endDate: dateRangeRequest.endDate,
+        category: category && category !== 'all' ? category : 'string',
       };
 
-      if (category && category !== 'all') {
-        requestBody.category = category;
+      // Only include region_nms if provided and has values
+      if (region_nms && region_nms.length > 0) {
+        requestBody.region_nms = region_nms;
       }
 
       const response = await apiClient.post<ComplaintApiResponseWithDrivers>(

@@ -81,6 +81,7 @@ export interface ComplaintExtendedWithDrivers {
     isActive: boolean;
   }>;
   presigned_links: PresignedLink[];
+  categories: string[];
 }
 
 export interface ComplaintApiResponse {
@@ -188,6 +189,7 @@ export interface Complaint {
   user: User;
   teams: Team[];
   presigned_links: PresignedLink[];
+  categories?: string[];
 }
 
 export interface DriverInfo {

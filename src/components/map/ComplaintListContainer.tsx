@@ -19,12 +19,16 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   selectedAreas = [],
   searchQuery,
 }) => {
-  const { complaints, isLoading, fetchError } = useComplaints(dateRange);
+  const { complaints, isLoading, fetchError } = useComplaints(
+    dateRange,
+    selectedCategory,
+    selectedAreas.length > 0 ? selectedAreas : undefined
+  );
 
   const filtered = useMemo(() => {
     let filtered = complaints;
 
-    // 카테고리 필터
+    // 카테고리 필터 (client-side filtering still needed for category)
     if (selectedCategory && selectedCategory !== '전체') {
       filtered = filtered.filter((complaint) => {
         const categoryMatch = complaint.teams.some(
@@ -34,12 +38,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
       });
     }
 
-    // 지역 필터
-    if (selectedAreas.length > 0) {
-      filtered = filtered.filter((complaint) => {
-        return selectedAreas.includes(complaint.address.region_nm);
-      });
-    }
+    // Note: Region filtering is now done server-side via region_nms parameter
 
     // 검색 필터
     if (searchQuery && searchQuery.trim()) {

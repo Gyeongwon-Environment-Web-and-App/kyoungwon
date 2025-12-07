@@ -123,23 +123,82 @@ const EditComplaintPage: React.FC = () => {
         }
       }
 
-      // Prepare update data according to API requirements
+      // Extract address string from Address object or use formData address
+      const addressString =
+        typeof originalComplaint.address === 'string'
+          ? originalComplaint.address
+          : originalComplaint.address?.address || formData.address || '';
+
+      // Convert coordinates from latitude/longitude to x_coord/y_coord
+      // Note: In Kakao Maps, x = longitude, y = latitude
+      const coordinates =
+        formData.coordinates || originalComplaint.coordinates
+          ? {
+              x_coord:
+                formData.coordinates?.longitude ||
+                originalComplaint.coordinates?.longitude ||
+                0,
+              y_coord:
+                formData.coordinates?.latitude ||
+                originalComplaint.coordinates?.latitude ||
+                0,
+            }
+          : undefined;
+
+      // Convert single category to categories array
+      const categories = formData.categories?.length
+        ? formData.categories
+        : originalComplaint.category
+          ? [originalComplaint.category]
+          : [];
+
+      // Prepare update data according to new API requirements
       const updateData = {
-        phone_no: formData.source?.phone_no || '',
+        address: addressString,
+        ...(coordinates && { coordinates }),
+        datetime: formData.datetime || originalComplaint.datetime || '',
+        phone_no: formData.source?.phone_no || originalComplaint.source?.phone_no || '',
         content: formData.content || '',
         type: formData.type || '',
         route: formData.route || '',
         // Note: status is not updated in edit mode, only in status change
+        source: {
+          phone_no: formData.source?.phone_no || originalComplaint.source?.phone_no || '',
+          bad: formData.source?.bad ?? originalComplaint.source?.bad ?? false,
+        },
+        categories: categories,
         ...(objectInfos && { objectInfos }),
       };
 
       // Prepare original complaint data for comparison
+      const originalAddressString =
+        typeof originalComplaint.address === 'string'
+          ? originalComplaint.address
+          : originalComplaint.address?.address || '';
+
+      const originalCoordinates = originalComplaint.coordinates
+        ? {
+            x_coord: originalComplaint.coordinates.longitude || 0,
+            y_coord: originalComplaint.coordinates.latitude || 0,
+          }
+        : undefined;
+
       const originalData = {
+        address: originalAddressString,
+        ...(originalCoordinates && { coordinates: originalCoordinates }),
+        datetime: originalComplaint.datetime || '',
         phone_no: originalComplaint.source?.phone_no || '',
         content: originalComplaint.content || '',
         type: originalComplaint.type || '',
         route: originalComplaint.route || '',
         status: originalComplaint.status,
+        source: originalComplaint.source
+          ? {
+              phone_no: originalComplaint.source.phone_no || '',
+              bad: originalComplaint.source.bad ?? false,
+            }
+          : undefined,
+        categories: originalComplaint.category ? [originalComplaint.category] : [],
         presigned_links: originalComplaint.presigned_links || [],
       };
 

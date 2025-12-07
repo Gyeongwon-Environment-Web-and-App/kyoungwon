@@ -19,13 +19,21 @@ const mapCategoryToKorean = (categoryId: string): string => {
   return categoryMap[categoryId] || categoryId;
 };
 
-export const useComplaints = (dateRange?: DateRange, category?: string) => {
+export const useComplaints = (
+  dateRange?: DateRange,
+  category?: string,
+  region_nms?: string[]
+) => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const loadComplaints = useCallback(
-    async (currentDateRange?: DateRange, currentCategory?: string) => {
+    async (
+      currentDateRange?: DateRange,
+      currentCategory?: string,
+      currentRegionNms?: string[]
+    ) => {
       setIsLoading(true);
       setFetchError(null);
       try {
@@ -36,7 +44,10 @@ export const useComplaints = (dateRange?: DateRange, category?: string) => {
 
         const data = await complaintService.getComplaintsByCategoryAndOrDates(
           currentDateRange,
-          koreanCategory
+          koreanCategory,
+          currentRegionNms && currentRegionNms.length > 0
+            ? currentRegionNms
+            : undefined
         );
 
         const sortedData = data.sort((a, b) => b.id - a.id);
@@ -59,8 +70,8 @@ export const useComplaints = (dateRange?: DateRange, category?: string) => {
   );
 
   useEffect(() => {
-    loadComplaints(dateRange, category);
-  }, [dateRange, category]);
+    loadComplaints(dateRange, category, region_nms);
+  }, [dateRange, category, region_nms, loadComplaints]);
 
   const getComplaintById = useCallback(async (id: string) => {
     setIsLoading(true);
@@ -81,7 +92,7 @@ export const useComplaints = (dateRange?: DateRange, category?: string) => {
     complaints,
     isLoading,
     fetchError,
-    refetch: () => loadComplaints(dateRange, category),
+    refetch: () => loadComplaints(dateRange, category, region_nms),
     getComplaintById,
   };
 };

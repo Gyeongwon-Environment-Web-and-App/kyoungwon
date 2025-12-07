@@ -9,7 +9,7 @@ import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { Complaint } from '@/types/complaint';
-import { getBuildingNameFromAddress } from '@/utils/buildingName';
+// import { getBuildingNameFromAddress } from '@/utils/buildingName';
 import { formatPhoneNumber } from '@/utils/validateDash';
 
 import sample from '../../assets/background/sample.jpg';
@@ -56,7 +56,7 @@ const ComplaintDetail: React.FC = () => {
   const [addressFrequency, setAddressFrequency] = useState<number | null>(null);
   const [phoneFrequency, setPhoneFrequency] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [buildingName, setBuildingName] = useState<string | null>(null);
+  // const [buildingName, setBuildingName] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const {
@@ -118,24 +118,63 @@ const ComplaintDetail: React.FC = () => {
     async (id: number, status: boolean) => {
       if (selectedComplaint) {
         try {
+          // Extract address string from Address object
+          const addressString =
+            typeof selectedComplaint.address === 'string'
+              ? selectedComplaint.address
+              : selectedComplaint.address?.address || '';
+
+          // Convert coordinates from latitude/longitude to x_coord/y_coord
+          const coordinates = selectedComplaint.coordinates
+            ? {
+                x_coord: selectedComplaint.coordinates.longitude || 0,
+                y_coord: selectedComplaint.coordinates.latitude || 0,
+              }
+            : undefined;
+
+          // Convert single category to categories array
+          const categories = selectedComplaint.category
+            ? [selectedComplaint.category]
+            : [];
+
           // Prepare original complaint data for comparison
           const originalData = {
+            address: addressString,
+            ...(coordinates && { coordinates }),
+            datetime: selectedComplaint.datetime || '',
             phone_no: selectedComplaint.source?.phone_no || '',
             content: selectedComplaint.content || '',
             type: selectedComplaint.type || '',
             route: selectedComplaint.route || '',
             status: selectedComplaint.status,
+            source: selectedComplaint.source
+              ? {
+                  phone_no: selectedComplaint.source.phone_no || '',
+                  bad: selectedComplaint.source.bad ?? false,
+                }
+              : undefined,
+            categories: categories,
             presigned_links: selectedComplaint.presigned_links || [],
           };
 
           await complaintService.updateComplaint(
             id,
             {
+              address: addressString,
+              ...(coordinates && { coordinates }),
+              datetime: selectedComplaint.datetime || '',
               phone_no: selectedComplaint.source?.phone_no || '',
               content: selectedComplaint.content,
               type: selectedComplaint.type,
               route: selectedComplaint.route,
               status: status,
+              source: selectedComplaint.source
+                ? {
+                    phone_no: selectedComplaint.source.phone_no || '',
+                    bad: selectedComplaint.source.bad ?? false,
+                  }
+                : undefined,
+              categories: categories,
             },
             originalData
           );
@@ -217,14 +256,14 @@ const ComplaintDetail: React.FC = () => {
       }
 
       // Fetch building name
-      getBuildingNameFromAddress(selectedComplaint.address.address)
-        .then((name) => {
-          setBuildingName(name);
-        })
-        .catch((error) => {
-          console.error('Failed to fetch building name:', error);
-          setBuildingName(null);
-        });
+      // getBuildingNameFromAddress(selectedComplaint.address.address)
+      //   .then((name) => {
+      //     setBuildingName(name);
+      //   })
+      //   .catch((error) => {
+      //     console.error('Failed to fetch building name:', error);
+      //     setBuildingName(null);
+      //   });
 
       // Reset image index when complaint changes
       setCurrentImageIndex(0);
@@ -442,9 +481,10 @@ const ComplaintDetail: React.FC = () => {
             <img src={pin} alt="주소 핀" className="w-4 md:w-5 h-4 md:h-5" />
             <label className="text-base md:text-lg font-semibold">
               {selectedComplaint?.address?.address
-                ? buildingName
-                  ? `${selectedComplaint.address.address} (${buildingName})`
-                  : selectedComplaint.address.address
+                ? // ? buildingName
+                  //   ? `${selectedComplaint.address.address} (${buildingName})`
+                  //   : selectedComplaint.address.address
+                  selectedComplaint.address.address
                 : '주소 정보 없음'}
             </label>
           </div>
@@ -514,7 +554,11 @@ const ComplaintDetail: React.FC = () => {
               {selectedComplaint?.teams[0]?.drivers[0]?.name ||
                 getFirstUsername(selectedComplaint) ||
                 '담당자 정보 없음'}{' '}
-              ({formatPhoneNumber(selectedComplaint?.teams[0]?.drivers[0]?.phone_no)})
+              (
+              {formatPhoneNumber(
+                selectedComplaint?.teams[0]?.drivers[0]?.phone_no
+              )}
+              )
             </label>
             <p className="text-sm md:text-base font-semibold text-[#7C7C7C]">
               {selectedComplaint?.status ? '수거 완료' : '차량 수거 중'}

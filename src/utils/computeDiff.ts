@@ -103,11 +103,22 @@ export interface ObjectInfo {
  * Original complaint data structure (from API)
  */
 export interface OriginalComplaintData {
+  address?: string;
+  coordinates?: {
+    x_coord: number;
+    y_coord: number;
+  };
+  datetime?: string;
   phone_no?: string;
   content?: string;
   type?: string;
   route?: string;
   status?: boolean | null;
+  source?: {
+    phone_no: string;
+    bad: boolean;
+  };
+  categories?: string[];
   presigned_links?: PresignedLink[];
 }
 
@@ -115,11 +126,22 @@ export interface OriginalComplaintData {
  * Current complaint data structure (from form)
  */
 export interface CurrentComplaintData {
+  address?: string;
+  coordinates?: {
+    x_coord: number;
+    y_coord: number;
+  };
+  datetime?: string;
   phone_no?: string;
   content?: string;
   type?: string;
   route?: string;
   status?: boolean | null;
+  source?: {
+    phone_no: string;
+    bad: boolean;
+  };
+  categories?: string[];
   objectInfos?: ObjectInfo[];
 }
 
@@ -127,11 +149,22 @@ export interface CurrentComplaintData {
  * Complaint patch payload (what gets sent to API)
  */
 export interface ComplaintPatchPayload {
+  address?: string;
+  coordinates?: {
+    x_coord: number;
+    y_coord: number;
+  };
+  datetime?: string;
   phone_no?: string;
   content?: string;
   type?: string;
   route?: string;
   status?: boolean;
+  source?: {
+    phone_no: string;
+    bad: boolean;
+  };
+  categories?: string[];
   objectInfos?: ObjectInfo[];
 }
 
@@ -181,6 +214,42 @@ function areObjectInfosEqual(arr1: ObjectInfo[], arr2: ObjectInfo[]): boolean {
 }
 
 /**
+ * Compares two coordinate objects
+ */
+function areCoordinatesEqual(
+  coord1?: { x_coord: number; y_coord: number },
+  coord2?: { x_coord: number; y_coord: number }
+): boolean {
+  if (!coord1 && !coord2) return true;
+  if (!coord1 || !coord2) return false;
+  return coord1.x_coord === coord2.x_coord && coord1.y_coord === coord2.y_coord;
+}
+
+/**
+ * Compares two source objects
+ */
+function areSourcesEqual(
+  source1?: { phone_no: string; bad: boolean },
+  source2?: { phone_no: string; bad: boolean }
+): boolean {
+  if (!source1 && !source2) return true;
+  if (!source1 || !source2) return false;
+  return source1.phone_no === source2.phone_no && source1.bad === source2.bad;
+}
+
+/**
+ * Compares two category arrays (order-independent)
+ */
+function areCategoriesEqual(arr1?: string[], arr2?: string[]): boolean {
+  const cat1 = arr1 || [];
+  const cat2 = arr2 || [];
+  if (cat1.length !== cat2.length) return false;
+  const sorted1 = [...cat1].sort().join(',');
+  const sorted2 = [...cat2].sort().join(',');
+  return sorted1 === sorted2;
+}
+
+/**
  * Computes the difference between original and current complaint data
  * Returns only changed fields in the format required for PATCH /complaint/edit/{id}
  *
@@ -194,12 +263,32 @@ export function computeComplaintDiff(
 ): ComplaintPatchPayload {
   const payload: ComplaintPatchPayload = {};
 
-  // Compare simple fields using computeDiff
-  const simpleFields = ['phone_no', 'content', 'type', 'route'] as const;
-  const simpleDiff = computeDiff(original, current);
+  // Handle address
+  if (current.address !== undefined && current.address !== original.address) {
+    payload.address = current.address;
+  }
 
+  // Handle coordinates
+  if (current.coordinates !== undefined) {
+    if (!areCoordinatesEqual(original.coordinates, current.coordinates)) {
+      payload.coordinates = current.coordinates;
+    }
+  }
+
+  // Handle datetime
+  if (current.datetime !== undefined && current.datetime !== original.datetime) {
+    payload.datetime = current.datetime;
+  }
+
+  // Handle phone_no (top-level)
+  if (current.phone_no !== undefined && current.phone_no !== original.phone_no) {
+    payload.phone_no = current.phone_no;
+  }
+
+  // Handle simple fields
+  const simpleFields = ['content', 'type', 'route'] as const;
   for (const field of simpleFields) {
-    if (field in simpleDiff && current[field] !== undefined) {
+    if (current[field] !== undefined && current[field] !== original[field]) {
       payload[field] = current[field] as string;
     }
   }
@@ -209,6 +298,20 @@ export function computeComplaintDiff(
     const originalStatus = original.status ?? false;
     if (current.status !== originalStatus) {
       payload.status = current.status;
+    }
+  }
+
+  // Handle source
+  if (current.source !== undefined) {
+    if (!areSourcesEqual(original.source, current.source)) {
+      payload.source = current.source;
+    }
+  }
+
+  // Handle categories
+  if (current.categories !== undefined) {
+    if (!areCategoriesEqual(original.categories, current.categories)) {
+      payload.categories = current.categories;
     }
   }
 
